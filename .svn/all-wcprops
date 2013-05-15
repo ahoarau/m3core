@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/svn/m3core/!svn/ver/60/trunk
+END
+m3base.pc
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/m3core/!svn/ver/2/trunk/m3base.pc
+END
+autogen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/m3core/!svn/ver/2/trunk/autogen.sh
+END
+NEWS
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/m3core/!svn/ver/2/trunk/NEWS
+END
+m3base.pc.in
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/m3core/!svn/ver/2/trunk/m3base.pc.in
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/m3core/!svn/ver/2/trunk/LICENSE
+END
+AUTHORS
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/m3core/!svn/ver/2/trunk/AUTHORS
+END
+m3toolbox.pc
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/m3core/!svn/ver/2/trunk/m3toolbox.pc
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/m3core/!svn/ver/2/trunk/ChangeLog
+END
+THANKS
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/m3core/!svn/ver/2/trunk/THANKS
+END
+m3toolbox.pc.in
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/m3core/!svn/ver/2/trunk/m3toolbox.pc.in
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/m3core/!svn/ver/2/trunk/README
+END
+configure.ac.no.rt
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/m3core/!svn/ver/53/trunk/configure.ac.no.rt
+END
+configure.ac
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/m3core/!svn/ver/52/trunk/configure.ac
+END
+Makefile.am.no.rt
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/m3core/!svn/ver/46/trunk/Makefile.am.no.rt
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/m3core/!svn/ver/2/trunk/COPYING
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/m3core/!svn/ver/56/trunk/Makefile.am
+END

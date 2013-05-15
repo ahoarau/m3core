@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/m3core/!svn/ver/57/trunk/src/m3rt/ethercat
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/ethercat/Makefile.am
+END
+Kbuild
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/m3core/!svn/ver/51/trunk/src/m3rt/ethercat/Kbuild
+END
+m3ec.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/m3core/!svn/ver/57/trunk/src/m3rt/ethercat/m3ec.c
+END

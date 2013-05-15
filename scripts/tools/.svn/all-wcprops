@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/m3core/!svn/ver/2/trunk/scripts/tools
+END
+rem3chroot.sh
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/m3core/!svn/ver/2/trunk/scripts/tools/rem3chroot.sh
+END
+rem3create.sh
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/m3core/!svn/ver/2/trunk/scripts/tools/rem3create.sh
+END
+rem3init.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/m3core/!svn/ver/2/trunk/scripts/tools/rem3init.sh
+END

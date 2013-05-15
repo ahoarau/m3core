@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/m3core/!svn/ver/57/trunk/src/m3rt/rt_system
+END
+rt_system.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/m3core/!svn/ver/57/trunk/src/m3rt/rt_system/rt_system.cpp
+END
+rt_service.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/m3core/!svn/ver/51/trunk/src/m3rt/rt_system/rt_service.h
+END
+rt_log_service.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/rt_log_service.h
+END
+rt_ros_service.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/rt_ros_service.h
+END
+rt_data_service.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/rt_data_service.cpp
+END
+rt_system.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/m3core/!svn/ver/51/trunk/src/m3rt/rt_system/rt_system.h
+END
+m3rt_system.i
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/m3rt_system.i
+END
+rt_data_service.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/rt_data_service.h
+END
+rt_service.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/m3core/!svn/ver/51/trunk/src/m3rt/rt_system/rt_service.cpp
+END
+rt_log_service.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/rt_log_service.cpp
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/m3core/!svn/ver/51/trunk/src/m3rt/rt_system/Makefile.am
+END
+rt_ros_service.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/m3core/!svn/ver/2/trunk/src/m3rt/rt_system/rt_ros_service.cpp
+END

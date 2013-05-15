@@ -1,5 +1,5 @@
-build
-.svn*
+#build
+#.svn*
 *.log
 *.log.*
 .Trash*
