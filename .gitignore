@@ -2,10 +2,9 @@ build
 .svn*
 *.log
 *.log.*
-.Trash*
+*.Trash*
 *.pyc
-*
 *~
-.kde*
-.*/
+*.kde*
 *.cache
+.*/
