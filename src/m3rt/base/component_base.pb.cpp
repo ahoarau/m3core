@@ -2,12 +2,16 @@
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
 #include "component_base.pb.h"
+
+#include <algorithm>
+
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// @@protoc_insertion_point(includes)
 
 namespace {
 
@@ -398,14 +402,16 @@ const int M3StatusAll::kNameFieldNumber;
 const int M3StatusAll::kDatumFieldNumber;
 #endif  // !_MSC_VER
 
-M3StatusAll::M3StatusAll() {
+M3StatusAll::M3StatusAll()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3StatusAll::InitAsDefaultInstance() {
 }
 
-M3StatusAll::M3StatusAll(const M3StatusAll& from) {
+M3StatusAll::M3StatusAll(const M3StatusAll& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -424,6 +430,11 @@ void M3StatusAll::SharedDtor() {
   }
 }
 
+void M3StatusAll::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3StatusAll::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3StatusAll_descriptor_;
@@ -454,16 +465,17 @@ bool M3StatusAll::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated string name = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name(0).data(), this->name(0).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-       parse_name:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->add_name()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->name(0).data(), this->name(0).length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectTag(10)) goto parse_name;
         if (input->ExpectTag(18)) goto parse_datum;
         break;
@@ -471,13 +483,14 @@ bool M3StatusAll::MergePartialFromCodedStream(
       
       // repeated bytes datum = 2;
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_datum:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->add_datum()));
+        } else {
           goto handle_uninterpreted;
         }
-       parse_datum:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-              input, this->add_datum()));
         if (input->ExpectTag(18)) goto parse_datum;
         if (input->ExpectAtEnd()) return true;
         break;
@@ -501,12 +514,6 @@ bool M3StatusAll::MergePartialFromCodedStream(
 
 void M3StatusAll::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3StatusAll::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // repeated string name = 1;
   for (int i = 0; i < this->name_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -574,7 +581,9 @@ int M3StatusAll::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -642,14 +651,16 @@ const int M3CommandAll::kDatumCmdFieldNumber;
 const int M3CommandAll::kDatumParamFieldNumber;
 #endif  // !_MSC_VER
 
-M3CommandAll::M3CommandAll() {
+M3CommandAll::M3CommandAll()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3CommandAll::InitAsDefaultInstance() {
 }
 
-M3CommandAll::M3CommandAll(const M3CommandAll& from) {
+M3CommandAll::M3CommandAll(const M3CommandAll& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -668,6 +679,11 @@ void M3CommandAll::SharedDtor() {
   }
 }
 
+void M3CommandAll::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3CommandAll::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3CommandAll_descriptor_;
@@ -700,16 +716,17 @@ bool M3CommandAll::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated string name_cmd = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_name_cmd:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_name_cmd()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name_cmd(0).data(), this->name_cmd(0).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-       parse_name_cmd:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->add_name_cmd()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->name_cmd(0).data(), this->name_cmd(0).length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectTag(10)) goto parse_name_cmd;
         if (input->ExpectTag(18)) goto parse_name_param;
         break;
@@ -717,16 +734,17 @@ bool M3CommandAll::MergePartialFromCodedStream(
       
       // repeated string name_param = 2;
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_name_param:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_name_param()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name_param(0).data(), this->name_param(0).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-       parse_name_param:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->add_name_param()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->name_param(0).data(), this->name_param(0).length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectTag(18)) goto parse_name_param;
         if (input->ExpectTag(26)) goto parse_datum_cmd;
         break;
@@ -734,13 +752,14 @@ bool M3CommandAll::MergePartialFromCodedStream(
       
       // repeated bytes datum_cmd = 3;
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_datum_cmd:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->add_datum_cmd()));
+        } else {
           goto handle_uninterpreted;
         }
-       parse_datum_cmd:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-              input, this->add_datum_cmd()));
         if (input->ExpectTag(26)) goto parse_datum_cmd;
         if (input->ExpectTag(34)) goto parse_datum_param;
         break;
@@ -748,13 +767,14 @@ bool M3CommandAll::MergePartialFromCodedStream(
       
       // repeated bytes datum_param = 4;
       case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_datum_param:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->add_datum_param()));
+        } else {
           goto handle_uninterpreted;
         }
-       parse_datum_param:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-              input, this->add_datum_param()));
         if (input->ExpectTag(34)) goto parse_datum_param;
         if (input->ExpectAtEnd()) return true;
         break;
@@ -778,12 +798,6 @@ bool M3CommandAll::MergePartialFromCodedStream(
 
 void M3CommandAll::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3CommandAll::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // repeated string name_cmd = 1;
   for (int i = 0; i < this->name_cmd_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -895,7 +909,9 @@ int M3CommandAll::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -964,14 +980,16 @@ void M3CommandAll::Swap(M3CommandAll* other) {
 const int M3StatusLogPage::kEntryFieldNumber;
 #endif  // !_MSC_VER
 
-M3StatusLogPage::M3StatusLogPage() {
+M3StatusLogPage::M3StatusLogPage()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3StatusLogPage::InitAsDefaultInstance() {
 }
 
-M3StatusLogPage::M3StatusLogPage(const M3StatusLogPage& from) {
+M3StatusLogPage::M3StatusLogPage(const M3StatusLogPage& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -990,6 +1008,11 @@ void M3StatusLogPage::SharedDtor() {
   }
 }
 
+void M3StatusLogPage::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3StatusLogPage::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3StatusLogPage_descriptor_;
@@ -1019,13 +1042,14 @@ bool M3StatusLogPage::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated .M3StatusAll entry = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_entry:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_entry()));
+        } else {
           goto handle_uninterpreted;
         }
-       parse_entry:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-              input, add_entry()));
         if (input->ExpectTag(10)) goto parse_entry;
         if (input->ExpectAtEnd()) return true;
         break;
@@ -1049,15 +1073,9 @@ bool M3StatusLogPage::MergePartialFromCodedStream(
 
 void M3StatusLogPage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3StatusLogPage::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // repeated .M3StatusAll entry = 1;
   for (int i = 0; i < this->entry_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageNoVirtual(
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->entry(i), output);
   }
   
@@ -1099,7 +1117,9 @@ int M3StatusLogPage::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -1158,9 +1178,7 @@ void M3StatusLogPage::Swap(M3StatusLogPage* other) {
 
 // ===================================================================
 
-const ::std::string M3BaseStatus::_default_name_;
 const ::std::string M3BaseStatus::_default_rate_("fast");
-const ::std::string M3BaseStatus::_default_version_;
 #ifndef _MSC_VER
 const int M3BaseStatus::kNameFieldNumber;
 const int M3BaseStatus::kStateFieldNumber;
@@ -1169,25 +1187,27 @@ const int M3BaseStatus::kRateFieldNumber;
 const int M3BaseStatus::kVersionFieldNumber;
 #endif  // !_MSC_VER
 
-M3BaseStatus::M3BaseStatus() {
+M3BaseStatus::M3BaseStatus()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3BaseStatus::InitAsDefaultInstance() {
 }
 
-M3BaseStatus::M3BaseStatus(const M3BaseStatus& from) {
+M3BaseStatus::M3BaseStatus(const M3BaseStatus& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
 void M3BaseStatus::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&_default_name_);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   state_ = 0;
   timestamp_ = GOOGLE_LONGLONG(0);
   rate_ = const_cast< ::std::string*>(&_default_rate_);
-  version_ = const_cast< ::std::string*>(&_default_version_);
+  version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1196,19 +1216,24 @@ M3BaseStatus::~M3BaseStatus() {
 }
 
 void M3BaseStatus::SharedDtor() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     delete name_;
   }
   if (rate_ != &_default_rate_) {
     delete rate_;
   }
-  if (version_ != &_default_version_) {
+  if (version_ != &::google::protobuf::internal::kEmptyString) {
     delete version_;
   }
   if (this != default_instance_) {
   }
 }
 
+void M3BaseStatus::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3BaseStatus::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3BaseStatus_descriptor_;
@@ -1226,20 +1251,20 @@ M3BaseStatus* M3BaseStatus::New() const {
 
 void M3BaseStatus::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (_has_bit(0)) {
-      if (name_ != &_default_name_) {
+    if (has_name()) {
+      if (name_ != &::google::protobuf::internal::kEmptyString) {
         name_->clear();
       }
     }
     state_ = 0;
     timestamp_ = GOOGLE_LONGLONG(0);
-    if (_has_bit(3)) {
+    if (has_rate()) {
       if (rate_ != &_default_rate_) {
         rate_->assign(_default_rate_);
       }
     }
-    if (_has_bit(4)) {
-      if (version_ != &_default_version_) {
+    if (has_version()) {
+      if (version_ != &::google::protobuf::internal::kEmptyString) {
         version_->clear();
       }
     }
@@ -1256,32 +1281,36 @@ bool M3BaseStatus::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->mutable_name()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->name().data(), this->name().length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectTag(16)) goto parse_state;
         break;
       }
       
       // optional .M3COMP_STATE state = 2 [default = M3COMP_STATE_INIT];
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          goto handle_uninterpreted;
-        }
-       parse_state:
-        int value;
-        DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));
-        if (M3COMP_STATE_IsValid(value)) {
-          set_state(static_cast< M3COMP_STATE >(value));
+         parse_state:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (M3COMP_STATE_IsValid(value)) {
+            set_state(static_cast< M3COMP_STATE >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(2, value);
+          }
         } else {
-          mutable_unknown_fields()->AddVarint(2, value);
+          goto handle_uninterpreted;
         }
         if (input->ExpectTag(24)) goto parse_timestamp;
         break;
@@ -1289,46 +1318,50 @@ bool M3BaseStatus::MergePartialFromCodedStream(
       
       // optional int64 timestamp = 3;
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_timestamp:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &timestamp_)));
+          set_has_timestamp();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_timestamp:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &timestamp_));
-        _set_bit(2);
         if (input->ExpectTag(34)) goto parse_rate;
         break;
       }
       
       // optional string rate = 4 [default = "fast"];
       case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_rate:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_rate()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->rate().data(), this->rate().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-       parse_rate:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->mutable_rate()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->rate().data(), this->rate().length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectTag(42)) goto parse_version;
         break;
       }
       
       // optional string version = 5;
       case 5: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_version:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_version()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->version().data(), this->version().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-       parse_version:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->mutable_version()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->version().data(), this->version().length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1351,14 +1384,8 @@ bool M3BaseStatus::MergePartialFromCodedStream(
 
 void M3BaseStatus::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3BaseStatus::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // optional string name = 1;
-  if (_has_bit(0)) {
+  if (has_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->name().data(), this->name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1367,18 +1394,18 @@ void M3BaseStatus::SerializeWithCachedSizes(
   }
   
   // optional .M3COMP_STATE state = 2 [default = M3COMP_STATE_INIT];
-  if (_has_bit(1)) {
+  if (has_state()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       2, this->state(), output);
   }
   
   // optional int64 timestamp = 3;
-  if (_has_bit(2)) {
+  if (has_timestamp()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(3, this->timestamp(), output);
   }
   
   // optional string rate = 4 [default = "fast"];
-  if (_has_bit(3)) {
+  if (has_rate()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->rate().data(), this->rate().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1387,7 +1414,7 @@ void M3BaseStatus::SerializeWithCachedSizes(
   }
   
   // optional string version = 5;
-  if (_has_bit(4)) {
+  if (has_version()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->version().data(), this->version().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1404,7 +1431,7 @@ void M3BaseStatus::SerializeWithCachedSizes(
 ::google::protobuf::uint8* M3BaseStatus::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional string name = 1;
-  if (_has_bit(0)) {
+  if (has_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->name().data(), this->name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1414,18 +1441,18 @@ void M3BaseStatus::SerializeWithCachedSizes(
   }
   
   // optional .M3COMP_STATE state = 2 [default = M3COMP_STATE_INIT];
-  if (_has_bit(1)) {
+  if (has_state()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       2, this->state(), target);
   }
   
   // optional int64 timestamp = 3;
-  if (_has_bit(2)) {
+  if (has_timestamp()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(3, this->timestamp(), target);
   }
   
   // optional string rate = 4 [default = "fast"];
-  if (_has_bit(3)) {
+  if (has_rate()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->rate().data(), this->rate().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1435,7 +1462,7 @@ void M3BaseStatus::SerializeWithCachedSizes(
   }
   
   // optional string version = 5;
-  if (_has_bit(4)) {
+  if (has_version()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->version().data(), this->version().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1495,7 +1522,9 @@ int M3BaseStatus::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -1514,19 +1543,19 @@ void M3BaseStatus::MergeFrom(const ::google::protobuf::Message& from) {
 void M3BaseStatus::MergeFrom(const M3BaseStatus& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_name()) {
       set_name(from.name());
     }
-    if (from._has_bit(1)) {
+    if (from.has_state()) {
       set_state(from.state());
     }
-    if (from._has_bit(2)) {
+    if (from.has_timestamp()) {
       set_timestamp(from.timestamp());
     }
-    if (from._has_bit(3)) {
+    if (from.has_rate()) {
       set_rate(from.rate());
     }
-    if (from._has_bit(4)) {
+    if (from.has_version()) {
       set_version(from.version());
     }
   }
@@ -1574,7 +1603,6 @@ void M3BaseStatus::Swap(M3BaseStatus* other) {
 
 // ===================================================================
 
-const ::std::string M3EtherCATStatus::_default_pdo_version_;
 #ifndef _MSC_VER
 const int M3EtherCATStatus::kNetworkIdFieldNumber;
 const int M3EtherCATStatus::kSerialNumberFieldNumber;
@@ -1586,14 +1614,16 @@ const int M3EtherCATStatus::kAlStateFieldNumber;
 const int M3EtherCATStatus::kPdoVersionFieldNumber;
 #endif  // !_MSC_VER
 
-M3EtherCATStatus::M3EtherCATStatus() {
+M3EtherCATStatus::M3EtherCATStatus()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3EtherCATStatus::InitAsDefaultInstance() {
 }
 
-M3EtherCATStatus::M3EtherCATStatus(const M3EtherCATStatus& from) {
+M3EtherCATStatus::M3EtherCATStatus(const M3EtherCATStatus& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -1607,7 +1637,7 @@ void M3EtherCATStatus::SharedCtor() {
   online_ = 0;
   operational_ = 0;
   al_state_ = 0;
-  pdo_version_ = const_cast< ::std::string*>(&_default_pdo_version_);
+  pdo_version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1616,13 +1646,18 @@ M3EtherCATStatus::~M3EtherCATStatus() {
 }
 
 void M3EtherCATStatus::SharedDtor() {
-  if (pdo_version_ != &_default_pdo_version_) {
+  if (pdo_version_ != &::google::protobuf::internal::kEmptyString) {
     delete pdo_version_;
   }
   if (this != default_instance_) {
   }
 }
 
+void M3EtherCATStatus::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3EtherCATStatus::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3EtherCATStatus_descriptor_;
@@ -1647,8 +1682,8 @@ void M3EtherCATStatus::Clear() {
     online_ = 0;
     operational_ = 0;
     al_state_ = 0;
-    if (_has_bit(7)) {
-      if (pdo_version_ != &_default_pdo_version_) {
+    if (has_pdo_version()) {
+      if (pdo_version_ != &::google::protobuf::internal::kEmptyString) {
         pdo_version_->clear();
       }
     }
@@ -1665,113 +1700,128 @@ bool M3EtherCATStatus::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional int32 network_id = 1 [default = -1];
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &network_id_)));
+          set_has_network_id();
+        } else {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &network_id_));
-        _set_bit(0);
         if (input->ExpectTag(16)) goto parse_serial_number;
         break;
       }
       
       // optional int32 serial_number = 2 [default = -1];
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_serial_number:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &serial_number_)));
+          set_has_serial_number();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_serial_number:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &serial_number_));
-        _set_bit(1);
         if (input->ExpectTag(24)) goto parse_product_code;
         break;
       }
       
       // optional int32 product_code = 3 [default = -1];
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_product_code:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &product_code_)));
+          set_has_product_code();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_product_code:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &product_code_));
-        _set_bit(2);
         if (input->ExpectTag(32)) goto parse_active;
         break;
       }
       
       // optional int32 active = 4;
       case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_active:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &active_)));
+          set_has_active();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_active:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &active_));
-        _set_bit(3);
         if (input->ExpectTag(40)) goto parse_online;
         break;
       }
       
       // optional int32 online = 5;
       case 5: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_online:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &online_)));
+          set_has_online();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_online:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &online_));
-        _set_bit(4);
         if (input->ExpectTag(48)) goto parse_operational;
         break;
       }
       
       // optional int32 operational = 6;
       case 6: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_operational:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &operational_)));
+          set_has_operational();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_operational:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &operational_));
-        _set_bit(5);
         if (input->ExpectTag(56)) goto parse_al_state;
         break;
       }
       
       // optional int32 al_state = 7;
       case 7: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_al_state:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &al_state_)));
+          set_has_al_state();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_al_state:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &al_state_));
-        _set_bit(6);
         if (input->ExpectTag(162)) goto parse_pdo_version;
         break;
       }
       
       // optional string pdo_version = 20;
       case 20: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_pdo_version:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_pdo_version()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->pdo_version().data(), this->pdo_version().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-       parse_pdo_version:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->mutable_pdo_version()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->pdo_version().data(), this->pdo_version().length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1794,49 +1844,43 @@ bool M3EtherCATStatus::MergePartialFromCodedStream(
 
 void M3EtherCATStatus::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3EtherCATStatus::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // optional int32 network_id = 1 [default = -1];
-  if (_has_bit(0)) {
+  if (has_network_id()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->network_id(), output);
   }
   
   // optional int32 serial_number = 2 [default = -1];
-  if (_has_bit(1)) {
+  if (has_serial_number()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->serial_number(), output);
   }
   
   // optional int32 product_code = 3 [default = -1];
-  if (_has_bit(2)) {
+  if (has_product_code()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->product_code(), output);
   }
   
   // optional int32 active = 4;
-  if (_has_bit(3)) {
+  if (has_active()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->active(), output);
   }
   
   // optional int32 online = 5;
-  if (_has_bit(4)) {
+  if (has_online()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->online(), output);
   }
   
   // optional int32 operational = 6;
-  if (_has_bit(5)) {
+  if (has_operational()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->operational(), output);
   }
   
   // optional int32 al_state = 7;
-  if (_has_bit(6)) {
+  if (has_al_state()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->al_state(), output);
   }
   
   // optional string pdo_version = 20;
-  if (_has_bit(7)) {
+  if (has_pdo_version()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->pdo_version().data(), this->pdo_version().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1853,42 +1897,42 @@ void M3EtherCATStatus::SerializeWithCachedSizes(
 ::google::protobuf::uint8* M3EtherCATStatus::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional int32 network_id = 1 [default = -1];
-  if (_has_bit(0)) {
+  if (has_network_id()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->network_id(), target);
   }
   
   // optional int32 serial_number = 2 [default = -1];
-  if (_has_bit(1)) {
+  if (has_serial_number()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->serial_number(), target);
   }
   
   // optional int32 product_code = 3 [default = -1];
-  if (_has_bit(2)) {
+  if (has_product_code()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->product_code(), target);
   }
   
   // optional int32 active = 4;
-  if (_has_bit(3)) {
+  if (has_active()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->active(), target);
   }
   
   // optional int32 online = 5;
-  if (_has_bit(4)) {
+  if (has_online()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->online(), target);
   }
   
   // optional int32 operational = 6;
-  if (_has_bit(5)) {
+  if (has_operational()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->operational(), target);
   }
   
   // optional int32 al_state = 7;
-  if (_has_bit(6)) {
+  if (has_al_state()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->al_state(), target);
   }
   
   // optional string pdo_version = 20;
-  if (_has_bit(7)) {
+  if (has_pdo_version()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->pdo_version().data(), this->pdo_version().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1970,7 +2014,9 @@ int M3EtherCATStatus::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -1989,28 +2035,28 @@ void M3EtherCATStatus::MergeFrom(const ::google::protobuf::Message& from) {
 void M3EtherCATStatus::MergeFrom(const M3EtherCATStatus& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_network_id()) {
       set_network_id(from.network_id());
     }
-    if (from._has_bit(1)) {
+    if (from.has_serial_number()) {
       set_serial_number(from.serial_number());
     }
-    if (from._has_bit(2)) {
+    if (from.has_product_code()) {
       set_product_code(from.product_code());
     }
-    if (from._has_bit(3)) {
+    if (from.has_active()) {
       set_active(from.active());
     }
-    if (from._has_bit(4)) {
+    if (from.has_online()) {
       set_online(from.online());
     }
-    if (from._has_bit(5)) {
+    if (from.has_operational()) {
       set_operational(from.operational());
     }
-    if (from._has_bit(6)) {
+    if (from.has_al_state()) {
       set_al_state(from.al_state());
     }
-    if (from._has_bit(7)) {
+    if (from.has_pdo_version()) {
       set_pdo_version(from.pdo_version());
     }
   }
@@ -2061,7 +2107,6 @@ void M3EtherCATStatus::Swap(M3EtherCATStatus* other) {
 
 // ===================================================================
 
-const ::std::string M3MonitorComponent::_default_name_;
 #ifndef _MSC_VER
 const int M3MonitorComponent::kNameFieldNumber;
 const int M3MonitorComponent::kStateFieldNumber;
@@ -2069,21 +2114,23 @@ const int M3MonitorComponent::kCycleTimeStatusUsFieldNumber;
 const int M3MonitorComponent::kCycleTimeCommandUsFieldNumber;
 #endif  // !_MSC_VER
 
-M3MonitorComponent::M3MonitorComponent() {
+M3MonitorComponent::M3MonitorComponent()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3MonitorComponent::InitAsDefaultInstance() {
 }
 
-M3MonitorComponent::M3MonitorComponent(const M3MonitorComponent& from) {
+M3MonitorComponent::M3MonitorComponent(const M3MonitorComponent& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
 void M3MonitorComponent::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&_default_name_);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   state_ = 0;
   cycle_time_status_us_ = 0;
   cycle_time_command_us_ = 0;
@@ -2095,13 +2142,18 @@ M3MonitorComponent::~M3MonitorComponent() {
 }
 
 void M3MonitorComponent::SharedDtor() {
-  if (name_ != &_default_name_) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
     delete name_;
   }
   if (this != default_instance_) {
   }
 }
 
+void M3MonitorComponent::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3MonitorComponent::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3MonitorComponent_descriptor_;
@@ -2119,8 +2171,8 @@ M3MonitorComponent* M3MonitorComponent::New() const {
 
 void M3MonitorComponent::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (_has_bit(0)) {
-      if (name_ != &_default_name_) {
+    if (has_name()) {
+      if (name_ != &::google::protobuf::internal::kEmptyString) {
         name_->clear();
       }
     }
@@ -2140,32 +2192,36 @@ bool M3MonitorComponent::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-              input, this->mutable_name()));
-        ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-          this->name().data(), this->name().length(),
-          ::google::protobuf::internal::WireFormat::PARSE);
         if (input->ExpectTag(16)) goto parse_state;
         break;
       }
       
       // optional .M3COMP_STATE state = 2;
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          goto handle_uninterpreted;
-        }
-       parse_state:
-        int value;
-        DO_(::google::protobuf::internal::WireFormatLite::ReadEnum(input, &value));
-        if (M3COMP_STATE_IsValid(value)) {
-          set_state(static_cast< M3COMP_STATE >(value));
+         parse_state:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (M3COMP_STATE_IsValid(value)) {
+            set_state(static_cast< M3COMP_STATE >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(2, value);
+          }
         } else {
-          mutable_unknown_fields()->AddVarint(2, value);
+          goto handle_uninterpreted;
         }
         if (input->ExpectTag(25)) goto parse_cycle_time_status_us;
         break;
@@ -2173,28 +2229,32 @@ bool M3MonitorComponent::MergePartialFromCodedStream(
       
       // optional double cycle_time_status_us = 3;
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_time_status_us:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_time_status_us_)));
+          set_has_cycle_time_status_us();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_time_status_us:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_time_status_us_));
-        _set_bit(2);
         if (input->ExpectTag(33)) goto parse_cycle_time_command_us;
         break;
       }
       
       // optional double cycle_time_command_us = 4;
       case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_time_command_us:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_time_command_us_)));
+          set_has_cycle_time_command_us();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_time_command_us:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_time_command_us_));
-        _set_bit(3);
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2217,14 +2277,8 @@ bool M3MonitorComponent::MergePartialFromCodedStream(
 
 void M3MonitorComponent::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3MonitorComponent::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // optional string name = 1;
-  if (_has_bit(0)) {
+  if (has_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->name().data(), this->name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -2233,18 +2287,18 @@ void M3MonitorComponent::SerializeWithCachedSizes(
   }
   
   // optional .M3COMP_STATE state = 2;
-  if (_has_bit(1)) {
+  if (has_state()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       2, this->state(), output);
   }
   
   // optional double cycle_time_status_us = 3;
-  if (_has_bit(2)) {
+  if (has_cycle_time_status_us()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(3, this->cycle_time_status_us(), output);
   }
   
   // optional double cycle_time_command_us = 4;
-  if (_has_bit(3)) {
+  if (has_cycle_time_command_us()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(4, this->cycle_time_command_us(), output);
   }
   
@@ -2257,7 +2311,7 @@ void M3MonitorComponent::SerializeWithCachedSizes(
 ::google::protobuf::uint8* M3MonitorComponent::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional string name = 1;
-  if (_has_bit(0)) {
+  if (has_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->name().data(), this->name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -2267,18 +2321,18 @@ void M3MonitorComponent::SerializeWithCachedSizes(
   }
   
   // optional .M3COMP_STATE state = 2;
-  if (_has_bit(1)) {
+  if (has_state()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       2, this->state(), target);
   }
   
   // optional double cycle_time_status_us = 3;
-  if (_has_bit(2)) {
+  if (has_cycle_time_status_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->cycle_time_status_us(), target);
   }
   
   // optional double cycle_time_command_us = 4;
-  if (_has_bit(3)) {
+  if (has_cycle_time_command_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(4, this->cycle_time_command_us(), target);
   }
   
@@ -2322,7 +2376,9 @@ int M3MonitorComponent::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -2341,16 +2397,16 @@ void M3MonitorComponent::MergeFrom(const ::google::protobuf::Message& from) {
 void M3MonitorComponent::MergeFrom(const M3MonitorComponent& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_name()) {
       set_name(from.name());
     }
-    if (from._has_bit(1)) {
+    if (from.has_state()) {
       set_state(from.state());
     }
-    if (from._has_bit(2)) {
+    if (from.has_cycle_time_status_us()) {
       set_cycle_time_status_us(from.cycle_time_status_us());
     }
-    if (from._has_bit(3)) {
+    if (from.has_cycle_time_command_us()) {
       set_cycle_time_command_us(from.cycle_time_command_us());
     }
   }
@@ -2400,14 +2456,16 @@ void M3MonitorComponent::Swap(M3MonitorComponent* other) {
 #ifndef _MSC_VER
 #endif  // !_MSC_VER
 
-M3MonitorCommand::M3MonitorCommand() {
+M3MonitorCommand::M3MonitorCommand()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3MonitorCommand::InitAsDefaultInstance() {
 }
 
-M3MonitorCommand::M3MonitorCommand(const M3MonitorCommand& from) {
+M3MonitorCommand::M3MonitorCommand(const M3MonitorCommand& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -2426,6 +2484,11 @@ void M3MonitorCommand::SharedDtor() {
   }
 }
 
+void M3MonitorCommand::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3MonitorCommand::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3MonitorCommand_descriptor_;
@@ -2464,12 +2527,6 @@ bool M3MonitorCommand::MergePartialFromCodedStream(
 
 void M3MonitorCommand::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3MonitorCommand::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -2493,7 +2550,9 @@ int M3MonitorCommand::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -2552,14 +2611,16 @@ void M3MonitorCommand::Swap(M3MonitorCommand* other) {
 #ifndef _MSC_VER
 #endif  // !_MSC_VER
 
-M3MonitorParam::M3MonitorParam() {
+M3MonitorParam::M3MonitorParam()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3MonitorParam::InitAsDefaultInstance() {
 }
 
-M3MonitorParam::M3MonitorParam(const M3MonitorParam& from) {
+M3MonitorParam::M3MonitorParam(const M3MonitorParam& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -2578,6 +2639,11 @@ void M3MonitorParam::SharedDtor() {
   }
 }
 
+void M3MonitorParam::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3MonitorParam::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3MonitorParam_descriptor_;
@@ -2616,12 +2682,6 @@ bool M3MonitorParam::MergePartialFromCodedStream(
 
 void M3MonitorParam::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3MonitorParam::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -2645,7 +2705,9 @@ int M3MonitorParam::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -2720,7 +2782,8 @@ const int M3MonitorStatus::kCycleTimeMaxUsFieldNumber;
 const int M3MonitorStatus::kEcDomainsFieldNumber;
 #endif  // !_MSC_VER
 
-M3MonitorStatus::M3MonitorStatus() {
+M3MonitorStatus::M3MonitorStatus()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
@@ -2728,7 +2791,8 @@ void M3MonitorStatus::InitAsDefaultInstance() {
   base_ = const_cast< ::M3BaseStatus*>(&::M3BaseStatus::default_instance());
 }
 
-M3MonitorStatus::M3MonitorStatus(const M3MonitorStatus& from) {
+M3MonitorStatus::M3MonitorStatus(const M3MonitorStatus& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -2762,6 +2826,11 @@ void M3MonitorStatus::SharedDtor() {
   }
 }
 
+void M3MonitorStatus::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3MonitorStatus::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3MonitorStatus_descriptor_;
@@ -2779,7 +2848,7 @@ M3MonitorStatus* M3MonitorStatus::New() const {
 
 void M3MonitorStatus::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (_has_bit(0)) {
+    if (has_base()) {
       if (base_ != NULL) base_->::M3BaseStatus::Clear();
     }
     num_components_rt_ = 0;
@@ -2812,179 +2881,203 @@ bool M3MonitorStatus::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional .M3BaseStatus base = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_base()));
+        } else {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-             input, mutable_base()));
         if (input->ExpectTag(16)) goto parse_num_components_rt;
         break;
       }
       
       // optional int32 num_components_rt = 2;
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_components_rt:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_components_rt_)));
+          set_has_num_components_rt();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_components_rt:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_components_rt_));
-        _set_bit(1);
         if (input->ExpectTag(24)) goto parse_num_components_ec;
         break;
       }
       
       // optional int32 num_components_ec = 3;
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_components_ec:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_components_ec_)));
+          set_has_num_components_ec();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_components_ec:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_components_ec_));
-        _set_bit(2);
         if (input->ExpectTag(32)) goto parse_num_components;
         break;
       }
       
       // optional int32 num_components = 4;
       case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_components:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_components_)));
+          set_has_num_components();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_components:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_components_));
-        _set_bit(3);
         if (input->ExpectTag(40)) goto parse_num_components_safeop;
         break;
       }
       
       // optional int32 num_components_safeop = 5;
       case 5: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_components_safeop:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_components_safeop_)));
+          set_has_num_components_safeop();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_components_safeop:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_components_safeop_));
-        _set_bit(4);
         if (input->ExpectTag(48)) goto parse_num_components_op;
         break;
       }
       
       // optional int32 num_components_op = 6;
       case 6: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_components_op:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_components_op_)));
+          set_has_num_components_op();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_components_op:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_components_op_));
-        _set_bit(5);
         if (input->ExpectTag(56)) goto parse_num_components_err;
         break;
       }
       
       // optional int32 num_components_err = 7;
       case 7: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_components_err:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_components_err_)));
+          set_has_num_components_err();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_components_err:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_components_err_));
-        _set_bit(6);
         if (input->ExpectTag(64)) goto parse_operational;
         break;
       }
       
       // optional bool operational = 8;
       case 8: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_operational:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &operational_)));
+          set_has_operational();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_operational:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadBool(
-              input, &operational_));
-        _set_bit(7);
         if (input->ExpectTag(73)) goto parse_cycle_time_status_us;
         break;
       }
       
       // optional double cycle_time_status_us = 9;
       case 9: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_time_status_us:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_time_status_us_)));
+          set_has_cycle_time_status_us();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_time_status_us:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_time_status_us_));
-        _set_bit(8);
         if (input->ExpectTag(81)) goto parse_cycle_time_command_us;
         break;
       }
       
       // optional double cycle_time_command_us = 10;
       case 10: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_time_command_us:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_time_command_us_)));
+          set_has_cycle_time_command_us();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_time_command_us:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_time_command_us_));
-        _set_bit(9);
         if (input->ExpectTag(89)) goto parse_cycle_time_us;
         break;
       }
       
       // optional double cycle_time_us = 11;
       case 11: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_time_us:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_time_us_)));
+          set_has_cycle_time_us();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_time_us:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_time_us_));
-        _set_bit(10);
         if (input->ExpectTag(97)) goto parse_cycle_frequency_hz;
         break;
       }
       
       // optional double cycle_frequency_hz = 12;
       case 12: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_frequency_hz:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_frequency_hz_)));
+          set_has_cycle_frequency_hz();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_frequency_hz:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_frequency_hz_));
-        _set_bit(11);
         if (input->ExpectTag(106)) goto parse_components;
         break;
       }
       
       // repeated .M3MonitorComponent components = 13;
       case 13: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_components:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_components()));
+        } else {
           goto handle_uninterpreted;
         }
-       parse_components:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-              input, add_components()));
         if (input->ExpectTag(106)) goto parse_components;
         if (input->ExpectTag(112)) goto parse_num_ethercat_cycles;
         break;
@@ -2992,41 +3085,46 @@ bool M3MonitorStatus::MergePartialFromCodedStream(
       
       // optional int32 num_ethercat_cycles = 14;
       case 14: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_num_ethercat_cycles:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &num_ethercat_cycles_)));
+          set_has_num_ethercat_cycles();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_num_ethercat_cycles:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt32(
-              input, &num_ethercat_cycles_));
-        _set_bit(13);
         if (input->ExpectTag(121)) goto parse_cycle_time_max_us;
         break;
       }
       
       // optional double cycle_time_max_us = 15;
       case 15: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_cycle_time_max_us:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &cycle_time_max_us_)));
+          set_has_cycle_time_max_us();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_cycle_time_max_us:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadDouble(
-              input, &cycle_time_max_us_));
-        _set_bit(14);
         if (input->ExpectTag(130)) goto parse_ec_domains;
         break;
       }
       
       // repeated .M3MonitorEcDomain ec_domains = 16;
       case 16: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_ec_domains:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_ec_domains()));
+        } else {
           goto handle_uninterpreted;
         }
-       parse_ec_domains:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-              input, add_ec_domains()));
         if (input->ExpectTag(130)) goto parse_ec_domains;
         if (input->ExpectAtEnd()) return true;
         break;
@@ -3050,92 +3148,86 @@ bool M3MonitorStatus::MergePartialFromCodedStream(
 
 void M3MonitorStatus::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3MonitorStatus::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // optional .M3BaseStatus base = 1;
-  if (_has_bit(0)) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageNoVirtual(
+  if (has_base()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       1, this->base(), output);
   }
   
   // optional int32 num_components_rt = 2;
-  if (_has_bit(1)) {
+  if (has_num_components_rt()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->num_components_rt(), output);
   }
   
   // optional int32 num_components_ec = 3;
-  if (_has_bit(2)) {
+  if (has_num_components_ec()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->num_components_ec(), output);
   }
   
   // optional int32 num_components = 4;
-  if (_has_bit(3)) {
+  if (has_num_components()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->num_components(), output);
   }
   
   // optional int32 num_components_safeop = 5;
-  if (_has_bit(4)) {
+  if (has_num_components_safeop()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->num_components_safeop(), output);
   }
   
   // optional int32 num_components_op = 6;
-  if (_has_bit(5)) {
+  if (has_num_components_op()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->num_components_op(), output);
   }
   
   // optional int32 num_components_err = 7;
-  if (_has_bit(6)) {
+  if (has_num_components_err()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->num_components_err(), output);
   }
   
   // optional bool operational = 8;
-  if (_has_bit(7)) {
+  if (has_operational()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(8, this->operational(), output);
   }
   
   // optional double cycle_time_status_us = 9;
-  if (_has_bit(8)) {
+  if (has_cycle_time_status_us()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(9, this->cycle_time_status_us(), output);
   }
   
   // optional double cycle_time_command_us = 10;
-  if (_has_bit(9)) {
+  if (has_cycle_time_command_us()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(10, this->cycle_time_command_us(), output);
   }
   
   // optional double cycle_time_us = 11;
-  if (_has_bit(10)) {
+  if (has_cycle_time_us()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(11, this->cycle_time_us(), output);
   }
   
   // optional double cycle_frequency_hz = 12;
-  if (_has_bit(11)) {
+  if (has_cycle_frequency_hz()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(12, this->cycle_frequency_hz(), output);
   }
   
   // repeated .M3MonitorComponent components = 13;
   for (int i = 0; i < this->components_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageNoVirtual(
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       13, this->components(i), output);
   }
   
   // optional int32 num_ethercat_cycles = 14;
-  if (_has_bit(13)) {
+  if (has_num_ethercat_cycles()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(14, this->num_ethercat_cycles(), output);
   }
   
   // optional double cycle_time_max_us = 15;
-  if (_has_bit(14)) {
+  if (has_cycle_time_max_us()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(15, this->cycle_time_max_us(), output);
   }
   
   // repeated .M3MonitorEcDomain ec_domains = 16;
   for (int i = 0; i < this->ec_domains_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageNoVirtual(
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       16, this->ec_domains(i), output);
   }
   
@@ -3148,64 +3240,64 @@ void M3MonitorStatus::SerializeWithCachedSizes(
 ::google::protobuf::uint8* M3MonitorStatus::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional .M3BaseStatus base = 1;
-  if (_has_bit(0)) {
+  if (has_base()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         1, this->base(), target);
   }
   
   // optional int32 num_components_rt = 2;
-  if (_has_bit(1)) {
+  if (has_num_components_rt()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->num_components_rt(), target);
   }
   
   // optional int32 num_components_ec = 3;
-  if (_has_bit(2)) {
+  if (has_num_components_ec()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->num_components_ec(), target);
   }
   
   // optional int32 num_components = 4;
-  if (_has_bit(3)) {
+  if (has_num_components()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->num_components(), target);
   }
   
   // optional int32 num_components_safeop = 5;
-  if (_has_bit(4)) {
+  if (has_num_components_safeop()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->num_components_safeop(), target);
   }
   
   // optional int32 num_components_op = 6;
-  if (_has_bit(5)) {
+  if (has_num_components_op()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->num_components_op(), target);
   }
   
   // optional int32 num_components_err = 7;
-  if (_has_bit(6)) {
+  if (has_num_components_err()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->num_components_err(), target);
   }
   
   // optional bool operational = 8;
-  if (_has_bit(7)) {
+  if (has_operational()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(8, this->operational(), target);
   }
   
   // optional double cycle_time_status_us = 9;
-  if (_has_bit(8)) {
+  if (has_cycle_time_status_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(9, this->cycle_time_status_us(), target);
   }
   
   // optional double cycle_time_command_us = 10;
-  if (_has_bit(9)) {
+  if (has_cycle_time_command_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(10, this->cycle_time_command_us(), target);
   }
   
   // optional double cycle_time_us = 11;
-  if (_has_bit(10)) {
+  if (has_cycle_time_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(11, this->cycle_time_us(), target);
   }
   
   // optional double cycle_frequency_hz = 12;
-  if (_has_bit(11)) {
+  if (has_cycle_frequency_hz()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(12, this->cycle_frequency_hz(), target);
   }
   
@@ -3217,12 +3309,12 @@ void M3MonitorStatus::SerializeWithCachedSizes(
   }
   
   // optional int32 num_ethercat_cycles = 14;
-  if (_has_bit(13)) {
+  if (has_num_ethercat_cycles()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(14, this->num_ethercat_cycles(), target);
   }
   
   // optional double cycle_time_max_us = 15;
-  if (_has_bit(14)) {
+  if (has_cycle_time_max_us()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(15, this->cycle_time_max_us(), target);
   }
   
@@ -3354,7 +3446,9 @@ int M3MonitorStatus::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -3375,48 +3469,48 @@ void M3MonitorStatus::MergeFrom(const M3MonitorStatus& from) {
   components_.MergeFrom(from.components_);
   ec_domains_.MergeFrom(from.ec_domains_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_base()) {
       mutable_base()->::M3BaseStatus::MergeFrom(from.base());
     }
-    if (from._has_bit(1)) {
+    if (from.has_num_components_rt()) {
       set_num_components_rt(from.num_components_rt());
     }
-    if (from._has_bit(2)) {
+    if (from.has_num_components_ec()) {
       set_num_components_ec(from.num_components_ec());
     }
-    if (from._has_bit(3)) {
+    if (from.has_num_components()) {
       set_num_components(from.num_components());
     }
-    if (from._has_bit(4)) {
+    if (from.has_num_components_safeop()) {
       set_num_components_safeop(from.num_components_safeop());
     }
-    if (from._has_bit(5)) {
+    if (from.has_num_components_op()) {
       set_num_components_op(from.num_components_op());
     }
-    if (from._has_bit(6)) {
+    if (from.has_num_components_err()) {
       set_num_components_err(from.num_components_err());
     }
-    if (from._has_bit(7)) {
+    if (from.has_operational()) {
       set_operational(from.operational());
     }
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    if (from._has_bit(8)) {
+    if (from.has_cycle_time_status_us()) {
       set_cycle_time_status_us(from.cycle_time_status_us());
     }
-    if (from._has_bit(9)) {
+    if (from.has_cycle_time_command_us()) {
       set_cycle_time_command_us(from.cycle_time_command_us());
     }
-    if (from._has_bit(10)) {
+    if (from.has_cycle_time_us()) {
       set_cycle_time_us(from.cycle_time_us());
     }
-    if (from._has_bit(11)) {
+    if (from.has_cycle_frequency_hz()) {
       set_cycle_frequency_hz(from.cycle_frequency_hz());
     }
-    if (from._has_bit(13)) {
+    if (from.has_num_ethercat_cycles()) {
       set_num_ethercat_cycles(from.num_ethercat_cycles());
     }
-    if (from._has_bit(14)) {
+    if (from.has_cycle_time_max_us()) {
       set_cycle_time_max_us(from.cycle_time_max_us());
     }
   }
@@ -3484,14 +3578,16 @@ const int M3MonitorEcDomain::kTEcatWaitTxFieldNumber;
 const int M3MonitorEcDomain::kTEcatTxFieldNumber;
 #endif  // !_MSC_VER
 
-M3MonitorEcDomain::M3MonitorEcDomain() {
+M3MonitorEcDomain::M3MonitorEcDomain()
+  : ::google::protobuf::Message() {
   SharedCtor();
 }
 
 void M3MonitorEcDomain::InitAsDefaultInstance() {
 }
 
-M3MonitorEcDomain::M3MonitorEcDomain(const M3MonitorEcDomain& from) {
+M3MonitorEcDomain::M3MonitorEcDomain(const M3MonitorEcDomain& from)
+  : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -3516,6 +3612,11 @@ void M3MonitorEcDomain::SharedDtor() {
   }
 }
 
+void M3MonitorEcDomain::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
 const ::google::protobuf::Descriptor* M3MonitorEcDomain::descriptor() {
   protobuf_AssignDescriptorsOnce();
   return M3MonitorEcDomain_descriptor_;
@@ -3552,83 +3653,95 @@ bool M3MonitorEcDomain::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional int64 t_ecat_wait_rx = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &t_ecat_wait_rx_)));
+          set_has_t_ecat_wait_rx();
+        } else {
           goto handle_uninterpreted;
         }
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &t_ecat_wait_rx_));
-        _set_bit(0);
         if (input->ExpectTag(16)) goto parse_t_ecat_rx;
         break;
       }
       
       // optional int64 t_ecat_rx = 2;
       case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_t_ecat_rx:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &t_ecat_rx_)));
+          set_has_t_ecat_rx();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_t_ecat_rx:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &t_ecat_rx_));
-        _set_bit(1);
         if (input->ExpectTag(24)) goto parse_t_ecat_wait_shm;
         break;
       }
       
       // optional int64 t_ecat_wait_shm = 3;
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_t_ecat_wait_shm:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &t_ecat_wait_shm_)));
+          set_has_t_ecat_wait_shm();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_t_ecat_wait_shm:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &t_ecat_wait_shm_));
-        _set_bit(2);
         if (input->ExpectTag(32)) goto parse_t_ecat_shm;
         break;
       }
       
       // optional int64 t_ecat_shm = 4;
       case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_t_ecat_shm:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &t_ecat_shm_)));
+          set_has_t_ecat_shm();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_t_ecat_shm:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &t_ecat_shm_));
-        _set_bit(3);
         if (input->ExpectTag(40)) goto parse_t_ecat_wait_tx;
         break;
       }
       
       // optional int64 t_ecat_wait_tx = 5;
       case 5: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_t_ecat_wait_tx:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &t_ecat_wait_tx_)));
+          set_has_t_ecat_wait_tx();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_t_ecat_wait_tx:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &t_ecat_wait_tx_));
-        _set_bit(4);
         if (input->ExpectTag(48)) goto parse_t_ecat_tx;
         break;
       }
       
       // optional int64 t_ecat_tx = 6;
       case 6: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) !=
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_t_ecat_tx:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &t_ecat_tx_)));
+          set_has_t_ecat_tx();
+        } else {
           goto handle_uninterpreted;
         }
-       parse_t_ecat_tx:
-        DO_(::google::protobuf::internal::WireFormatLite::ReadInt64(
-              input, &t_ecat_tx_));
-        _set_bit(5);
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -3651,39 +3764,33 @@ bool M3MonitorEcDomain::MergePartialFromCodedStream(
 
 void M3MonitorEcDomain::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  ::google::protobuf::uint8* raw_buffer = output->GetDirectBufferForNBytesAndAdvance(_cached_size_);
-  if (raw_buffer != NULL) {
-    M3MonitorEcDomain::SerializeWithCachedSizesToArray(raw_buffer);
-    return;
-  }
-  
   // optional int64 t_ecat_wait_rx = 1;
-  if (_has_bit(0)) {
+  if (has_t_ecat_wait_rx()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->t_ecat_wait_rx(), output);
   }
   
   // optional int64 t_ecat_rx = 2;
-  if (_has_bit(1)) {
+  if (has_t_ecat_rx()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(2, this->t_ecat_rx(), output);
   }
   
   // optional int64 t_ecat_wait_shm = 3;
-  if (_has_bit(2)) {
+  if (has_t_ecat_wait_shm()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(3, this->t_ecat_wait_shm(), output);
   }
   
   // optional int64 t_ecat_shm = 4;
-  if (_has_bit(3)) {
+  if (has_t_ecat_shm()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(4, this->t_ecat_shm(), output);
   }
   
   // optional int64 t_ecat_wait_tx = 5;
-  if (_has_bit(4)) {
+  if (has_t_ecat_wait_tx()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(5, this->t_ecat_wait_tx(), output);
   }
   
   // optional int64 t_ecat_tx = 6;
-  if (_has_bit(5)) {
+  if (has_t_ecat_tx()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(6, this->t_ecat_tx(), output);
   }
   
@@ -3696,32 +3803,32 @@ void M3MonitorEcDomain::SerializeWithCachedSizes(
 ::google::protobuf::uint8* M3MonitorEcDomain::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional int64 t_ecat_wait_rx = 1;
-  if (_has_bit(0)) {
+  if (has_t_ecat_wait_rx()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->t_ecat_wait_rx(), target);
   }
   
   // optional int64 t_ecat_rx = 2;
-  if (_has_bit(1)) {
+  if (has_t_ecat_rx()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(2, this->t_ecat_rx(), target);
   }
   
   // optional int64 t_ecat_wait_shm = 3;
-  if (_has_bit(2)) {
+  if (has_t_ecat_wait_shm()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(3, this->t_ecat_wait_shm(), target);
   }
   
   // optional int64 t_ecat_shm = 4;
-  if (_has_bit(3)) {
+  if (has_t_ecat_shm()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(4, this->t_ecat_shm(), target);
   }
   
   // optional int64 t_ecat_wait_tx = 5;
-  if (_has_bit(4)) {
+  if (has_t_ecat_wait_tx()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(5, this->t_ecat_wait_tx(), target);
   }
   
   // optional int64 t_ecat_tx = 6;
-  if (_has_bit(5)) {
+  if (has_t_ecat_tx()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(6, this->t_ecat_tx(), target);
   }
   
@@ -3784,7 +3891,9 @@ int M3MonitorEcDomain::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
@@ -3803,22 +3912,22 @@ void M3MonitorEcDomain::MergeFrom(const ::google::protobuf::Message& from) {
 void M3MonitorEcDomain::MergeFrom(const M3MonitorEcDomain& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_t_ecat_wait_rx()) {
       set_t_ecat_wait_rx(from.t_ecat_wait_rx());
     }
-    if (from._has_bit(1)) {
+    if (from.has_t_ecat_rx()) {
       set_t_ecat_rx(from.t_ecat_rx());
     }
-    if (from._has_bit(2)) {
+    if (from.has_t_ecat_wait_shm()) {
       set_t_ecat_wait_shm(from.t_ecat_wait_shm());
     }
-    if (from._has_bit(3)) {
+    if (from.has_t_ecat_shm()) {
       set_t_ecat_shm(from.t_ecat_shm());
     }
-    if (from._has_bit(4)) {
+    if (from.has_t_ecat_wait_tx()) {
       set_t_ecat_wait_tx(from.t_ecat_wait_tx());
     }
-    if (from._has_bit(5)) {
+    if (from.has_t_ecat_tx()) {
       set_t_ecat_tx(from.t_ecat_tx());
     }
   }
@@ -3864,3 +3973,7 @@ void M3MonitorEcDomain::Swap(M3MonitorEcDomain* other) {
   return metadata;
 }
 
+
+// @@protoc_insertion_point(namespace_scope)
+
+// @@protoc_insertion_point(global_scope)

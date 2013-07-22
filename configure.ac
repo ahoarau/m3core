@@ -120,7 +120,7 @@ PKG_CHECK_MODULES([OROCOSKDL], [orocos-kdl >= 1.0.2])
 AC_SUBST(RTAI_DIR,[/usr/realtime])
 
 #TODO: have autoconf find correct ros dir
-AC_SUBST(ROS_DIR,[/opt/ros/cturtle/])
+AC_SUBST(ROS_DIR,[/opt/ros/groovy])
 
 #m3toolbox.pc
 
