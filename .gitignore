@@ -4,3 +4,8 @@ build
 *.log.*
 .Trash*
 *.pyc
+*
+*~
+.kde*
+.*/
+*.cache
