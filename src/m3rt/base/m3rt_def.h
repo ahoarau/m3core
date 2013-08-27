@@ -63,7 +63,7 @@ typedef double mReal;
 //#define M3_COMP_LIB_FILENAME    "m3_component_libs.yml"
 #define M3_COMP_LIB_FILENAME  "m3_config.yml"
 /*-------------------- CONVERSION MACROS ----------------------------*/
-#define GRAV -9.8
+#define GRAV -9.809
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
