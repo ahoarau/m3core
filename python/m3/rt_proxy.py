@@ -27,7 +27,7 @@ import string
 
 
 class M3RtProxy:
-	def __init__(self,host=None,rpc_port=8000):
+	def __init__(self,host=None,rpc_port=8000,verbose=True):
 		"""M3RtProxy is the client interface to the M3RtServer.
 	It manages the state of the server using XML_RPC methods. 
 	It can query the server state,
@@ -35,6 +35,7 @@ class M3RtProxy:
 	and publish/subscribe desired components to the DataService.
 	The DataService uses a faster TCP/IP socket on port 10000"""
 		self.host=host
+		self.verbose=verbose
 		if host is None:
 			self.host=m3t.get_config_hostname()
 		if self.host is None:
@@ -59,7 +60,7 @@ class M3RtProxy:
 		self.ros_svc =None
 		try:
 			self.proxy = xmlrpclib.ServerProxy('http://'+self.host+':'+str(self.rpc_port))
-			print 'Starting M3 RPC Client at ',self.host, 'on Port ',self.rpc_port,'...'
+			if self.verbose: print 'Starting M3 RPC Client at ',self.host, 'on Port ',self.rpc_port,'...'
 			#Check that connection made
 			try:
 				self.proxy.system.listMethods()
@@ -162,11 +163,10 @@ class M3RtProxy:
 		#return self.proxy.AddRosComponent(name)
 		return false'''
 
-	def subscribe_status(self,component,verbose=True):
+	def subscribe_status(self,component):
 		"""Subscribe to the servers status message for this component"""
 		self.__check_component(component)
-		if verbose:
-			print 'Subscribing to status for: ',component.name
+		if self.verbose: print 'Subscribing to status for: ',component.name
 		self.subscribed[component.name]={'status':component.status,'component':component}
 		self.status_raw.name.append(component.name)
 		self.status_raw.datum.append('')
@@ -177,7 +177,7 @@ class M3RtProxy:
 		self.__check_component(component)
 		if self.published_command.has_key(component.name):
 			return
-		print 'Publishing command for: ',component.name
+		if self.verbose: print 'Publishing command for: ',component.name
 		self.published_command[component.name]={'component':component,'command':component.command}
 		self.command_raw.name_cmd.append(component.name)
 		self.command_raw.datum_cmd.append(component.command.SerializeToString())
@@ -187,7 +187,7 @@ class M3RtProxy:
 		self.__check_component(component)
 		if self.published_param.has_key(component.name):
 			return
-		print 'Publishing param for: ',component.name
+		if self.verbose: print 'Publishing param for: ',component.name
 		self.published_param[component.name]={'component':component,'param':component.param}
 		self.command_raw.name_param.append(component.name)
 		self.command_raw.datum_param.append(component.param.SerializeToString())
