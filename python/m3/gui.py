@@ -119,8 +119,11 @@ class M3Gui(M3GuiServer):
 		
 		
 	
-	def start(self,process_cb):		
-		
+	def start(self,process_cb,args=None):
+		self.args=args
+		if self.args:
+			if not isinstance(self.args,list):
+				self.args = [args]	
 		self.process_cb=process_cb
 		self.update_source_id = gobject.timeout_add(self.stride_ms, self.update)
 		gtk.main()
@@ -140,7 +143,10 @@ class M3Gui(M3GuiServer):
 			self.widgets.append(w)
 		
 	def update(self):
-		apply(self.process_cb)
+		if not self.args:
+			apply(self.process_cb)
+		else:
+			apply(self.process_cb,args)
 		self.step()
 		if (self.first_update):
 			self.first_update=0 
