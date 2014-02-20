@@ -32,7 +32,7 @@ in a list of the form :
 	['WidgetType', 'WidgetName',[r/w sequence],[[indices],other_args],readonly]
 """
 
-M3GuiBadReadOnly = "This widget does not support reading/writing"
+M3GuiBadReadOnly = Exception("This widget does not support reading/writing")
 M3GuiType = 0
 M3GuiName = 1
 M3GuiValue = 2
@@ -79,10 +79,7 @@ class M3GuiToggle:
 		self.data[M3GuiValue]=self.button.get_active()
 		return self.data
 	def toggle_callback(self,widget, data):
-		if widget.get_active():
-			widget.set_label(self.data[M3GuiArgs][M3GuiToggleNames][M3GuiToggleNameActive])
-		else:
-			widget.set_label(self.data[M3GuiArgs][M3GuiToggleNames][M3GuiToggleNameNotActive])
+		widget.set_label(self.data[M3GuiArgs][M3GuiToggleNames][int(widget.get_active())])
 			
 # ######################################### M3GuiModes #########################################################
 
