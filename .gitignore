@@ -9,3 +9,12 @@ build
 *.cache
 .*/
 *.o
+*.cmd
+*.la
+*.lo
+*.pb.h
+*.pb.cpp
+*.symvers
+*.ko
+*.mod.c
+*.order
