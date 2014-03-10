@@ -146,7 +146,7 @@ class M3Gui(M3GuiServer):
 		if not self.args:
 			apply(self.process_cb)
 		else:
-			apply(self.process_cb,args)
+			apply(self.process_cb,self.args)
 		self.step()
 		if (self.first_update):
 			self.first_update=0 
