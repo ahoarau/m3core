@@ -53,6 +53,17 @@ libm3baseinclude_HEADERS = \
 	m3rt_def.h \
 	m3ec_def.h
 
+if RTAI
+RT = -D__RTAI__
+else
+RT = 
+endif
+
+if RTAI
+LRT = -llxrt
+else
+LRT = 
+endif
 
 if RTAI
 libm3base_la_SOURCES = \
@@ -79,34 +90,14 @@ lib_LTLIBRARIES = libm3base.la
 libm3base_la_LIBADD = \
 	$(PROTOBUF_LIBS) \
 	$(YAMLCPP_LIBS) \
-	$(LRT) 
+	$(LRT)
 
 libm3base_la_LDFLAGS = -version-info 1:0:0 -module \
-	-L$(ros_dir)/ros/core/roscpp/lib \
-	-L$(ros_dir)/ros/core/roslib/lib \
-	-L$(ros_dir)/ros/core/rosconsole/lib  \
-	-L$(ros_dir)/ros/3rdparty/xmlrpcpp/lib \
-	-L$(RTAI_DIR)/lib\
-	-L$(ros_dir)/stacks/ros_comm/utilities/cpp_common/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/lib \
-	-L$(ros_dir)/stacks/ros_comm/tools/rosconsole/lib \
-	-L$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/lib
+	-L$(RTAI_DIR)/lib \
+	-L$(ros_dir)/lib
 	
-libm3base_la_CPPFLAGS =  -I$(m3_dir) -Wl,-E -ffast-math -pipe -mhard-float\
+libm3base_la_CPPFLAGS =  -shared -I$(m3_dir) -Wl,-E -ffast-math -pipe -mhard-float\
 	-I$(rtai_inc) \
-	-I$(ros_dir)/ros/core/roscpp/include \
-	-I$(ros_dir)/ros/core/roslib/include \
-	-I$(ros_dir)/ros/core/rosconsole/include \
-	-I$(ros_dir)/ros/3rdparty/xmlrpcpp/src \
-	-I$(top_srcdir)/ros/m3_msgs/srv_gen/cpp/include \
-	-I$(top_srcdir)/ros/m3_msgs/msg_gen/cpp/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/cpp_common/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/include \
-	-I$(ros_dir)/stacks/ros_comm/tools/rosconsole/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/src\
-	-I$(ros_dir)/stacks/ros_comm/utilities/rostime/include
+	$(RT)\
+	-I$(ros_dir)/include
  

@@ -96,8 +96,8 @@ SEM shm_sem;
 SEM sync_sem;
 
 //A.Hoarau: Fix on deprecated SPIN_LOCK_UNLOCKED
-//spinlock_t master_lock = SPIN_LOCK_UNLOCKED;
-static DEFINE_SPINLOCK(master_lock) ;
+spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
+//static DEFINE_SPINLOCK(master_lock) ;
 
 cycles_t t_last_cycle;
 cycles_t t_critical;
@@ -367,7 +367,9 @@ int m3sys_startup(void)
 	int sidx,i;
 	int pcode;
 	M3EcSlaveShm * s;
-	
+	int found=0,ps=0;
+	ec_pdo_t *pdo, *next_pdo;
+	ec_pdo_entry_t * pe, *npe;
 	if (!(sys.master = ecrt_request_master(0))) {
 		M3_ERR("Requesting master 0 failed!\n");
 		return 0;
@@ -396,7 +398,7 @@ int m3sys_startup(void)
 	{
 		s=&(sys.shm->slave[sidx]);
 		M3_INFO("Registering slave: %d\n",sidx);
-		int found=0;
+		found=0;
 		for (pcode=M3_PRODUCT_CODE_START;pcode<=M3_PRODUCT_CODE_END;pcode++)
 		{
 			s->network_id=sidx;
@@ -422,8 +424,7 @@ int m3sys_startup(void)
 					sys.shm->slaves_active++;
 					s->active=1;
 					
-					ec_pdo_t *pdo, *next_pdo;
-					ec_pdo_entry_t * pe, *npe;
+
 					s->n_byte_status=0;
 					s->n_byte_cmd=0;
 					//In M3 EEPROM standard, SYNCM0 is for Command, SYNCM1 is for Status
@@ -445,9 +446,9 @@ int m3sys_startup(void)
 				else
 				{
 					//This is ugly hack into master, hopefully newer rev will allow graceful failure on adding slaves
-					//M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,product_codes[pidx]);
+					////////////M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,pcode);
 					list_del(&(sys.slave_config[sidx]->list));
-					ec_slave_config_clear(sys.slave_config[sidx]);
+					/////////////::::ec_slave_config_clear(sys.slave_config[sidx]);
 				}
 			}
 		}
@@ -498,7 +499,7 @@ int m3sys_startup(void)
 	for (i=0;i<sys.num_domain;i++)
 	{
 		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
-		int ps=ecrt_domain_size (sys.domain[i]);   	
+		ps=ecrt_domain_size (sys.domain[i]);   	
 		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
 	}
 	return 1;

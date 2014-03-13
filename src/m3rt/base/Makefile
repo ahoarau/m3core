@@ -99,7 +99,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libm3base_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__libm3base_la_SOURCES_DIST = component_base.pb.cpp toolbox.cpp \
 	simple_server.cpp component_factory.cpp component_ec.cpp \
 	component.cpp component_async.cpp component_shm.cpp
@@ -183,7 +183,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LINUX_SOURCE_DIR = /usr/src/linux-headers-2.6.32.20-rtai-3.9
+LINUX_SOURCE_DIR = /usr/src/linux-headers-3.4.67-rtmeka4.0
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
@@ -194,8 +194,8 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
-OROCOSKDL_CFLAGS = -I/opt/ros/hydro/include -I/usr/include/eigen3  
-OROCOSKDL_LIBS = -L/opt/ros/hydro/lib -lorocos-kdl  
+OROCOSKDL_CFLAGS = -I/usr/local/include -I/usr/include/eigen2  
+OROCOSKDL_LIBS = -L/usr/local/lib -lorocos-kdl  
 OTOOL = 
 OTOOL64 = 
 PACKAGE = m3
@@ -208,9 +208,9 @@ PACKAGE_VERSION = 1.4
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 PKG_CONFIG_LIBDIR = 
-PKG_CONFIG_PATH = /opt/ros/hydro/lib/pkgconfig
-PROTOBUF_CFLAGS = -pthread -I/usr/local/include  
-PROTOBUF_LIBS = -pthread -L/usr/local/lib -lprotobuf -lz -lpthread  
+PKG_CONFIG_PATH = 
+PROTOBUF_CFLAGS = -pthread  
+PROTOBUF_LIBS = -pthread -lprotobuf -lz -lpthread  
 PYTHON = /usr/bin/python
 PYTHON_CPPFLAGS = -I/usr/include/python2.7
 PYTHON_EXEC_PREFIX = ${exec_prefix}
@@ -221,19 +221,19 @@ PYTHON_PREFIX = ${prefix}
 PYTHON_SITE_PKG = /usr/lib/python2.7/site-packages
 PYTHON_VERSION = 2.7
 RANLIB = ranlib
-ROS_DIR = /opt/ros/groovy
+ROS_DIR = /opt/ros/hydro
 RTAI_DIR = /usr/realtime
 SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = strip
-SWIG = /usr/bin/swig -c++
-SWIG_LIB = /usr/share/swig2.0
+SWIG = /usr/local/bin/swig -c++
+SWIG_LIB = /usr/local/share/swig/2.0.12
 SWIG_PYTHON_CPPFLAGS = -I/usr/include/python2.7
 SWIG_PYTHON_OPT = -python
 VERSION = 1.4
-YAMLCPP_CFLAGS = -I/usr/local/include/yaml-cpp  
-YAMLCPP_LIBS = -L/usr/local/lib -lyaml-cpp  
+YAMLCPP_CFLAGS =  
+YAMLCPP_LIBS = -lyaml-cpp  
 abs_builddir = /home/meka/mekabot/m3core/src/m3rt/base
 abs_srcdir = /home/meka/mekabot/m3core/src/m3rt/base
 abs_top_builddir = /home/meka/mekabot/m3core
@@ -309,6 +309,10 @@ libm3baseinclude_HEADERS = \
 	m3rt_def.h \
 	m3ec_def.h
 
+#RT = 
+RT = -D__RTAI__
+#LRT = 
+LRT = -llxrt
 #libm3base_la_SOURCES = \
 #	component_base.pb.cpp\
 #	toolbox.cpp \
@@ -331,36 +335,16 @@ lib_LTLIBRARIES = libm3base.la
 libm3base_la_LIBADD = \
 	$(PROTOBUF_LIBS) \
 	$(YAMLCPP_LIBS) \
-	$(LRT) 
+	$(LRT)
 
 libm3base_la_LDFLAGS = -version-info 1:0:0 -module \
-	-L$(ros_dir)/ros/core/roscpp/lib \
-	-L$(ros_dir)/ros/core/roslib/lib \
-	-L$(ros_dir)/ros/core/rosconsole/lib  \
-	-L$(ros_dir)/ros/3rdparty/xmlrpcpp/lib \
-	-L$(RTAI_DIR)/lib\
-	-L$(ros_dir)/stacks/ros_comm/utilities/cpp_common/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/lib \
-	-L$(ros_dir)/stacks/ros_comm/tools/rosconsole/lib \
-	-L$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/lib
+	-L$(RTAI_DIR)/lib \
+	-L$(ros_dir)/lib
 
-libm3base_la_CPPFLAGS = -I$(m3_dir) -Wl,-E -ffast-math -pipe -mhard-float\
+libm3base_la_CPPFLAGS = -shared -I$(m3_dir) -Wl,-E -ffast-math -pipe -mhard-float\
 	-I$(rtai_inc) \
-	-I$(ros_dir)/ros/core/roscpp/include \
-	-I$(ros_dir)/ros/core/roslib/include \
-	-I$(ros_dir)/ros/core/rosconsole/include \
-	-I$(ros_dir)/ros/3rdparty/xmlrpcpp/src \
-	-I$(top_srcdir)/ros/m3_msgs/srv_gen/cpp/include \
-	-I$(top_srcdir)/ros/m3_msgs/msg_gen/cpp/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/cpp_common/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/include \
-	-I$(ros_dir)/stacks/ros_comm/tools/rosconsole/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/src\
-	-I$(ros_dir)/stacks/ros_comm/utilities/rostime/include
+	$(RT)\
+	-I$(ros_dir)/include
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am

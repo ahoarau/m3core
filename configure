@@ -15989,7 +15989,7 @@ RTAI_DIR=/usr/realtime
 
 
 #TODO: have autoconf find correct ros dir
-ROS_DIR=/opt/ros/groovy
+ROS_DIR=/opt/ros/hydro
 
 
 #m3toolbox.pc

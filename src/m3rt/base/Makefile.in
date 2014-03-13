@@ -99,7 +99,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libm3base_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__libm3base_la_SOURCES_DIST = component_base.pb.cpp toolbox.cpp \
 	simple_server.cpp component_factory.cpp component_ec.cpp \
 	component.cpp component_async.cpp component_shm.cpp
@@ -309,6 +309,10 @@ libm3baseinclude_HEADERS = \
 	m3rt_def.h \
 	m3ec_def.h
 
+@RTAI_FALSE@RT = 
+@RTAI_TRUE@RT = -D__RTAI__
+@RTAI_FALSE@LRT = 
+@RTAI_TRUE@LRT = -llxrt
 @RTAI_FALSE@libm3base_la_SOURCES = \
 @RTAI_FALSE@	component_base.pb.cpp\
 @RTAI_FALSE@	toolbox.cpp \
@@ -331,36 +335,16 @@ lib_LTLIBRARIES = libm3base.la
 libm3base_la_LIBADD = \
 	$(PROTOBUF_LIBS) \
 	$(YAMLCPP_LIBS) \
-	$(LRT) 
+	$(LRT)
 
 libm3base_la_LDFLAGS = -version-info 1:0:0 -module \
-	-L$(ros_dir)/ros/core/roscpp/lib \
-	-L$(ros_dir)/ros/core/roslib/lib \
-	-L$(ros_dir)/ros/core/rosconsole/lib  \
-	-L$(ros_dir)/ros/3rdparty/xmlrpcpp/lib \
-	-L$(RTAI_DIR)/lib\
-	-L$(ros_dir)/stacks/ros_comm/utilities/cpp_common/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/lib \
-	-L$(ros_dir)/stacks/ros_comm/tools/rosconsole/lib \
-	-L$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/lib
+	-L$(RTAI_DIR)/lib \
+	-L$(ros_dir)/lib
 
-libm3base_la_CPPFLAGS = -I$(m3_dir) -Wl,-E -ffast-math -pipe -mhard-float\
+libm3base_la_CPPFLAGS = -shared -I$(m3_dir) -Wl,-E -ffast-math -pipe -mhard-float\
 	-I$(rtai_inc) \
-	-I$(ros_dir)/ros/core/roscpp/include \
-	-I$(ros_dir)/ros/core/roslib/include \
-	-I$(ros_dir)/ros/core/rosconsole/include \
-	-I$(ros_dir)/ros/3rdparty/xmlrpcpp/src \
-	-I$(top_srcdir)/ros/m3_msgs/srv_gen/cpp/include \
-	-I$(top_srcdir)/ros/m3_msgs/msg_gen/cpp/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/cpp_common/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/include \
-	-I$(ros_dir)/stacks/ros_comm/tools/rosconsole/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/src\
-	-I$(ros_dir)/stacks/ros_comm/utilities/rostime/include
+	$(RT)\
+	-I$(ros_dir)/include
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am

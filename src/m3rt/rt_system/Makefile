@@ -35,6 +35,7 @@
 #//////////////////////////////////////////////////////////////////
 
 
+
 pkgdatadir = $(datadir)/m3
 pkgincludedir = $(includedir)/m3
 pkglibdir = $(libdir)/m3
@@ -54,8 +55,8 @@ POST_UNINSTALL = :
 build_triplet = i686-pc-linux-gnu
 host_triplet = i686-pc-linux-gnu
 subdir = src/m3rt/rt_system
-DIST_COMMON = $(pkgpython_PYTHON) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in
+DIST_COMMON = $(_m3rt_system_la_include_HEADERS) $(pkgpython_PYTHON) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_pkg_swig.m4 \
 	$(top_srcdir)/m4/ac_python_devel.m4 \
@@ -96,7 +97,8 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(pkgpyexecdir)" \
-	"$(DESTDIR)$(pkgpythondir)"
+	"$(DESTDIR)$(pkgpythondir)" \
+	"$(DESTDIR)$(_m3rt_system_la_includedir)"
 LTLIBRARIES = $(pkgpyexec_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 _m3rt_system_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
@@ -127,6 +129,7 @@ SOURCES = $(_m3rt_system_la_SOURCES)
 DIST_SOURCES = $(_m3rt_system_la_SOURCES)
 am__py_compile = PYTHON=$(PYTHON) $(SHELL) $(py_compile)
 py_compile = $(top_srcdir)/config/py-compile
+HEADERS = $(_m3rt_system_la_include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -171,7 +174,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LINUX_SOURCE_DIR = /usr/src/linux-headers-2.6.32.20-rtai-3.9
+LINUX_SOURCE_DIR = /usr/src/linux-headers-3.4.67-rtmeka4.0
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
@@ -182,8 +185,8 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
-OROCOSKDL_CFLAGS = -I/opt/ros/hydro/include -I/usr/include/eigen3  
-OROCOSKDL_LIBS = -L/opt/ros/hydro/lib -lorocos-kdl  
+OROCOSKDL_CFLAGS = -I/usr/local/include -I/usr/include/eigen2  
+OROCOSKDL_LIBS = -L/usr/local/lib -lorocos-kdl  
 OTOOL = 
 OTOOL64 = 
 PACKAGE = m3
@@ -196,9 +199,9 @@ PACKAGE_VERSION = 1.4
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 PKG_CONFIG_LIBDIR = 
-PKG_CONFIG_PATH = /opt/ros/hydro/lib/pkgconfig
-PROTOBUF_CFLAGS = -pthread -I/usr/local/include  
-PROTOBUF_LIBS = -pthread -L/usr/local/lib -lprotobuf -lz -lpthread  
+PKG_CONFIG_PATH = 
+PROTOBUF_CFLAGS = -pthread  
+PROTOBUF_LIBS = -pthread -lprotobuf -lz -lpthread  
 PYTHON = /usr/bin/python
 PYTHON_CPPFLAGS = -I/usr/include/python2.7
 PYTHON_EXEC_PREFIX = ${exec_prefix}
@@ -209,19 +212,19 @@ PYTHON_PREFIX = ${prefix}
 PYTHON_SITE_PKG = /usr/lib/python2.7/site-packages
 PYTHON_VERSION = 2.7
 RANLIB = ranlib
-ROS_DIR = /opt/ros/groovy
+ROS_DIR = /opt/ros/hydro
 RTAI_DIR = /usr/realtime
 SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = strip
-SWIG = /usr/bin/swig -c++
-SWIG_LIB = /usr/share/swig2.0
+SWIG = /usr/local/bin/swig -c++
+SWIG_LIB = /usr/local/share/swig/2.0.12
 SWIG_PYTHON_CPPFLAGS = -I/usr/include/python2.7
 SWIG_PYTHON_OPT = -python
 VERSION = 1.4
-YAMLCPP_CFLAGS = -I/usr/local/include/yaml-cpp  
-YAMLCPP_LIBS = -L/usr/local/lib -lyaml-cpp  
+YAMLCPP_CFLAGS =  
+YAMLCPP_LIBS = -lyaml-cpp  
 abs_builddir = /home/meka/mekabot/m3core/src/m3rt/rt_system
 abs_srcdir = /home/meka/mekabot/m3core/src/m3rt/rt_system
 abs_top_builddir = /home/meka/mekabot/m3core
@@ -283,13 +286,23 @@ m3_dir = $(top_srcdir)/src
 rtai_inc = $(RTAI_DIR)/include  
 ros_dir = $(ROS_DIR)
 EXTRA_DIST = \
-	rt_system.h\
-	rt_service.h\
-	rt_data_service.h\
-	rt_log_service.h\
-	rt_ros_service.h\
+	rt_system.h \
+	rt_service.h \
+	rt_data_service.h \
+	rt_log_service.h \
+	rt_ros_service.h \
 	m3rt_system.i
 
+_m3rt_system_la_includedir = $(includedir)/m3rt/rt_system
+_m3rt_system_la_include_HEADERS = \
+	rt_data_service.h \
+	rt_log_service.h \
+	rt_ros_service.h \
+	rt_service.h \
+	rt_system.h
+
+
+#lib_LTLIBRARIES = libm3rt_system.la
 BUILT_SOURCES = m3rt_system_wrap.cpp 
 pkgpython_PYTHON = m3rt_system.py 
 pkgpyexec_LTLIBRARIES = _m3rt_system.la 
@@ -297,7 +310,7 @@ _m3rt_system_la_SOURCES = \
 	rt_service.cpp \
 	rt_system.cpp \
 	rt_data_service.cpp \
-	rt_log_service.cpp\
+	rt_log_service.cpp \
 	m3rt_system_wrap.cpp \
 	m3rt_system.i 
 
@@ -306,40 +319,20 @@ RT = -D__RTAI__
 #LRT = 
 LRT = -llxrt
 _m3rt_system_la_CPPFLAGS = \
-	-pipe -msse2 -ffast-math -mhard-float\
+	-pipe -msse2 -ffast-math -mhard-float \
+	$(RT) \
 	$(SWIG_PYTHON_CPPFLAGS) \
 	$(ETHERCAT_CFLAGS) \
-	-I$(m3_dir)\
+	-I$(m3_dir) \
 	-I$(rtai_inc) \
-	-I$(ros_dir)/ros/core/roscpp/include \
-	-I$(ros_dir)/ros/core/roslib/include \
-	-I$(ros_dir)/ros/3rdparty/xmlrpcpp/src \
-	-I$(ros_dir)/ros/core/rosconsole/include \
-	-I$(top_srcdir)/ros/m3_msgs/srv_gen/cpp/include \
-	-I$(top_srcdir)/ros/m3_msgs/msg_gen/cpp/include \
-	$(RT)\
-	-I$(ros_dir)/stacks/ros_comm/utilities/cpp_common/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/include \
-	-I$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/include \
-	-I$(ros_dir)/stacks/ros_comm/tools/rosconsole/include \
-	-I$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/src\
-	-I$(ros_dir)/stacks/ros_comm/utilities/rostime/include
+	-I$(ros_dir)/include
 
-_m3rt_system_la_LDFLAGS = -module -version-info 1:1:0 -L$(RTAI_DIR)/lib -lpthread -mhard-float \
-	-L$(ros_dir)/ros/core/roscpp/lib \
-	-L$(ros_dir)/ros/core/roslib/lib \
-	-L$(ros_dir)/ros/core/rosconsole/lib \
-	-L$(ros_dir)/ros/3rdparty/xmlrpcpp/lib \
-	-L$(top_srcdir)/src/m3rt/base\
-	-L$(ros_dir)/stacks/ros_comm/utilities/cpp_common/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_traits/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp_serialization/lib \
-	-L$(ros_dir)/stacks/ros_comm/clients/cpp/roscpp/lib \
-	-L$(ros_dir)/stacks/ros_comm/tools/rosconsole/lib \
-	-L$(ros_dir)/stacks/ros_comm/utilities/xmlrpcpp/lib
+_m3rt_system_la_LDFLAGS = -module -version-info 1:1:0 -mhard-float \
+	-L$(RTAI_DIR)/lib \
+	-L$(top_srcdir)/src/m3rt/base \
+	-L$(ros_dir)/lib
 
-_m3rt_system_la_LIBADD = $(PROTOBUF_LIBS) $(YAMLCPP_LIBS) $(LRT) -lm3base 
+_m3rt_system_la_LIBADD = $(LRT) $(PROTOBUF_LIBS) $(YAMLCPP_LIBS) -lm3base -lpthread
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -517,6 +510,24 @@ uninstall-pkgpythonPYTHON:
 	  $(am__uninstall_files_from_dir) || st=$$?; \
 	done; \
 	exit $$st
+install-_m3rt_system_la_includeHEADERS: $(_m3rt_system_la_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(_m3rt_system_la_includedir)" || $(MKDIR_P) "$(DESTDIR)$(_m3rt_system_la_includedir)"
+	@list='$(_m3rt_system_la_include_HEADERS)'; test -n "$(_m3rt_system_la_includedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(_m3rt_system_la_includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(_m3rt_system_la_includedir)" || exit $$?; \
+	done
+
+uninstall-_m3rt_system_la_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(_m3rt_system_la_include_HEADERS)'; test -n "$(_m3rt_system_la_includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(_m3rt_system_la_includedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -603,9 +614,9 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(pkgpyexecdir)" "$(DESTDIR)$(pkgpythondir)"; do \
+	for dir in "$(DESTDIR)$(pkgpyexecdir)" "$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(_m3rt_system_la_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -663,7 +674,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pkgpythonPYTHON
+install-data-am: install-_m3rt_system_la_includeHEADERS \
+	install-pkgpythonPYTHON
 
 install-dvi: install-dvi-am
 
@@ -709,7 +721,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-pkgpyexecLTLIBRARIES uninstall-pkgpythonPYTHON
+uninstall-am: uninstall-_m3rt_system_la_includeHEADERS \
+	uninstall-pkgpyexecLTLIBRARIES uninstall-pkgpythonPYTHON
 
 .MAKE: all check install install-am install-strip
 
@@ -717,7 +730,8 @@ uninstall-am: uninstall-pkgpyexecLTLIBRARIES uninstall-pkgpythonPYTHON
 	clean-libtool clean-local clean-pkgpyexecLTLIBRARIES ctags \
 	distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
+	html-am info info-am install \
+	install-_m3rt_system_la_includeHEADERS install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-pdf install-pdf-am \
@@ -726,7 +740,8 @@ uninstall-am: uninstall-pkgpyexecLTLIBRARIES uninstall-pkgpythonPYTHON
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-pkgpyexecLTLIBRARIES \
+	tags uninstall uninstall-_m3rt_system_la_includeHEADERS \
+	uninstall-am uninstall-pkgpyexecLTLIBRARIES \
 	uninstall-pkgpythonPYTHON
 
 
@@ -734,7 +749,7 @@ clean-local:
 	rm -f m3rt_system_wrap.cpp
 
 m3rt_system_wrap.cpp : m3rt_system.i
-	$(SWIG) $(SWIG_PYTHON_OPT) -I$(m3_dir)  -o $@ $<
+	$(SWIG) $(SWIG_PYTHON_OPT) -o $@ -I$(m3_dir) $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
