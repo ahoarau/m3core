@@ -28,8 +28,14 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 //#include "m3ros/RosTestMsg.h"
 
 #ifdef __RTAI__
+#ifdef __cplusplus
+extern "C" {
+#endif 
 #include <rtai.h>
 #include "rtai_sem.h"
+#ifdef __cplusplus
+}  // extern "C"
+#endif 
 #endif
 
 

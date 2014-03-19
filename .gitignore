@@ -18,3 +18,9 @@ build
 *.ko
 *.mod.c
 *.order
+autom4te.cache
+Makefile
+*.in
+*.status
+libtool
+configure

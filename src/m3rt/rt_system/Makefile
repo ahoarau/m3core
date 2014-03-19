@@ -185,8 +185,8 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
-OROCOSKDL_CFLAGS = -I/usr/local/include -I/usr/include/eigen2  
-OROCOSKDL_LIBS = -L/usr/local/lib -lorocos-kdl  
+OROCOSKDL_CFLAGS = -I/opt/ros/hydro/include -I/usr/include/eigen3  
+OROCOSKDL_LIBS = -L/opt/ros/hydro/lib -lorocos-kdl  
 OTOOL = 
 OTOOL64 = 
 PACKAGE = m3
@@ -199,7 +199,7 @@ PACKAGE_VERSION = 1.4
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 PKG_CONFIG_LIBDIR = 
-PKG_CONFIG_PATH = 
+PKG_CONFIG_PATH = /home/meka/catkin_ws/devel/lib/pkgconfig:/opt/ros/hydro/lib/pkgconfig
 PROTOBUF_CFLAGS = -pthread  
 PROTOBUF_LIBS = -pthread -lprotobuf -lz -lpthread  
 PYTHON = /usr/bin/python
@@ -318,7 +318,7 @@ _m3rt_system_la_SOURCES = \
 RT = -D__RTAI__
 #LRT = 
 LRT = -llxrt
-_m3rt_system_la_CPPFLAGS = \
+_m3rt_system_la_CPPFLAGS = -shared\
 	-pipe -msse2 -ffast-math -mhard-float \
 	$(RT) \
 	$(SWIG_PYTHON_CPPFLAGS) \

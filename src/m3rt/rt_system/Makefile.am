@@ -68,7 +68,7 @@ else
 LRT = 
 endif
 	
-_m3rt_system_la_CPPFLAGS = \
+_m3rt_system_la_CPPFLAGS = -shared\
 	-pipe -msse2 -ffast-math -mhard-float \
 	$(RT) \
 	$(SWIG_PYTHON_CPPFLAGS) \

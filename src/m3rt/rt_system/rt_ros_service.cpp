@@ -27,12 +27,18 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 //#include "m3/robots/humanoid.h"
 
 #ifdef __RTAI__
+#ifdef __cplusplus
+extern "C" {
+#endif 
 #include <rtai.h>
 #include <rtai_shm.h>
 #include <rtai_sched.h>
 #include <rtai_nam2num.h>
 #include <rtai_sem.h>
 #include <rtai_lxrt.h>
+#ifdef __cplusplus
+}
+#endif 
 #endif
 
 namespace m3rt

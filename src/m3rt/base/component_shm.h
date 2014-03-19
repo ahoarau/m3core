@@ -19,10 +19,14 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef  M3RT_COMP_SHM_H
 #define  M3RT_COMP_SHM_H
-#include <rtai_registry.h>
+
 #include <m3rt/base/component.h>
 #include <m3rt/base/component_base.pb.h>
 //#include <m3rt/toolbox/toolbox.h>
+#ifdef __cplusplus
+extern "C" {
+#endif 
+#include <rtai_registry.h>
 #include <rtai.h>
 #include <rtai_lxrt.h>
 #include <rtai_shm.h>
@@ -30,6 +34,9 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <rtai_nam2num.h>
 #include <rtai_sem.h>
 #include <rtai_malloc.h> 
+#ifdef __cplusplus
+}  // extern "C"
+#endif 
 #include "m3rt/base/m3rt_def.h"
 #include "m3rt/base/m3ec_def.h"
 #include "m3rt/base/toolbox.h"
