@@ -28,7 +28,7 @@ if RTAI
 SUBDIRS = src/m3rt/base \
 	src/m3rt/rt_system \
 	python \
-	src/m3rt/ethercat 
+	src/m3rt/ethercat_fake 
 else
 SUBDIRS = src/m3rt/base \
 	src/m3rt/rt_system \
