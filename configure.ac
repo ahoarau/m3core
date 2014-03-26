@@ -98,7 +98,7 @@ AC_MSG_RESULT([$LINUX_SOURCE_DIR (Kernel $linuxversion)])
 #------------------------------------------------------------------------------
 # Eigen
 #------------------------------------------------------------------------------
-PKG_CHECK_MODULES([EIGEN2], [eigen2 >= 2.0.15])
+PKG_CHECK_MODULES([EIGEN3], [eigen3 >= 3.0])
 
 #------------------------------------------------------------------------------
 # Yaml-cpp
@@ -128,7 +128,7 @@ AC_CONFIG_FILES([
 	Makefile
 	python/Makefile
 	src/m3rt/base/Makefile
-	src/m3rt/ethercat/Makefile
+	src/m3rt/ethercat_fake/Makefile
 	src/m3rt/rt_system/Makefile
 ])
 AC_OUTPUT
