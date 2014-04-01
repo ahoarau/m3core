@@ -110,12 +110,13 @@ int M3SimpleServer:: WriteStringToPort(string & s)
 // return -1 if error
 // return -2 if no cmd data
 
+typedef float htype;
 
 int M3SimpleServer::ReadStringFromPort(string & s, int & size)
 {
 	//In theory can be more than one client writing to port. This shouldn't happen tho.
 	int nr;
-	int header;
+	htype header;
 	if (!IsActiveSocket())
 	{
 		HandleNewConnection();
@@ -133,7 +134,7 @@ int M3SimpleServer::ReadStringFromPort(string & s, int & size)
     }
 	if (nfd && FD_ISSET(socket_fd, &read_fds))
 	{	     	      	  		
-		nr = recv(socket_fd, &header, sizeof(int), MSG_WAITALL);
+		nr = recv(socket_fd, &header, sizeof(htype), MSG_WAITALL);
 		if (nr<= 0) 
 		{// got error on client side
 			if (nr == 0) 
@@ -151,18 +152,20 @@ int M3SimpleServer::ReadStringFromPort(string & s, int & size)
 			}
 		}
 		
-		if (nr != sizeof(int)) 
+		if (nr != sizeof(htype)) 
 		{
-			M3_ERR("Num bytes read not same as requested: %d %d\n",nr,sizeof(int));
+			M3_ERR("Num bytes read not same as requested: %d %d\n",nr,sizeof(htype));
 			return -1;
 		}
 		if (header != 9999)
 		{
-		    M3_ERR("Header corrupted: %x nfd: %d\n", header, nfd);
+		    M3_ERR("Header corrupted: %d nfd: %d\n", header, nfd);
 		    //FD_CLR(socket_fd, &read_fds);
 		    return -1;
 		}
-		nr = recv(socket_fd, &size, sizeof(int), MSG_WAITALL);
+		htype tmp;
+		nr = recv(socket_fd, &tmp, sizeof(htype), MSG_WAITALL);
+		size = static_cast<int>(tmp);
 		if (size>MAX_STRING_SIZE||size<0)
 		{
 			M3_ERR("Packet size out of bounds, may be corrupted data: %x %d\n",size,MAX_STRING_SIZE);

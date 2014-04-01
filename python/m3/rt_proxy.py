@@ -375,9 +375,14 @@ class M3RtProxy:
 			self.command_raw.name_param[idx]=name
 			v['component'].load_param()
 			self.command_raw.datum_param[idx]=v['param'].SerializeToString()
-			idx=idx+1   
-		nh=array.array('L',[9999]).tostring()
-		nc=array.array('L',[self.command_raw.ByteSize()]).tostring()		
+			idx=idx+1
+		## A.H : Sending floats allows to run on 64 bits machines : 
+		## sizeof(int) in python32 : 4 bits
+		## sizeof(float) in python64 : 8 bits -> server hangs
+		## WORKAROUND : send floats that weights =4 bits so x86 and x64 speak the same language
+		## Note : simple_server.cpp has to be modified to receive floats as well !
+		nh=array.array('f',[9999]).tostring()
+		nc=array.array('f',[self.command_raw.ByteSize()]).tostring()		
 		sc=self.command_raw.SerializeToString()
 		self.data_socket.sendall(nh+nc+sc)
 		
