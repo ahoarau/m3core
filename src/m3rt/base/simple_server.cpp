@@ -31,7 +31,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-	
+	using namespace std;
 M3SimpleServer::~M3SimpleServer()
 {
 	Shutdown();
@@ -110,12 +110,12 @@ int M3SimpleServer:: WriteStringToPort(string & s)
 // return -1 if error
 // return -2 if no cmd data
 
-
+typedef float sizes_type;
 int M3SimpleServer::ReadStringFromPort(string & s, int & size)
 {
 	//In theory can be more than one client writing to port. This shouldn't happen tho.
 	int nr;
-	float header;
+	sizes_type header;
 	if (!IsActiveSocket())
 	{
 		HandleNewConnection();
@@ -133,7 +133,8 @@ int M3SimpleServer::ReadStringFromPort(string & s, int & size)
     }
 	if (nfd && FD_ISSET(socket_fd, &read_fds))
 	{	     	      	  		
-		nr = recv(socket_fd, &header, sizeof(float), MSG_WAITALL);
+		nr = recv(socket_fd, &header, sizeof(sizes_type), MSG_WAITALL);
+		//cout<<"nr:"<<nr<<" header:"<<header<<" sizeof:"<<sizeof(sizes_type)<<endl;
 		if (nr<= 0) 
 		{// got error on client side
 			if (nr == 0) 
@@ -151,19 +152,19 @@ int M3SimpleServer::ReadStringFromPort(string & s, int & size)
 			}
 		}
 		
-		if (nr != static_cast<int>(sizeof(float))) 
+		if (nr != static_cast<int>(sizeof(sizes_type))) 
 		{
-			M3_ERR("Num bytes read not same as requested: %d %d\n",nr,sizeof(float));
+			M3_ERR("Num bytes read not same as requested: %d %d\n",nr,static_cast<int>(sizeof(sizes_type)));
 			return -1;
 		}
-		if (header != static_cast<float>(9999))
+		if (header != static_cast<sizes_type>(9999)) // The Hardcoded header number
 		{
-		    M3_ERR("Header corrupted: %d nfd: %d\n", header, nfd);
+		    M3_ERR("Header corrupted: %d nfd: %d\n", static_cast<int>(header), nfd);
 		    //FD_CLR(socket_fd, &read_fds);
 		    return -1;
 		}
-		float tmp;
-		nr = recv(socket_fd, &tmp, sizeof(float), MSG_WAITALL);
+		sizes_type tmp;
+		nr = recv(socket_fd, &tmp, sizeof(sizes_type), MSG_WAITALL);
 		size = static_cast<int>(tmp);
 		if (size>MAX_STRING_SIZE||size<0)
 		{

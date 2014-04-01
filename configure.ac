@@ -133,7 +133,12 @@ AC_CONFIG_FILES([
 	src/m3rt/base/Makefile
 	src/m3rt/rt_system/Makefile
 ])
-
+if test "$rtai" = true; then
+AC_MSG_RESULT([checking for RTAI...YES])
+else
+AC_MSG_RESULT([checking for RTAI...NO])
+fi
+AC_MSG_RESULT([checking for ETHERCAT...YES])
 AM_COND_IF([ETHERCAT],[AC_CONFIG_FILES([src/m3rt/ethercat/Makefile])],[AC_CONFIG_FILES([src/m3rt/ethercat_fake/Makefile])])
 AC_MSG_RESULT([---------------------------------------------------------------])
 if test "$ethercat" = true; then
