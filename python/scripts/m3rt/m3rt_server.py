@@ -19,7 +19,8 @@
 
 import time
 import xmlrpclib
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+import SocketServer
+import SimpleXMLRPCServer
 import os
 import glob
 import sys
@@ -32,8 +33,17 @@ import socket
 import m3.rt_proxy as m3p
 import m3.toolbox_core as m3t
 from threading import Thread
+class MyTCPServer(SocketServer.TCPServer):
+    def server_bind(self):
+        self.socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        self.socket.bind(self.server_address)
 
-	
+class MyXMLRPCServer(MyTCPServer, SimpleXMLRPCServer.SimpleXMLRPCDispatcher):
+    def __init__(self, addr, requestHandler=SimpleXMLRPCServer.SimpleXMLRPCRequestHandler, logRequests=1):
+        self.logRequests = logRequests
+        SimpleXMLRPCServer.SimpleXMLRPCDispatcher.__init__(self)
+        MyTCPServer.__init__(self, addr, requestHandler)
+
 def start_log_service(logname, freq, components,page_size,logpath=None,verbose=True):
 	logdir=m3t.get_log_dir(logname,logpath)
 	if logdir is None:
@@ -76,7 +86,7 @@ class client_thread(Thread):
 		self.make_all_op_no_shm = make_all_op_no_shm
 		
 	def run(self):		
-		self.proxy = m3p.M3RtProxy()		
+		self.proxy = m3p.M3RtProxy(rpc_port=port)		
 		self.proxy.start(start_data_svc, False)	
 		if self.make_all_op:
 			self.proxy.make_operational_all()
@@ -133,7 +143,7 @@ t = None
 try:
 	time.sleep(3.0) # wait for EC kmod to get slaves in OP
 	print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
-	server = SimpleXMLRPCServer((host,port),logRequests=0)
+	server = MyXMLRPCServer((host,port),logRequests=False)
 	server.register_introspection_functions()
 	server.register_instance(svc)
 	server.register_function(start_log_service)
@@ -164,7 +174,8 @@ except:
 #except KeyboardInterrupt:
 #	pass
 #if make_op_all:
-t.stop = True
+if t:
+  t.stop=True
 #print "Shutting down"
 svc.Shutdown()
 

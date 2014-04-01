@@ -71,6 +71,8 @@ bool M3Component::SerializeStatus(std::string & s)
 		M3_ERR("Error in SerializeToString for %s\n",GetName().c_str());
 		return false;
 	}
+	//To see all the messages
+	//PrettyPrint();
 	return true;
 }
 	

@@ -382,7 +382,7 @@ class M3RtProxy:
 		## WORKAROUND : send floats that weights =4 bits so x86 and x64 speak the same language
 		## Note : simple_server.cpp has to be modified to receive floats as well !
 		nh=array.array('f',[9999]).tostring()
-		nc=array.array('f',[self.command_raw.ByteSize()]).tostring()		
+		nc=array.array('f',[self.command_raw.ByteSize()]).tostring()
 		sc=self.command_raw.SerializeToString()
 		self.data_socket.sendall(nh+nc+sc)
 		
