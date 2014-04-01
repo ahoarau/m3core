@@ -1,4 +1,5 @@
-AC_INIT(m3, 1.4, info@mekabot.com)
+AC_INIT(m3, 1.5, info@mekabot.com)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE
 
@@ -18,7 +19,7 @@ SWIG_ENABLE_CXX
 SWIG_PYTHON
 
 #------------------------------------------------------------------------------
-# Virtual M3
+# Virtual M3 - No RTAI No Ethercat (not recommended)
 #------------------------------------------------------------------------------
 AC_ARG_ENABLE([virtual-only],
 [  --enable-virtual-only    Turn off realtime and ethercat],
@@ -28,6 +29,19 @@ AC_ARG_ENABLE([virtual-only],
   *) AC_MSG_ERROR([bad value ${enableval} for --enable-virtual-only]) ;;
 esac],[rtai=true])
 AM_CONDITIONAL([RTAI], [test x$rtai = xtrue])
+
+#------------------------------------------------------------------------------
+# Virtual M3 - RTAI but No Ethercat
+#------------------------------------------------------------------------------
+
+AC_ARG_ENABLE([ethercat],
+[  --disable-ethercat    Turn off ethercat for virtual meka],
+[case "${enableval}" in
+  yes) ethercat=true ;;
+  no)  ethercat=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --disable-ethercat]) ;;
+esac],[ethercat=true])
+AM_CONDITIONAL([ETHERCAT], [test x$ethercat = xtrue])
 
 #------------------------------------------------------------------------------
 # Linux kernel directory
@@ -81,21 +95,6 @@ AC_SUBST(LINUX_SOURCE_DIR,[$sourcedir])
 AC_MSG_RESULT([$LINUX_SOURCE_DIR (Kernel $linuxversion)])
 
 #------------------------------------------------------------------------------
-# Ethercat
-#------------------------------------------------------------------------------
-
-#if test "$rtai" = true; then
-#    PKG_CHECK_MODULES([ETHERCAT], [ethercat >= 1.5.0])
-#fi
-
-#PKG_CHECK_MODULES([ETHERCAT], [ethercat >= 1.5.0])
-
-#AS_IF(["$rtai" = true], [
-#   PKG_CHECK_MODULES([ETHERCAT], [ethercat >= 1.5.0])
-#])
-
-
-#------------------------------------------------------------------------------
 # Eigen
 #------------------------------------------------------------------------------
 PKG_CHECK_MODULES([EIGEN3], [eigen3 >= 3.0])
@@ -119,17 +118,30 @@ PKG_CHECK_MODULES([OROCOSKDL], [orocos-kdl >= 1.0.2])
 AC_SUBST(RTAI_DIR,[/usr/realtime])
 
 #TODO: have autoconf find correct ros dir
-AC_SUBST(ROS_DIR,[/opt/ros/hydro])
+#AC_SUBST(ROS_DIR,[/opt/ros/hydro])
 
 #m3toolbox.pc
+
+
+
+#m3base.pc
 
 AC_CONFIG_FILES([
 	m3base.pc
 	Makefile
 	python/Makefile
 	src/m3rt/base/Makefile
-	src/m3rt/ethercat_fake/Makefile
 	src/m3rt/rt_system/Makefile
 ])
+
+AM_COND_IF([ETHERCAT],[AC_CONFIG_FILES([src/m3rt/ethercat/Makefile])],[AC_CONFIG_FILES([src/m3rt/ethercat_fake/Makefile])])
+AC_MSG_RESULT([---------------------------------------------------------------])
+if test "$ethercat" = true; then
+AC_MSG_RESULT([checking for ETHERCAT...YES])
+else
+AC_MSG_RESULT([checking for ETHERCAT...NO (VIRTUAL MEKA)])
+fi
+AC_MSG_RESULT([---------------------------------------------------------------])
+
 AC_OUTPUT
 
