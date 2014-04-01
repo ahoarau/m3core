@@ -24,3 +24,7 @@ Makefile
 *.status
 libtool
 configure
+Makefile.in
+Makefile
+m3rt_system_wrap.cpp
+
