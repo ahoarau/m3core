@@ -23,17 +23,17 @@ AM_CPPFLAGS = -g
 # NOTE: to do make install you must 'su root'
 
 #ros/m3_msgs 
+if ETHERCAT
 SUBDIRS = src/m3rt/base \
 	src/m3rt/rt_system \
+	src/m3rt/ethercat \
 	python
-
-
-if ETHERCAT
-	SUBDIRS = $(SUBDIRS) src/m3rt/ethercat 
-else	
-	SUBDIRS = $(SUBDIRS) src/m3rt/ethercat_fake
+else
+SUBDIRS = src/m3rt/base \
+	src/m3rt/rt_system \
+	src/m3rt/ethercat_fake \
+	python
 endif
-
 
 dist_bin_SCRIPTS = \
 	scripts/m3rt_rotate_logs \
