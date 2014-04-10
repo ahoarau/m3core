@@ -108,9 +108,10 @@ int M3RtService::AttachRtSystem()
 
 int M3RtService::RemoveRtSystem()
 {
-	
+	m3rt::M3_INFO("Removing RtSystem\n");
 	if (rt_system==NULL)
 	{
+		m3rt::M3_INFO("No RtSystem found\n");
 		num_rtsys_attach=0;
 		return 0;
 	}
@@ -220,6 +221,7 @@ int M3RtService::AttachDataService()
 
 bool M3RtService::RemoveDataService(int port)
 {	
+	m3rt::M3_INFO("Removing DataService\n");
 	int idx=-1;
 	for (int i=0; i<data_services.size(); i++)
 	{

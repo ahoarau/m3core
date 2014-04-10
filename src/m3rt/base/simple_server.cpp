@@ -28,7 +28,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <arpa/inet.h>
 #include "string.h"
 #include <unistd.h>
-
 namespace m3rt
 {
 	using namespace std;
