@@ -19,7 +19,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "m3rt/rt_system/rt_system.h"
 //#include "m3rt/base/m3ec_pdo_v1_def.h"
-
+#include <unistd.h>
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {

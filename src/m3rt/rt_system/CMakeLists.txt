@@ -1,5 +1,5 @@
-#cmake_minimum_required(VERSION 2.8)
-#project(m3rt_system)
+cmake_minimum_required(VERSION 2.8)
+project(m3rt_system)
 set(LIBNAME "_m3rt_system.la")
 
 INCLUDE_DIRECTORIES(${M3RT_SOURCE_DIR})
@@ -11,14 +11,14 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(RTAI REQUIRED)
 find_package (Threads)
-
+find_package(YamlCpp)
 #find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
 #find_package(M3rt REQUIRED )
 #find_package(Boost COMPONENTS filesystem system REQUIRED)
 #find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
-SET(LIBS ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
+SET(LIBS ${YAMLCPP_LIBRARY}${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
+include_directories(${YAMLCPP_INCLUDE_DIR} ${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
 
 
 

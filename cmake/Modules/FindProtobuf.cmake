@@ -7,6 +7,9 @@
 #                              (vsprojects/Debug & vsprojects/Release) will be searched
 #                              for libraries and binaries.
 #
+#   PROTOBUF_IMPORT_DIRS     - List of additional directories to be searched for
+#                              imported .proto files. (New in CMake 2.8.8)
+#
 # Defines the following variables:
 #
 #   PROTOBUF_FOUND - Found the Google Protocol Buffers library (libprotobuf & header files)
@@ -33,7 +36,7 @@
 #   find_package(Protobuf REQUIRED)
 #   include_directories(${PROTOBUF_INCLUDE_DIRS})
 #
-#   include_directories(${CUSTOM_PATH})
+#   include_directories(${CMAKE_CURRENT_BINARY_DIR})
 #   PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS foo.proto)
 #   add_executable(bar bar.cc ${PROTO_SRCS} ${PROTO_HDRS})
 #   target_link_libraries(bar ${PROTOBUF_LIBRARIES})
@@ -71,11 +74,11 @@
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
-function(PROTOBUF_GENERATE_CPP SRCS HDRS CUSTOM_PATH)
+function(PROTOBUF_GENERATE_CPP SRCS HDRS OUTPATH)
   if(NOT ARGN)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
-  endif(NOT ARGN)
+  endif()
 
   if(PROTOBUF_GENERATE_CPP_APPEND_PATH)
     # Create an include path for each file specified
@@ -91,12 +94,28 @@ function(PROTOBUF_GENERATE_CPP SRCS HDRS CUSTOM_PATH)
     set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
 
+  if(DEFINED PROTOBUF_IMPORT_DIRS)
+    foreach(DIR ${PROTOBUF_IMPORT_DIRS})
+      get_filename_component(ABS_PATH ${DIR} ABSOLUTE)
+      list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
+      if(${_contains_already} EQUAL -1)
+          list(APPEND _protobuf_include_path -I ${ABS_PATH})
+      endif()
+    endforeach()
+  endif()
+
   set(${SRCS})
   set(${HDRS})
   foreach(FIL ${ARGN})
     get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
-    
+
+	if(OUTPATH)
+		SET(CUSTOM_PATH ${OUTPATH})
+	else(OUTPATH)
+		SET(CUSTOM_PATH ${CMAKE_CURRENT_BINARY_DIR})
+	endif(OUTPATH)
+
     list(APPEND ${SRCS} "${CUSTOM_PATH}/${FIL_WE}.pb.cc")
     list(APPEND ${HDRS} "${CUSTOM_PATH}/${FIL_WE}.pb.h")
 
@@ -143,6 +162,16 @@ function(_protobuf_find_libraries name filename)
    endif()
 endfunction()
 
+# Internal function: find threads library
+function(_protobuf_find_threads)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    find_package(Threads)
+    if(Threads_FOUND)
+        list(APPEND PROTOBUF_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+        set(PROTOBUF_LIBRARIES "${PROTOBUF_LIBRARIES}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 #
 # Main.
 #
@@ -177,6 +206,9 @@ if(MSVC)
     set(CMAKE_FIND_LIBRARY_PREFIXES "${PROTOBUF_ORIG_FIND_LIBRARY_PREFIXES}")
 endif()
 
+if(UNIX)
+    _protobuf_find_threads()
+endif()
 
 # Find the include directory
 find_path(PROTOBUF_INCLUDE_DIR

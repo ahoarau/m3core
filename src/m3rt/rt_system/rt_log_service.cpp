@@ -24,7 +24,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include <unistd.h>
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {

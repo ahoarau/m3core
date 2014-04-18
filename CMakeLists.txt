@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(M3m3core)
+project(m3core)
 #set(LIBNAME "m3core")
 
 SET(CMAKE_COLOR_MAKEFILE ON)

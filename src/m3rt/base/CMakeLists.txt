@@ -1,5 +1,5 @@
-#cmake_minimum_required(VERSION 2.8)
-#project(m3base)
+cmake_minimum_required(VERSION 2.8)
+project(m3base)
 set(LIBNAME "m3base")
 
 
@@ -12,14 +12,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(RTAI REQUIRED)
 #find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
 #find_package(M3rt REQUIRED)
-#find_package(Boost COMPONENTS filesystem system REQUIRED)
+find_package(Boost  REQUIRED)
 #find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
 
 # Start Protobuf stuff
-include_directories(${PROTOBUF_INCLUDE_DIR})
+include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )	     
-PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_SOURCE_DIR} ${ProtoFiles})
+PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
 # End Protobuf stuff
 
 

@@ -19,7 +19,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "rt_data_service.h"
 #include "m3rt/base/m3rt_def.h"
-
+#include <unistd.h>
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {

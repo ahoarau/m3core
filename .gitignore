@@ -13,6 +13,7 @@ build
 *.la
 *.lo
 *.pb.h
+*.pb.cc
 *.pb.cpp
 *.symvers
 *.ko
@@ -30,3 +31,4 @@ m3rt_system_wrap.cpp
 aclocal.m4
 .project
 .pydevproject
+config/
