@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
-project(m3rt_system)
+project(rt_system)
 set(LIBNAME "_m3rt_system.la")
+OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
+OPTION(ROS "Enable/Disable ROS" OFF)
 
+message("RTAI:${RTAI}")
+message("ROS:${ROS}")
 INCLUDE_DIRECTORIES(${M3RT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -9,8 +13,19 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+if(RTAI)
+add_definitions(-D__RTAI__)
 find_package(RTAI REQUIRED)
-find_package (Threads)
+endif(RTAI)
+
+if(ROS)
+add_definitions(-D__ROS__)
+###find_package(RTAI REQUIRED)
+endif(ROS)
+
+
+
+find_package(Threads)
 find_package(YamlCpp)
 #find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
 #find_package(M3rt REQUIRED )
@@ -36,34 +51,53 @@ SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp)
 SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES})
 # End Swig
 
-
 # Start Protobuf stuff
-#include_directories(${PROTOBUF_INCLUDE_DIR})
-#file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )	     
-#PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_SOURCE_DIR} ${ProtoFiles})
+#include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
+#file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
+#if(ProtoFiles)	     
+#	PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
+#endif(Protofiles)
 # End Protobuf stuff
 
+SET(LIBS ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
+include_directories(${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
 
+## Get all the files sources and headers
+file(GLOB ALL_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.cpp)
+file(GLOB ALL_HDRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.h)
 
+if(NOT ROS)
+message("Removing ROS stuff")
+FILE(GLOB ROS_STUFF RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*_ros_*")
+message("ros stuff to remove : ${ROS_STUFF}")
+list(REMOVE_ITEM ALL_SRCS ${ROS_STUFF})
+list(REMOVE_ITEM ALL_HDRS ${ROS_STUFF})
+endif(NOT ROS)
 
-
-
-
-SET(m3base_LIB_SRCS
-rt_service.cpp
-rt_system.cpp 
-rt_data_service.cpp
-rt_log_service.cpp 
-
+list(APPEND 
+ALL_SCRS
 ${ProtoSources}
 ${ProtoHeaders}
-
 )
 
+file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.proto )
+list(APPEND ALL_HDRS
+${ProtoHeaders}
+${ProtoFiles}
+)
+
+message("ALL SRC in ${PROJECT_NAME}:${ALL_SRCS}")
 
 
-add_library(${LIBNAME} STATIC ${m3base_LIB_SRCS})
+## Building
+add_library(${LIBNAME} STATIC ${ALL_SRCS})
 target_link_libraries(${LIBNAME} ${LIBS})
+set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
+
+
+## Installation
+install(TARGETS ${LIBNAME} DESTINATION lib)
+install(FILES ${ALL_HDRS} DESTINATION include/m3rt/${PROJECT_NAME})
 #install(TARGETS ${LIBNAME} DESTINATION lib)
 #install(FILES m3enscontroller.h m3enscontroller.pb.h DESTINATION include/m3ens/controllers)
 ########### next target ###############

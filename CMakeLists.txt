@@ -5,7 +5,7 @@ set(PACKAGE_VERSION 1.6.1)
 
 SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
-
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 # Options
 # 1) Disable ethercat (used for virtual meka on RT Kernels)
 OPTION(DISABLE_ETHERCAT "Disable Ethercat (The 'fake' ethercat kernel module is compiled instead)" OFF)
