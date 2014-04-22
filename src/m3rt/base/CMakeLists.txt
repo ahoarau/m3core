@@ -21,6 +21,7 @@ endif(RTAI)
 #find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
 #find_package(M3rt REQUIRED)
 find_package(Boost  REQUIRED)
+find_package(YamlCpp 0.3 REQUIRED)
 #find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
 
@@ -32,15 +33,17 @@ message("ProtoFiles:${ProtoFiles} to ${CMAKE_CURRENT_SOURCE_DIR} ")
 PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
 
 
+find_package(PythonLibs REQUIRED)
+find_package(PythonInterp REQUIRED) 
 ## Generate and copy the python protobuf
-PROTOBUF_GENERATE_PYTHON(PySources ${CMAKE_CURRENT_SOURCE_DIR}/../../../python/m3rt/ ${ProtoFiles}) # HACK on the path
-add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # Hack to force the generation
+PROTOBUF_GENERATE_PYTHON(PySources ${CMAKE_CURRENT_BINARY_DIR} ${ProtoFiles}) 
+add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # force the generation
 
 
 # End Protobuf stuff
 
-SET(LIBS ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
+SET(LIBS ${YAMLCPP_LIBRARY} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
+include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
 
 ## Get all the files sources and headers
 #file(GLOB ALL_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.cpp)
@@ -66,11 +69,31 @@ ${ProtoFiles}
 add_library(${LIBNAME} SHARED ${all_srcs} )
 target_link_libraries(${LIBNAME} ${LIBS})
 #set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
-message("ALL SRCS in ${PROJECT_NAME}:${all_srcs}")
+
 
 install(TARGETS ${LIBNAME} DESTINATION lib)
 install(FILES ${all_hdrs} DESTINATION include/${SUBPROJECT_INSTALL_DIR_NAME}/${SUBPROJECT_INSTALL_NAME})
 
+execute_process ( 
+   COMMAND ${PYTHON_EXECUTABLE} -c 
+   	"import site, sys; sys.stdout.write(site.PREFIXES[-1])" 
+   OUTPUT_VARIABLE PYTHON_PREFIX 
+) 
+file ( TO_CMAKE_PATH "${PYTHON_PREFIX}" PYTHON_PREFIX ) 
+execute_process ( 
+   COMMAND ${PYTHON_EXECUTABLE} -c 
+   	"import site, sys; sys.stdout.write(site.getsitepackages()[-1])" 
+   OUTPUT_VARIABLE PYTHON_SITE_DIR 
+) 
+file ( TO_CMAKE_PATH "${PYTHON_SITE_DIR}" PYTHON_SITE_DIR ) 
+string ( REGEX REPLACE "^${PYTHON_PREFIX}/" "" 
+   PYTHON_SITE_DIR "${PYTHON_SITE_DIR}" 
+) 
 
+
+install ( FILES ${PySources} 
+   DESTINATION ${PYTHON_SITE_DIR}/m3/
+   COMPONENT library 
+) 
 
 

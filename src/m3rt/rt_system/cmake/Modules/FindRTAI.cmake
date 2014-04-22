@@ -43,8 +43,8 @@ else()
   find_path(RTAI_INCLUDE_DIR       NAMES ${header_NAME} PATHS ${RTAI_SEARCH_PATH} PATH_SUFFIXES include )
   find_library(RTAI_LIBRARY        NAMES ${rtai_NAME} PATHS ${RTAI_SEARCH_PATH} PATH_SUFFIXES lib)
 endif()
-message("-- rtai include dir : "${RTAI_INCLUDE_DIR})
-message("-- rtai library : "${RTAI_LIBRARY})
+message("-- rtai include dir : ${RTAI_INCLUDE_DIR}")
+message("-- rtai library : ${RTAI_LIBRARY}")
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
 set(RTAI_PROCESS_INCLUDES RTAI_INCLUDE_DIR)

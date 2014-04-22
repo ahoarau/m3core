@@ -35,3 +35,4 @@ config/
 m4/
 *.txt.user
 config/
+*pb2.py

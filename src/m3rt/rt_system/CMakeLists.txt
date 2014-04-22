@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
-project(rt_system)
-set(LIBNAME "_m3rt_system.la")
+project(rt_system C CXX)
+set(LIBNAME "rt_system")
+
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 OPTION(ROS "Enable/Disable ROS" OFF)
 
 message("RTAI:${RTAI}")
 message("ROS:${ROS}")
 INCLUDE_DIRECTORIES(${M3RT_SOURCE_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}../base)
 
 #set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -26,31 +27,36 @@ endif(ROS)
 
 
 find_package(Threads)
-find_package(YamlCpp)
+find_package(YamlCpp 0.3 REQUIRED)
 #find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
 #find_package(M3rt REQUIRED )
 #find_package(Boost COMPONENTS filesystem system REQUIRED)
 #find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
-SET(LIBS ${YAMLCPP_LIBRARY}${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${YAMLCPP_INCLUDE_DIR} ${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
 
+SET(LIBS ${YAMLCPP_LIBRARY} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES} m3base)
+include_directories(${YAMLCPP_INCLUDE_DIR} ${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
 
 
 # Swig
 FIND_PACKAGE(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
+FIND_PACKAGE(PythonLibs REQUIRED)
+find_package ( PythonInterp REQUIRED ) 
 
-FIND_PACKAGE(PythonLibs)
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 SET(CMAKE_SWIG_FLAGS "")
 SET_SOURCE_FILES_PROPERTIES(m3rt_system.i PROPERTIES CPLUSPLUS ON)
-set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../python/m3rt/) # HACK for the path
+#(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../python/m3/) # HACK for the path
+####install(FILES ${CMAKE_BINARY_DIR}/src/target.py DESTINATION ${PYTHON_DIST_PACKAGES}/m3) #### TO TRY
+
 SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp)
 
 SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES})
+SWIG_LINK_LIBRARIES(m3rt_system ${LIBNAME})
+SWIG_LINK_LIBRARIES(m3rt_system ${LIBS})
 # End Swig
-message("m3rt_system=${m3rt_system}")
+set_target_properties(_m3rt_system PROPERTIES LINKER_LANGUAGE CXX)
 # Start Protobuf stuff
 #include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 #file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
@@ -58,9 +64,6 @@ message("m3rt_system=${m3rt_system}")
 #	PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
 #endif(Protofiles)
 # End Protobuf stuff
-
-SET(LIBS ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
 
 ## Get all the files sources and headers
 file(GLOB ALL_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.cpp)
@@ -90,14 +93,45 @@ message("ALL SRC in ${PROJECT_NAME}:${ALL_SRCS}")
 
 
 ## Building
-add_library(${LIBNAME} STATIC ${ALL_SRCS})
+add_library(${LIBNAME} SHARED ${ALL_SRCS})
+set_target_properties(${LIBNAME} PROPERTIES PREFIX "")
 target_link_libraries(${LIBNAME} ${LIBS})
 set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
 
+#SET_TARGET_PROPERTIES( ${LIBNAME} PROPERTIES COMPILE_FLAGS -fPIC)
+execute_process ( 
+   COMMAND ${PYTHON_EXECUTABLE} -c 
+   	"import site, sys; sys.stdout.write(site.PREFIXES[-1])" 
+   OUTPUT_VARIABLE PYTHON_PREFIX 
+) 
+file ( TO_CMAKE_PATH "${PYTHON_PREFIX}" PYTHON_PREFIX ) 
+execute_process ( 
+   COMMAND ${PYTHON_EXECUTABLE} -c 
+   	"import site, sys; sys.stdout.write(site.getsitepackages()[-1])" 
+   OUTPUT_VARIABLE PYTHON_SITE_DIR 
+) 
+file ( TO_CMAKE_PATH "${PYTHON_SITE_DIR}" PYTHON_SITE_DIR ) 
+string ( REGEX REPLACE "^${PYTHON_PREFIX}/" "" 
+   PYTHON_SITE_DIR "${PYTHON_SITE_DIR}" 
+) 
 
 ## Installation
+install ( TARGETS ${SWIG_MODULE_m3rt_system_REAL_NAME} ${LIBNAME}
+   LIBRARY 
+     DESTINATION ${PYTHON_SITE_DIR}/m3/ 
+     COMPONENT library 
+) 
+
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/m3rt_system.py 
+   DESTINATION ${PYTHON_SITE_DIR}/m3/
+   COMPONENT library 
+) 
+
+
+
 install(TARGETS ${LIBNAME} DESTINATION lib)
 install(FILES ${ALL_HDRS} DESTINATION include/m3rt/${PROJECT_NAME})
+#install(TARGETS _m3rt_system DESTINATION lib COMPONENT ${LIBNAME} )
 #install(TARGETS ${LIBNAME} DESTINATION lib)
 #install(FILES m3enscontroller.h m3enscontroller.pb.h DESTINATION include/m3ens/controllers)
 ########### next target ###############
