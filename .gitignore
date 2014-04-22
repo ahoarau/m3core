@@ -21,7 +21,7 @@ build
 *.order
 autom4te.cache
 Makefile
-*.in
+Makefile.in
 *.status
 libtool
 configure
