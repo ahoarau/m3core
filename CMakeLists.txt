@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(m3core)
 #set(LIBNAME "m3core")
+set(PACKAGE_VERSION 1.6.1)
 
 SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -34,7 +35,7 @@ set(M3RT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 #set(DESTINATION "/usr/local/include/m3_msgs")
 add_subdirectory(src/m3rt/base)
 #######set(M3RT_BASE_SOURCE_DIR "${M3RT_SOURCE_DIR}/base")
-
+add_subdirectory(python)
 add_subdirectory(src/m3rt/rt_system)
 ############set(M3RT_RT_SYSTEM_SOURCE_DIR "${M3RT_SOURCE_DIR}/rt_system")
 #add_subdirectory(src/m3rt/ethercat)
