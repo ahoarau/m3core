@@ -45,12 +45,12 @@ FIND_PACKAGE(PythonLibs)
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 SET(CMAKE_SWIG_FLAGS "")
 SET_SOURCE_FILES_PROPERTIES(m3rt_system.i PROPERTIES CPLUSPLUS ON)
-#SET_SOURCE_FILES_PROPERTIES(m3rt_system.i PROPERTIES SWIG_FLAGS "-includeall")
+set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../python/m3rt/) # HACK for the path
 SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp)
 
 SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES})
 # End Swig
-
+message("m3rt_system=${m3rt_system}")
 # Start Protobuf stuff
 #include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 #file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )

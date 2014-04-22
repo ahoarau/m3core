@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 if (PYTHON)
     set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
     set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
-#    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/module/__init__.py")
+    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/module/__init__.py")
     set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
 
     configure_file(${SETUP_PY_IN} ${SETUP_PY})

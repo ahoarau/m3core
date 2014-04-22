@@ -63,7 +63,7 @@ ${ProtoHeaders}
 ${ProtoFiles}
 )
 
-add_library(${LIBNAME} SHARED ${all_srcs} ) # big HACK : Adding the py to source so it gets generated
+add_library(${LIBNAME} SHARED ${all_srcs} )
 target_link_libraries(${LIBNAME} ${LIBS})
 #set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
 message("ALL SRCS in ${PROJECT_NAME}:${all_srcs}")
