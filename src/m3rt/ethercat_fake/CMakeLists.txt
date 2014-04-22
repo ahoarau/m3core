@@ -29,3 +29,4 @@ Add_Custom_Command( OUTPUT  ${DRIVER_BIN_FILE}
 Add_Custom_Target ( ${DRIVER_TARGET_NAME}
                     ALL
                     DEPENDS ${DRIVER_BIN_FILE} )
+Install(FILES ${DRIVER_FILE} DESTINATION /lib/modules/${CMAKE_SYSTEM_VERSION}/extra/)

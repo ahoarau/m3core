@@ -30,10 +30,13 @@ file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
 #file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.proto)
 message("ProtoFiles:${ProtoFiles} to ${CMAKE_CURRENT_SOURCE_DIR} ")
 PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
-message("ProtoFiles:${ProtoFiles} to ${CMAKE_CURRENT_SOURCE_DIR} ")
-message("ProtoSources:${ProtoSources}")
 
-message("ProtoHeaders:${ProtoHeaders}")
+
+## Generate and copy the python protobuf
+PROTOBUF_GENERATE_PYTHON(PySources ${CMAKE_CURRENT_SOURCE_DIR}/../../../python/m3rt/ ${ProtoFiles}) # HACK on the path
+add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # Hack to force the generation
+
+
 # End Protobuf stuff
 
 SET(LIBS ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
@@ -60,14 +63,13 @@ ${ProtoHeaders}
 ${ProtoFiles}
 )
 
-add_library(${LIBNAME} SHARED ${all_srcs})
+add_library(${LIBNAME} SHARED ${all_srcs} ) # big HACK : Adding the py to source so it gets generated
 target_link_libraries(${LIBNAME} ${LIBS})
 #set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
 message("ALL SRCS in ${PROJECT_NAME}:${all_srcs}")
 
 install(TARGETS ${LIBNAME} DESTINATION lib)
 install(FILES ${all_hdrs} DESTINATION include/${SUBPROJECT_INSTALL_DIR_NAME}/${SUBPROJECT_INSTALL_NAME})
-
 
 
 

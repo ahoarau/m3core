@@ -74,6 +74,34 @@
 #=============================================================================
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
+function(PROTOBUF_GENERATE_PYTHON PYSRC OUTPATH)
+  if(NOT ARGN)
+    message(SEND_ERROR "Error: PROTOBUF_GENERATE_PYTHON() called without any proto files")
+    return()
+  endif(NOT ARGN)
+
+  set(${PYSRC})
+  foreach(FIL ${ARGN})
+    get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
+    get_filename_component(FIL_WE ${FIL} NAME_WE)
+    get_filename_component(PATH ${FIL} PATH)
+
+    list(APPEND PYSRC "${OUTPATH}/${FIL_WE}_pb2.py")
+message("PYSRC:${PYSRC}")
+    add_custom_command(
+      OUTPUT "${OUTPATH}/${FIL_WE}_pb2.py"
+      COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+      ARGS --python_out ${OUTPATH}
+           --proto_path ${PATH}
+           ${ABS_FIL}
+      DEPENDS ${ABS_FIL}
+      COMMENT "Running Python protocol buffer compiler on ${FIL}"
+      VERBATIM )
+  endforeach()
+
+  set_source_files_properties(${${PYSRC}} PROPERTIES GENERATED TRUE)
+  set(${PYSRC} ${${PYSRC}} PARENT_SCOPE)
+endfunction()
 
 function(PROTOBUF_GENERATE_CPP SRCS HDRS OUTPATH)
   if(NOT ARGN)
