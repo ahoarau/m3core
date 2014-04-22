@@ -24,39 +24,40 @@ PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${Pr
 
 
 
-
-
 SET(LIBS ${RTAI_LIBRARIES} ${M3RT_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
 include_directories(${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
 
+## Get all the files sources and headers
+file(GLOB ALL_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.cpp)
+file(GLOB ALL_HDRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.h)
+## Remove all generated protobufs froms above lists
+list(REMOVE_ITEM ALL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.pb.cpp)
+list(REMOVE_ITEM ALL_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/*.pb.h)
 
-SET(m3base_LIB_SRCS
-toolbox.cpp 
-simple_server.cpp 
-component_factory.cpp
-component_ec.cpp
-component.cpp
-component_async.cpp
-component_shm.cpp
-toolbox.h 
-simple_server.h  	
-component_factory.h  
-component_ec.h  
-component.h  
-component_async.h  	
-component_shm.h  	
-component_base.proto  
-m3rt_def.h  	
-m3ec_def.h
+#message("Srcs:${ALL_SRCS}")
+#message("hdrs:${ALL_HDRS}")
+
+
+SET(LIB_SRCS
+${ALL_SCRS}
 ${ProtoSources}
 ${ProtoHeaders}
-
 )
+file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.proto )
+SET(LIB_HDRS
+${ALL_HDRS}
+${ProtoHeaders}
+${ProtoFiles}
+)
+#message("lib headers :${LIB_HDRS}")
 
-
-
-add_library(${LIBNAME} SHARED ${m3base_LIB_SRCS})
+add_library(${LIBNAME} SHARED ${LIB_SRCS})
 target_link_libraries(${LIBNAME} ${LIBS})
+
+install(TARGETS ${LIBNAME} DESTINATION lib)
+install(FILES ${LIB_HDRS} DESTINATION include/m3rt/base)
+#install(FILES 
+
 #install(TARGETS ${LIBNAME} DESTINATION lib)
 #install(FILES m3enscontroller.h m3enscontroller.pb.h DESTINATION include/m3ens/controllers)
 ########### next target ###############
