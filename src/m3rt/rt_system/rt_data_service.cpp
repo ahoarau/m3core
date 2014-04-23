@@ -102,6 +102,7 @@ bool M3RtDataService::Startup()
 	M3_INFO("Startup of M3RtDataService, port %d...\n",portno);
 	ext_sem=sys->GetExtSem();
 #ifdef __RTAI__
+	M3_INFO("Creating rt_threadDataService...\n");
 	hdt=rt_thread_create((void*)data_thread,this,10000);  // wait until thread starts
 #else
 	pthread_create((pthread_t *)&hdt, NULL, (void *(*)(void *))data_thread, (void*)this);

@@ -526,7 +526,7 @@ void M3RtSystem::PrettyPrintComponents()
 	PrettyPrint();
 	for(int i=0;i<GetNumComponents();i++)
 		GetComponent(i)->PrettyPrint();
-	M3_PRINTF("\n\n\n",0);
+	M3_PRINTF("\n\n\n");
 }
 
 void M3RtSystem::PrettyPrintComponent(int idx)

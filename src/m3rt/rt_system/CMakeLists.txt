@@ -20,7 +20,7 @@ find_package(RTAI REQUIRED)
 endif(RTAI)
 
 if(ROS)
-add_definitions(-D__ROS__)
+add_definitions(-D_ROS_)
 ###find_package(RTAI REQUIRED)
 endif(ROS)
 
@@ -77,11 +77,8 @@ list(REMOVE_ITEM ALL_SRCS ${ROS_STUFF})
 list(REMOVE_ITEM ALL_HDRS ${ROS_STUFF})
 endif(NOT ROS)
 
-list(APPEND 
-ALL_SCRS
-${ProtoSources}
-${ProtoHeaders}
-)
+list(APPEND ALL_SRCS ${ProtoSources})
+
 
 file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.proto )
 list(APPEND ALL_HDRS
@@ -97,6 +94,7 @@ add_library(${LIBNAME} SHARED ${ALL_SRCS})
 set_target_properties(${LIBNAME} PROPERTIES PREFIX "")
 target_link_libraries(${LIBNAME} ${LIBS})
 set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(${LIBNAME} PROPERTIES COMPILE_FLAGS "-I${CMAKE_BINARY_DIR}/src")
 
 #SET_TARGET_PROPERTIES( ${LIBNAME} PROPERTIES COMPILE_FLAGS -fPIC)
 execute_process ( 
