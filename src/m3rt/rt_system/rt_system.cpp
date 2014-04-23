@@ -60,7 +60,7 @@ void * rt_system_thread(void * arg)
 	sys_thread_end=false;
 	
 	
-	//M3_INFO("Starting M3RtSystem real-time thread\n",0);
+    M3_INFO("Starting M3RtSystem real-time thread\n");
 	if (!m3sys->StartupComponents())
 	{
 		sys_thread_active=false;
@@ -103,8 +103,10 @@ void * rt_system_thread(void * arg)
 #ifdef __RTAI__
 	rt_sleep(nano2count(1000000000));
 	rt_task_make_periodic(task, now + tick_period, tick_period); 
+    M3_INFO("Using rtai\n");
 #else	
 	usleep(50000);
+    M3_INFO("Using pthreads\n");
 #endif
 	M3_INFO("Periodic task initialized.\n");
 	bool safeop_only = false;

@@ -16,7 +16,7 @@ if (PYTHON)
                        COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
                        DEPENDS ${DEPS})
 
-    add_custom_target(target ALL DEPENDS ${OUTPUT})
+    add_custom_target(m3core_py ALL DEPENDS ${OUTPUT})
 
     install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
 endif()

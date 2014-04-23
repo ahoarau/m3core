@@ -55,8 +55,8 @@ SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp)
 SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES})
 SWIG_LINK_LIBRARIES(m3rt_system ${LIBNAME})
 SWIG_LINK_LIBRARIES(m3rt_system ${LIBS})
-# End Swig
 set_target_properties(_m3rt_system PROPERTIES LINKER_LANGUAGE CXX)
+# End Swig
 # Start Protobuf stuff
 #include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 #file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
@@ -112,7 +112,7 @@ file ( TO_CMAKE_PATH "${PYTHON_SITE_DIR}" PYTHON_SITE_DIR )
 string ( REGEX REPLACE "^${PYTHON_PREFIX}/" "" 
    PYTHON_SITE_DIR "${PYTHON_SITE_DIR}" 
 ) 
-
+message("Swig file out : ${SWIG_MODULE_m3rt_system_REAL_NAME}")
 ## Installation
 install ( TARGETS ${SWIG_MODULE_m3rt_system_REAL_NAME} ${LIBNAME}
    LIBRARY 
