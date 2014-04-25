@@ -1,4 +1,5 @@
-
+cmake_minimum_required(VERSION 2.8)
+project(m3core-python)
 
 find_program(PYTHON "python")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")

@@ -246,14 +246,16 @@ def get_component_config_filename(name):
                                 if (c==name):
                                         return path+cdir+'/'+name+'.yml'
         except KeyError:
-                pass
+                print "No ec_components for",name,"trying with rt_components"
         try:
                 for cdir in config['rt_components'].keys():
                         for c in config['rt_components'][cdir].keys():
                                 if (c==name):
-                                        return path+cdir+'/'+name+'.yml'
+					fileout = path+cdir+'/'+name+'.yml'
+					print "Returning filename [",fileout,"]"
+                                        return fileout
         except KeyError:
-                pass
+                print "No rt_components for",name," returning None"
         return ''
 
 def get_component_config_path(name):
