@@ -25,6 +25,7 @@ import os
 import glob
 import sys
 import ctypes
+from m3.toolbox_core import M3Exception
 flags = sys.getdlopenflags()
 sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL) #allow exceptions to be passed between dll's
 import m3.m3rt_system
@@ -135,50 +136,69 @@ for idx in range(1,len(sys.argv)):
 		print '   -help                  this help screen'
 		print ''
 		sys.exit()
-		
 
+
+class M3Server(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        try:
+            self.t = None
+            time.sleep(3.0) # wait for EC kmod to get slaves in OP
+            self.server = MyXMLRPCServer((host,port),logRequests=False)
+            self.server.register_introspection_functions()
+            self.server.register_instance(svc)
+            self.server.register_function(start_log_service)
+            self.server.register_function(stop_log_service)
+            self.server.register_function(get_log_file)
+            self.server.register_function(get_log_info)
+            if make_op_all:
+                self.t = client_thread()
+            elif make_op_all_shm:
+                self.t = client_thread(make_all_op = False, make_all_op_shm = True)
+            elif make_op_all_no_shm:
+                self.t = client_thread(make_all_op = False, make_all_op_no_shm = True)
+            else:
+                self.t = client_thread(False)
+            self.t.start()
+            time.sleep(2.0) # wait for EC kmod to get slaves in OP
+        except Exception,e:
+            raise M3Exception("M3 RPC Server failed to start:",e)
+    def run(self):
+        print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
+        self.server.serve_forever()
+        
 svc=m3.m3rt_system.M3RtService()
 svc.Startup() # Let client start rt_system
-t = None
+
 try:
-	time.sleep(3.0) # wait for EC kmod to get slaves in OP
-	print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
-	server = MyXMLRPCServer((host,port),logRequests=False)
-	server.register_introspection_functions()
-	server.register_instance(svc)
-	server.register_function(start_log_service)
-	server.register_function(stop_log_service)
-	server.register_function(get_log_file)
-	server.register_function(get_log_info)	
-
-	time.sleep(2.0) # wait for EC kmod to get slaves in OP
-
-	if make_op_all:
-		t = client_thread()
-	elif make_op_all_shm:
-		t = client_thread(make_all_op = False, make_all_op_shm = True)
-	elif make_op_all_no_shm:
-		t = client_thread(make_all_op = False, make_all_op_no_shm = True)
-	else:
-		t = client_thread(False)
-	t.start()
-		
-	server.serve_forever()
-	
-	
-except socket.error as (errno,strerror):
-	print "Error({0}): {1}".format(errno, strerror),'. Check that ',host,'has a valid IP address.'
-except:
-	pass
+    m3server = M3Server()
+except Exception,e:
+    raise M3Exception("M3 RPC Server failed to start:",e)
+try:
+    m3server.start()
+    while m3server.is_alive():
+        try:
+            m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
+        except KeyboardInterrupt:
+            print "yahoo! let's shutdown"
+            raise M3Exception("Shutdown signal caught",e)
+        
+except Exception,e:
+    pass # Door to the Exit
 # TODO: Find out why server_forever bombs out on CTRL-C if ROS service has been used.
 #except KeyboardInterrupt:
 #	pass
 #if make_op_all:
-if t:
-  t.stop=True
-#print "Shutting down"
-svc.Shutdown()
+if svc.IsRtSystemRunning():
+    print "Shutting down M3 Services"
+    #svc.Shutdown() it's in the destructor !
 
+if m3server and m3server.is_alive():
+    print "Shutting down M3 RPC Server"
+    m3server.t.stop=True
+    m3server.server.shutdown()
+    
+exit()
 # ################################################################################
 	
 	
