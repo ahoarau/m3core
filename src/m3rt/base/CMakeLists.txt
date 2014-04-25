@@ -31,7 +31,7 @@ file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
 #file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.proto)
 message("ProtoFiles:${ProtoFiles} to ${CMAKE_CURRENT_SOURCE_DIR} ")
 PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
-
+add_custom_target(${LIBNAME}_protobuf_output ALL DEPENDS ${ProtoSources}) # force the generation
 
 find_package(PythonLibs REQUIRED)
 find_package(PythonInterp REQUIRED) 
