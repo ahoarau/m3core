@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(ethercat_fake)
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 # RTAI
 find_package(RTAI REQUIRED)
 add_definitions(-D__RTAI__)
@@ -12,7 +12,7 @@ include_directories(${RTAI_INCLUDE_DIR})
 
 add_definitions(-ffast-math)
 
-message("Cmake c flags : ${CMAKE_C_FLAGS}")
+
 Set( MODULE_OUTPUT_FILES    m3ec.o
                             m3ec.mod.c
                             m3ec.mod.o
@@ -22,10 +22,11 @@ Set( MODULE_SOURCE_FILES  m3ec.c )
 
 Set( DRIVER_FILE        m3ec.ko )
 Set( DRIVER_TARGET_NAME m3ec-module )
-Set( DRIVER_BIN_FILE    ${CMAKE_BINARY_DIR}${DRIVER_FILE} )
-Set( MODULE_SOURCE_DIR  ${PROJECT_SOURCE_DIR} )
+Set( DRIVER_BIN_FILE    ${CMAKE_CURRENT_BINARY_DIR}${DRIVER_FILE} )
+Set( MODULE_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR} )
 
 Set( KERNEL_DIR "/lib/modules/${CMAKE_SYSTEM_VERSION}/build" )
+message("-- Kernel dir : ${KERNEL_DIR} (Should be rtai-patched)")
 Set( KBUILD_CMD ${CMAKE_MAKE_PROGRAM}
                 -C ${KERNEL_DIR}
                 M=${MODULE_SOURCE_DIR}
