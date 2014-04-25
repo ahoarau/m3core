@@ -180,7 +180,6 @@ try:
         try:
             m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
         except KeyboardInterrupt:
-            print "yahoo! let's shutdown"
             raise M3Exception("Shutdown signal caught",e)
         
 except Exception,e:

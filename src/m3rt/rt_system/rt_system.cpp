@@ -103,7 +103,6 @@ void * rt_system_thread(void * arg)
 #ifdef __RTAI__
 	rt_sleep(nano2count(1000000000));
 	rt_task_make_periodic(task, now + tick_period, tick_period); 
-    M3_INFO("Using rtai\n");
 #else	
 	usleep(50000);
     M3_INFO("Using pthreads\n");
