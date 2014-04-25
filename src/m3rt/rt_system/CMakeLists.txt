@@ -38,6 +38,27 @@ SET(LIBS ${YAMLCPP_LIBRARY} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES} ${M3RT_LIBRA
 include_directories(${YAMLCPP_INCLUDE_DIR} ${M3RT_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
 
 
+
+set(ALL_SRCS
+rt_data_service.cpp
+rt_log_service.cpp
+rt_service.cpp
+rt_system.cpp
+)
+set(ALL_HDRS
+rt_data_service.h
+rt_log_service.h
+rt_service.h
+rt_system.h
+)
+
+if(ROS)
+list(REMOVE_ITEM ALL_SRCS rt_ros_service.cpp)
+list(REMOVE_ITEM ALL_HDRS rt_ros_service.h)
+endif(ROS)
+
+
+
 # Swig
 FIND_PACKAGE(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
@@ -47,52 +68,13 @@ find_package ( PythonInterp REQUIRED )
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 SET(CMAKE_SWIG_FLAGS "")
 SET_SOURCE_FILES_PROPERTIES(m3rt_system.i PROPERTIES CPLUSPLUS ON)
-#(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../python/m3/) # HACK for the path
-####install(FILES ${CMAKE_BINARY_DIR}/src/target.py DESTINATION ${PYTHON_DIST_PACKAGES}/m3) #### TO TRY
 
-SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp)
+SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp ${ALL_SRCS})
 
-SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES} ${LIBS} ${LIBNAME})
+SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES} ${LIBS} )
 set_target_properties(${SWIG_MODULE_m3rt_system_REAL_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-# End Swig
-# Start Protobuf stuff
-#include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
-#file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
-#if(ProtoFiles)	     
-#	PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
-#endif(Protofiles)
-# End Protobuf stuff
+# End swig
 
-## Get all the files sources and headers
-file(GLOB ALL_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.cpp)
-file(GLOB ALL_HDRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.h)
-
-if(NOT ROS)
-message("Removing ROS stuff")
-FILE(GLOB ROS_STUFF RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*_ros_*")
-message("ros stuff to remove : ${ROS_STUFF}")
-list(REMOVE_ITEM ALL_SRCS ${ROS_STUFF})
-list(REMOVE_ITEM ALL_HDRS ${ROS_STUFF})
-endif(NOT ROS)
-
-list(APPEND ALL_SRCS ${ProtoSources})
-
-
-file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.proto )
-list(APPEND ALL_HDRS
-${ProtoHeaders}
-${ProtoFiles}
-)
-
-message("ALL SRC in ${PROJECT_NAME}:${ALL_SRCS}")
-
-
-## Building
-add_library(${LIBNAME} SHARED ${ALL_SRCS})
-set_target_properties(${LIBNAME} PROPERTIES PREFIX "")
-target_link_libraries(${LIBNAME} ${LIBS})
-set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(${LIBNAME} PROPERTIES COMPILE_FLAGS "-I${CMAKE_BINARY_DIR}/src")
 
 #SET_TARGET_PROPERTIES( ${LIBNAME} PROPERTIES COMPILE_FLAGS -fPIC)
 execute_process ( 
@@ -106,13 +88,15 @@ execute_process (
    	"import site, sys; sys.stdout.write(site.getsitepackages()[-1])" 
    OUTPUT_VARIABLE PYTHON_SITE_DIR 
 ) 
+
 file ( TO_CMAKE_PATH "${PYTHON_SITE_DIR}" PYTHON_SITE_DIR ) 
 string ( REGEX REPLACE "^${PYTHON_PREFIX}/" "" 
    PYTHON_SITE_DIR "${PYTHON_SITE_DIR}" 
 ) 
-message("Swig file out : ${SWIG_MODULE_m3rt_system_REAL_NAME}")
+
+
 ## Installation
-install ( TARGETS ${SWIG_MODULE_m3rt_system_REAL_NAME} ${LIBNAME}
+install ( TARGETS ${SWIG_MODULE_m3rt_system_REAL_NAME}
    LIBRARY 
      DESTINATION ${PYTHON_SITE_DIR}/m3/ 
      COMPONENT library 
@@ -124,7 +108,4 @@ install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/m3rt_system.py
 ) 
 
 
-
-#install(TARGETS ${LIBNAME} DESTINATION lib)
-install(FILES ${ALL_HDRS} DESTINATION include/m3rt/${PROJECT_NAME})
 
