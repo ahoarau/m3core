@@ -76,7 +76,11 @@ void data_thread(void * arg)
 		   svc->data_thread_error=true;		   
 		   break;
 		}
+#ifdef __RTAI__
+		//rt_task_wait_period(); //A.H Just go as fast as you can (No locks for now) TODO: test this more
+#else
 		usleep(10000); //100hz
+#endif
 	}	
 #ifdef __RTAI__
 	rt_task_delete(task);

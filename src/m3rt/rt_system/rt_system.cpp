@@ -85,27 +85,29 @@ void * rt_system_thread(void * arg)
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 	M3_INFO("Mem lock all initialized.\n");
 	RTIME tick_period = nano2count(RT_TIMER_TICKS_NS + 200000); 
-	RTIME now = rt_get_time();
-	if (1)
+	
+#ifndef __SOFTREALTIME__
+		M3_INFO("Hard real time initialized.\n");
 		rt_make_hard_real_time();
+#else
 
-	if (0)
-	{
+		M3_INFO("Soft real time initialized.\n");
 		rt_make_soft_real_time();
 		M3_INFO("M3Sytem running in soft real time! For debugging only!!!\n");
-	}
-	M3_INFO("Hard real time initialized.\n");
+#endif
+	
 #else	
 	long long start, end, dt;	
 #endif	
 	sys_thread_active=true;
 	//Give other threads a chance to load before starting
 #ifdef __RTAI__
+	RTIME now = rt_get_time();
 	rt_sleep(nano2count(1000000000));
 	rt_task_make_periodic(task, now + tick_period, tick_period); 
 #else	
 	usleep(50000);
-    M3_INFO("Using pthreads\n");
+	M3_INFO("Using pthreads\n");
 #endif
 	M3_INFO("Periodic task initialized.\n");
 	bool safeop_only = false;
@@ -129,7 +131,7 @@ void * rt_system_thread(void * arg)
 
 		//if (tmp_cnt++ == 1000)
 		//{
-		 // M3_INFO("%f\n",double(count2nano(dt)/1000));
+		//M3_INFO("%f\n",double(count2nano(dt)/1000));
 		//  tmp_cnt = 0;
 		//}
 		/*
@@ -143,7 +145,7 @@ void * rt_system_thread(void * arg)
 			if (m3sys->over_step_cnt > 10)
 			{
 			  m3rt::M3_WARN("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n",step_cnt);
-			  m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period));
+			  m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period),(double)count2nano(dt));
 			  tick_period=dt;
 			  rt_task_make_periodic(task, end + tick_period,tick_period);
 			  safeop_only = true;

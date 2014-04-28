@@ -246,13 +246,14 @@ def get_component_config_filename(name):
                                 if (c==name):
                                         return path+cdir+'/'+name+'.yml'
         except KeyError:
-                print "No ec_components for",name,"trying with rt_components"
+		pass
+                #print "No ec_components for",name,"trying with rt_components"
         try:
                 for cdir in config['rt_components'].keys():
                         for c in config['rt_components'][cdir].keys():
                                 if (c==name):
 					fileout = path+cdir+'/'+name+'.yml'
-					print "Returning filename [",fileout,"]"
+					#print "Returning filename [",fileout,"]"
                                         return fileout
         except KeyError:
                 print "No rt_components for",name," returning None"
@@ -396,7 +397,7 @@ def gplot(x,y=None,g=None,yrange=None,persist_in=1):
                 g = Gnuplot.Gnuplot(persist = persist_in)
                 g.title('M3 Plot')
                 g('set data style lines')
-                g('set term x11 noraise')
+                g('set terminal x11 noraise')
                 if yrange is not None:
                         g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
         g.plot(zip(y,x))
@@ -409,7 +410,7 @@ def gplot2(x1,x2,y=None,g=None,yrange=None,persist_in=1):
                 g = Gnuplot.Gnuplot(persist = persist_in)
                 g.title('M3 Plot')
                 g('set data style lines')
-                g('set term x11 noraise')
+                g('set terminal x11 noraise')
                 if yrange is not None:
                         g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
         d = Gnuplot.Data(y,x1)
@@ -527,6 +528,8 @@ def user_select_components_interactive(names,single=False,item='Components'):
                                 return select
                         idx=(idx+1)%len(names)
                 elif r=='q':
+                        if not len(select):
+                            select.append(names[idx])
                         return select
                 elif r=='i':
                         print 'Enter ',item, 'index: '
@@ -594,7 +597,7 @@ class M3ScopeN():
                 self.x=range(xwidth)
                 self.g = Gnuplot.Gnuplot(persist = 1)                
                 self.g('set data style lines')
-                self.g('set term x11 noraise')
+                self.g('set terminal x11 noraise')
                 if yrange is not None:
                         self.g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
         def plot(self,y):
