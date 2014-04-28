@@ -169,21 +169,23 @@ class M3Server(Thread):
         
 svc=m3.m3rt_system.M3RtService()
 svc.Startup() # Let client start rt_system
-
 try:
-    m3server = M3Server()
-except Exception,e:
-    raise M3Exception("M3 RPC Server failed to start:",e)
-try:
+    # Instanciate the server
+    try:
+        m3server = M3Server()
+    except Exception,e:
+        print e
+        raise M3Exception("M3 RPC Server failed to start")
+    # Start the server
     m3server.start()
     while m3server.is_alive():
         try:
             m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
         except KeyboardInterrupt:
-            raise M3Exception("Shutdown signal caught",e)
-        
+            raise M3Exception("Shutdown signal caught")        
 except Exception,e:
     pass # Door to the Exit
+
 # TODO: Find out why server_forever bombs out on CTRL-C if ROS service has been used.
 #except KeyboardInterrupt:
 #	pass
