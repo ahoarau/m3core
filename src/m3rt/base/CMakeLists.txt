@@ -33,7 +33,7 @@ message("ProtoFiles:${ProtoFiles} to ${CMAKE_CURRENT_SOURCE_DIR} ")
 PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
 add_custom_target(${LIBNAME}_protobuf_output ALL DEPENDS ${ProtoSources}) # force the generation
 
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 find_package(PythonInterp REQUIRED) 
 ## Generate and copy the python protobuf
 PROTOBUF_GENERATE_PYTHON(PySources ${CMAKE_CURRENT_BINARY_DIR} ${ProtoFiles}) 
