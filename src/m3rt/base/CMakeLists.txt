@@ -46,14 +46,27 @@ SET(LIBS ${YAMLCPP_LIBRARY} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES} ${M3RT_LIBRA
 include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
 
 ## Get all the files sources and headers
-#file(GLOB ALL_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.cpp)
-#file(GLOB ALL_HDRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.h)
-file(GLOB all_srcs [^.]*.cpp)
-file(GLOB all_hdrs [^.]*.h)
-## Remove all generated protobufs froms above lists
-#list(REMOVE_ITEM ALL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.pb.cpp)
-#list(REMOVE_ITEM ALL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.pb.cc)
-#list(REMOVE_ITEM ALL_HDRS ${CMAKE_CURRENT_SOURCE_DIR}/*.pb.h)
+
+set( all_srcs
+component_async.cpp
+component.cpp
+component_ec.cpp
+component_factory.cpp
+component_shm.cpp
+simple_server.cpp
+toolbox.cpp
+)
+set(all_hdrs
+component_async.h
+component_ec.h
+component_factory.h
+component.h
+component_shm.h
+m3ec_def.h
+m3rt_def.h
+simple_server.h
+toolbox.h
+)
 
 list(APPEND 
 all_srcs
