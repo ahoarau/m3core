@@ -53,8 +53,8 @@ rt_system.h
 )
 
 if(ROS)
-list(REMOVE_ITEM ALL_SRCS rt_ros_service.cpp)
-list(REMOVE_ITEM ALL_HDRS rt_ros_service.h)
+list(APPEND ALL_SRCS rt_ros_service.cpp)
+list(APPEND ALL_HDRS rt_ros_service.h)
 endif(ROS)
 
 
@@ -69,10 +69,11 @@ INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 SET(CMAKE_SWIG_FLAGS "")
 SET_SOURCE_FILES_PROPERTIES(m3rt_system.i PROPERTIES CPLUSPLUS ON)
 
-SWIG_ADD_MODULE(m3rt_system python m3rt_system.i rt_system.cpp ${ALL_SRCS})
+SWIG_ADD_MODULE(m3rt_system python m3rt_system.i ${ALL_SRCS})
 
 SWIG_LINK_LIBRARIES(m3rt_system ${PYTHON_LIBRARIES} ${LIBS} )
 set_target_properties(${SWIG_MODULE_m3rt_system_REAL_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+add_custom_target(m3rt_system ALL DEPENDS ${ALL_SRCS})
 # End swig
 
 
