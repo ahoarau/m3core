@@ -32,6 +32,7 @@ from datetime import timedelta
 from m3.unit_conversion import *
 from threading import Thread
 import m3.component_base_pb2 as mbs
+from fileinput import close
 #import roslib; roslib.load_manifest('m3_toolbox_ros')
 #import rospy
 #import rosbag
@@ -179,7 +180,27 @@ def get_config_hostname():
                 h = None
         return h
 
+def set_config_hostname(hostname):
+        path=get_m3_config_path()
+        filename= path+'m3_config.yml'
+        f = open(filename, 'r')
+        config= yaml.safe_load(f)
+        old_hostname = config['hostname']
+        f.close()
+        try:
+                 f = open(filename, 'w')
+                 config['hostname']=hostname
+                 yaml.safe_dump(config,f,default_flow_style=False)
+                 f.close()
+        except KeyError:
+                return False
+        print "Config hostname changed (",old_hostname,"->",hostname,")"
+        return True
 
+def configure_virtual_meka():
+    local_hostname = get_local_hostname()
+    set_config_hostname(local_hostname)
+    
 def get_local_hostname():
 	cmd='hostname'
 	stdout_handle = os.popen(cmd, "r")
