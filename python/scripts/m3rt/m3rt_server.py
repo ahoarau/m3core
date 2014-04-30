@@ -164,6 +164,8 @@ if __name__ == '__main__':
     try:
         svc=m3.m3rt_system.M3RtService()
         svc.Startup() # Let client start rt_system
+        for i in xrange(20):
+            time.sleep(0.1)
         # Instanciate the server
         while not svc.IsServiceThreadActive():
             time.sleep(0.1)

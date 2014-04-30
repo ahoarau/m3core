@@ -60,7 +60,7 @@ void * rt_system_thread(void * arg)
 	sys_thread_end=false;
 	
 	
-    M3_INFO("Starting M3RtSystem real-time thread\n");
+	M3_INFO("Starting M3RtSystem real-time thread\n");
 	if (!m3sys->StartupComponents())
 	{
 		sys_thread_active=false;
@@ -182,8 +182,12 @@ bool M3RtSystem::Startup()
 #ifdef __RTAI__
 	hst=rt_thread_create((void*)rt_system_thread, (void*)this, 1000000);
 #else		
-	pthread_create((pthread_t *)&hst, NULL, (void *(*)(void *))rt_system_thread, (void*)this);
+	long hst=pthread_create((pthread_t *)&hst, NULL, (void *(*)(void *))rt_system_thread, (void*)this);
 #endif
+	if(!hst){ //A.H : Added earlier check
+	  m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+	  return false;
+	}
 	for (int i=0;i<50;i++)
 	{
 		usleep(100000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.
@@ -192,7 +196,7 @@ bool M3RtSystem::Startup()
 	}
 	if (!sys_thread_active)
 	{
-		m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+		m3rt::M3_INFO("Startup of M3RtSystem thread failed, thread still not active.\n");
 		return false;
 	}
 	//Debugging
@@ -263,6 +267,7 @@ bool M3RtSystem::Shutdown()
 bool M3RtSystem::StartupComponents()
 {
 #ifdef __RTAI__
+	M3_INFO("Getting Kernel EC components.\n");
 	if (shm_ec = (M3EcSystemShm*) rtai_malloc (nam2num(SHMNAM_M3MKMD),1))
 		M3_PRINTF("Found %d active M3 EtherCAT slaves\n",shm_ec->slaves_active);
 	else
@@ -291,7 +296,7 @@ bool M3RtSystem::StartupComponents()
 	if (!ext_sem)
 	{
 		M3_ERR("Unable to find the M3LEXT semaphore.\n",0);
-		return false;
+		//return false;
 	}
 	M3_INFO("Reading component config files ...\n"); 
 #ifdef __RTAI__	
