@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export ROS_ROOT=/opt/ros/cturtle/ros
 export PATH=$ROS_ROOT/bin:$PATH
 export PYTHONPATH=$ROS_ROOT/core/roslib/src:$PYTHONPATH

@@ -119,8 +119,12 @@ class M3Server(Thread):
         self.server.register_function(get_log_info)
         #time.sleep(2.0) # wait for EC kmod to get slaves in OP
     def run(self):
-        print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
-        self.server.serve_forever()  
+        try:
+            print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
+            self.server.serve_forever()
+        finally:
+            print "M3 INFO: Closing Socket"
+            self.server.socket.close()
 # ################################################################################
 
 ## THE DEFAULT ARGUMENTS TO START THE SERVER
@@ -214,7 +218,7 @@ if __name__ == '__main__':
         print 'M3 INFO: M3 RPC Server exited normally'
     time.sleep(0.5)
     print("M3 INFO: Exiting")
-    exit()
+    #exit()
 # ################################################################################
     
     
