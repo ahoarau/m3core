@@ -242,7 +242,7 @@ bool M3RtService::RemoveDataService(int port)
 			data_services[i]->Shutdown();		
 			delete data_services[i];			
 			data_services[i] = NULL;			
-			ports[i] = NULL;			
+			ports[i] = 0;			
 			break;
 		}
 	}

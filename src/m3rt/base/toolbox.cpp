@@ -34,7 +34,7 @@ namespace m3rt
   
  void M3_WARN(const char * format, ...)
  {
-	FILE * pFile = NULL;
+	//FILE * pFile = NULL;
 	string path;
 	
 /*	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
@@ -97,7 +97,7 @@ namespace m3rt
 
  void M3_INFO(const char * format, ...)
  {
-	FILE * pFile = NULL;
+	//FILE * pFile = NULL;
 	string path;
 	
 /*	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
@@ -134,12 +134,12 @@ void BannerPrint(int width, const char *format, ...)
 	if (n<width&&((width-n)/2)>0)
 	{
 		out[(width-n)/2]=0;
-		M3_PRINTF(out);
-		M3_PRINTF(buf);
-		M3_PRINTF(out);
+		M3_PRINTF("%s",out);
+		M3_PRINTF("%s",buf);
+		M3_PRINTF("%s",out);
 	}
 	else
-		M3_PRINTF(buf);
+		M3_PRINTF("%s",buf);
 	va_end (args);
 	M3_PRINTF("\n");
 }
@@ -198,7 +198,7 @@ vector<mReal> YamlReadVectorM(const YAML::Node& seq)
 {	
 	vector<mReal> f;
 	mReal val;
-	for (int i=0; i<seq.size(); i++)
+	for (size_t i=0; i<seq.size(); i++)
 	{
 		seq[i] >> val;
 		f.push_back(val);

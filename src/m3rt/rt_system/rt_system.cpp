@@ -99,12 +99,15 @@ void * rt_system_thread(void * arg)
 #else	
 	long long start, end, dt;	
 #endif	
-	sys_thread_active=true;
+	
 	//Give other threads a chance to load before starting
 #ifdef __RTAI__
 	RTIME now = rt_get_time();
 	rt_sleep(nano2count(1000000000));
-	rt_task_make_periodic(task, now + tick_period, tick_period); 
+	if(rt_task_make_periodic(task, now + tick_period, tick_period)){
+	  M3_ERR("Couldn't make rt_system task periodic.\n");
+	  return 0;
+	}
 #else	
 	usleep(50000);
 	M3_INFO("Using pthreads\n");
@@ -114,7 +117,7 @@ void * rt_system_thread(void * arg)
 	
 	int tmp_cnt = 0;
 	m3sys->over_step_cnt = 0;
-		
+	sys_thread_active=true;
 	while(!sys_thread_end)
 	{
 #ifdef __RTAI__
@@ -129,11 +132,11 @@ void * rt_system_thread(void * arg)
 		end = nano2count(rt_get_cpu_time_ns());
 		dt=end-start;
 
-		//if (tmp_cnt++ == 1000)
-		//{
-		//M3_INFO("%f\n",double(count2nano(dt)/1000));
-		//  tmp_cnt = 0;
-		//}
+		if (tmp_cnt++ == 1000)
+		{
+		M3_INFO("%f\n",double(count2nano(dt)/1000));
+		  tmp_cnt = 0;
+		}
 		/*
 		Check the time it takes to run components, and if it takes longer
 		than our period, make us run slower. Otherwise this task locks
@@ -268,7 +271,8 @@ bool M3RtSystem::StartupComponents()
 {
 #ifdef __RTAI__
 	M3_INFO("Getting Kernel EC components.\n");
-	if (shm_ec = (M3EcSystemShm*) rtai_malloc (nam2num(SHMNAM_M3MKMD),1))
+	shm_ec = (M3EcSystemShm*) rtai_malloc (nam2num(SHMNAM_M3MKMD),1);
+	if (shm_ec)
 		M3_PRINTF("Found %d active M3 EtherCAT slaves\n",shm_ec->slaves_active);
 	else
 	{
@@ -295,8 +299,8 @@ bool M3RtSystem::StartupComponents()
 #endif	
 	if (!ext_sem)
 	{
-		M3_ERR("Unable to find the M3LEXT semaphore.\n",0);
-		//return false;
+		M3_ERR("Unable to find the M3LEXT semaphore (ext_sem:[%d]).\n",&ext_sem);
+		return false;
 	}
 	M3_INFO("Reading component config files ...\n"); 
 #ifdef __RTAI__	
@@ -487,6 +491,7 @@ int M3RtSystem::GetComponentState(int idx)
 {
 	if (idx<GetNumComponents()&&idx>=0)
 		return GetComponent(idx)->GetState();
+	return -1;
 }
 
 void M3RtSystem::PrettyPrint()
@@ -545,7 +550,6 @@ void M3RtSystem::PrettyPrintComponent(int idx)
 	
 bool M3RtSystem::Step(bool safeop_only)
 {
-	int i;
 #ifdef __RTAI__
 	RTIME start, end, dt,start_c,end_c, start_p,end_p;
 #else
@@ -628,7 +632,7 @@ bool M3RtSystem::Step(bool safeop_only)
 #else
 	int64_t ts=getNanoSec()/1000;
 #endif
-	for(i=0;i<GetNumComponents();i++) 
+	for(int i=0;i<GetNumComponents();i++) 
 		GetComponent(i)->SetTimestamp(ts);
 #ifdef __RTAI__
 	start_p = rt_get_cpu_time_ns();
@@ -656,7 +660,7 @@ bool M3RtSystem::Step(bool safeop_only)
 	//Set Status on non-EC components
 	for (int j=0; j<=MAX_PRIORITY; j++)
 	{
-		for(i=0; i<m3rt_list.size(); i++)
+		for(int i=0; i<m3rt_list.size(); i++)
 		{
 			if (m3rt_list[i]->GetPriority() == j)
 			{
@@ -691,7 +695,7 @@ bool M3RtSystem::Step(bool safeop_only)
 #endif
 	for (int j=MAX_PRIORITY; j>=0; j--)
 	{
-		for(i=0; i<m3rt_list.size(); i++)
+		for(int i=0; i<m3rt_list.size(); i++)
 		{
 				if (m3rt_list[i]->GetPriority() == j)
 				{

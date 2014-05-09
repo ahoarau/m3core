@@ -101,7 +101,7 @@ void *async_io_thread(void * arg)
 	rt_sem_delete(aio->status_mutex);
 	aio->status_mutex = NULL;
   }  
-    
+    return static_cast<void *>(0);
 }
 
 

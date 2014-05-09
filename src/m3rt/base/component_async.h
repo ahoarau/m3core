@@ -47,7 +47,7 @@ namespace m3rt
 class M3ComponentAsync : public M3Component
 {
 	public:
-		M3ComponentAsync(int p=EC_PRIORITY):M3Component(p),stop_thread(false),initializing(true),rc(NULL)
+		M3ComponentAsync(int p=EC_PRIORITY):M3Component(p),initializing(true),rc(-1),stop_thread(false)
 		{
 			RegisterVersion("default",DEFAULT);	//RBL
 			RegisterVersion("iss",ISS);		//ISS. Updated safety thresholds to use motor model.
@@ -87,7 +87,6 @@ class M3ComponentAsync : public M3Component
 		virtual bool LinkDependentComponents();				
 	private:	      
 	      long rc;
-
 	      bool stop_thread;
 	      int tmp;
 

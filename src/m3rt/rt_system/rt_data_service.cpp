@@ -78,6 +78,7 @@ void data_thread(void * arg)
 		}
 #ifdef __RTAI__
 		//rt_task_wait_period(); //A.H Just go as fast as you can (No locks for now) TODO: test this more
+		rt_sleep(4000); //250 Hz
 #else
 		usleep(10000); //100hz
 #endif
@@ -109,10 +110,10 @@ bool M3RtDataService::Startup()
 	M3_INFO("Creating rt_threadDataService...\n");
 	hdt=rt_thread_create((void*)data_thread,this,10000);  // wait until thread starts
 #else
-	pthread_create((pthread_t *)&hdt, NULL, (void *(*)(void *))data_thread, (void*)this);
+	long int hdt = pthread_create((pthread_t *)&hdt, NULL, (void *(*)(void *))data_thread, (void*)this);
 #endif
 	usleep(100000);
-	if (!data_thread_active)
+	if (!data_thread_active || !hdt)
 	{
 		M3_ERR("Unable to start M3RtDataSevice\n",0);
 		return false;

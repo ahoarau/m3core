@@ -57,14 +57,14 @@ A component can be in one of 4 states:
 
 class M3Component{
 	public:
-		M3Component(int p=0):priority(p),version_id(-1),factory(NULL){GOOGLE_PROTOBUF_VERIFY_VERSION;}
+		M3Component(int p=0):factory(NULL),priority(p),version_id(-1){GOOGLE_PROTOBUF_VERIFY_VERSION;}
 		virtual ~M3Component(){}
 		friend class M3RtSystem;
 		friend class M3RtLogService;
 		string GetName(){return GetBaseStatus()->name();}
 		int  GetState(){return (int)GetBaseStatus()->state();}
 		int  GetPriority(){return priority;}
-		int  SetPriority(int p){priority=p;}
+		void  SetPriority(int p){priority=p;}
 		void SetStateError(){GetBaseStatus()->set_state(M3COMP_STATE_ERR);}
 		void SetStateOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_OP);}
 		void SetStateSafeOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_SAFEOP);}

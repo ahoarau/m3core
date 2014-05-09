@@ -3,21 +3,12 @@ project(m3core)
 #set(LIBNAME "m3core")
 set(PACKAGE_VERSION 1.6.1)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 # Options
 # 1) Disable ethercat (used for virtual meka on RT Kernels)
 OPTION(ETHERCAT "Enable/Disable Ethercat (The 'fake' ethercat kernel module is compiled instead)" OFF)
 message("-- The option ETHERCAT is ${ETHERCAT}")
-# 2) Compile in c++11 (not compiling yet)
-OPTION(USE_C++11 "Use c++11 (not compiling yet 10 avril 2014)" 0)
 
-
-if(USE_C++11)
-	set(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
-	message("-- Using c++11")
-endif(USE_C++11)
-#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
