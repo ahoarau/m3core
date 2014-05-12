@@ -53,10 +53,10 @@ pkgconfig_DATA = m3base.pc
 
 includedir =  /usr/local/include/m3_msgs
 
-include_HEADERS = ros/m3_msgs/msg_gen/cpp/include/m3_msgs/M3BaseStatus.h \
-		ros/m3_msgs/srv_gen/cpp/include/m3_msgs/M3ComponentCmd.h \
-		ros/m3_msgs/srv_gen/cpp/include/m3_msgs/M3ComponentParam.h \
-		ros/m3_msgs/srv_gen/cpp/include/m3_msgs/M3ComponentStatus.h
+#include_HEADERS = ros/m3_msgs/msg_gen/cpp/include/m3_msgs/M3BaseStatus.h \
+#		ros/m3_msgs/srv_gen/cpp/include/m3_msgs/M3ComponentCmd.h \
+#		ros/m3_msgs/srv_gen/cpp/include/m3_msgs/M3ComponentParam.h \
+#		ros/m3_msgs/srv_gen/cpp/include/m3_msgs/M3ComponentStatus.h
 
 
 

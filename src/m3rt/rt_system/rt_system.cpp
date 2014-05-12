@@ -17,9 +17,9 @@ You should have received a copy of the GNU Lesser General Public License
 along with M3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "m3rt/rt_system/rt_system.h"
+#include "rt_system.h"
 //#include "m3rt/base/m3ec_pdo_v1_def.h"
-
+#include <unistd.h>
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {
@@ -60,7 +60,7 @@ void * rt_system_thread(void * arg)
 	sys_thread_end=false;
 	
 	
-	//M3_INFO("Starting M3RtSystem real-time thread\n",0);
+	M3_INFO("Starting M3RtSystem real-time thread\n");
 	if (!m3sys->StartupComponents())
 	{
 		sys_thread_active=false;
@@ -84,34 +84,40 @@ void * rt_system_thread(void * arg)
 	M3_INFO("Use fpu initialized.\n");
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 	M3_INFO("Mem lock all initialized.\n");
-	RTIME tick_period = nano2count(RT_TIMER_TICKS_NS + 200000); 
-	RTIME now = rt_get_time();
-	if (1)
+	RTIME tick_period = nano2count(RT_TIMER_TICKS_NS + 200000); //TODO : why +200000 ?
+	
+#ifndef __SOFTREALTIME__
+		M3_INFO("Hard real time initialized.\n");
 		rt_make_hard_real_time();
+#else
 
-	if (0)
-	{
+		M3_INFO("Soft real time initialized.\n");
 		rt_make_soft_real_time();
 		M3_INFO("M3Sytem running in soft real time! For debugging only!!!\n");
-	}
-	M3_INFO("Hard real time initialized.\n");
+#endif
+	
 #else	
 	long long start, end, dt;	
 #endif	
-	sys_thread_active=true;
+	
 	//Give other threads a chance to load before starting
 #ifdef __RTAI__
+	RTIME now = rt_get_time();
 	rt_sleep(nano2count(1000000000));
-	rt_task_make_periodic(task, now + tick_period, tick_period); 
+	if(rt_task_make_periodic(task, now+ tick_period, tick_period)){
+	  M3_ERR("Couldn't make rt_system task periodic.\n");
+	  return 0;
+	}
 #else	
 	usleep(50000);
+	M3_INFO("Using pthreads\n");
 #endif
 	M3_INFO("Periodic task initialized.\n");
 	bool safeop_only = false;
 	
 	int tmp_cnt = 0;
 	m3sys->over_step_cnt = 0;
-		
+	sys_thread_active=true;
 	while(!sys_thread_end)
 	{
 #ifdef __RTAI__
@@ -126,26 +132,29 @@ void * rt_system_thread(void * arg)
 		end = nano2count(rt_get_cpu_time_ns());
 		dt=end-start;
 
-		//if (tmp_cnt++ == 1000)
-		//{
-		 // M3_INFO("%f\n",double(count2nano(dt)/1000));
-		//  tmp_cnt = 0;
-		//}
+		if (tmp_cnt++ == 1000)
+		{
+		  M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
+		  tmp_cnt = 0;
+		}
 		/*
 		Check the time it takes to run components, and if it takes longer
 		than our period, make us run slower. Otherwise this task locks
 		up the CPU.*/
 		if (dt > tick_period && step_cnt>10) 
 		{
-			m3sys->over_step_cnt++;			
-			m3rt::M3_DEBUG("WARNING: Previous period: %f ns overrun\n", (double)count2nano(dt)-(double)count2nano(tick_period));
+			m3sys->over_step_cnt++;	
+			int dt_us = static_cast<int>((count2nano(dt)/1000));
+			int tick_period_us = static_cast<int>((count2nano(tick_period)/1000));
+			int overrun_us = dt_us-tick_period_us; 
+			m3rt::M3_WARN("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n",overrun_us, dt_us,tick_period_us);
 			if (m3sys->over_step_cnt > 10)
 			{
 			  m3rt::M3_WARN("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n",step_cnt);
-			  m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period));
+			  m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period),(double)count2nano(dt));
 			  tick_period=dt;
 			  rt_task_make_periodic(task, end + tick_period,tick_period);
-			  safeop_only = true;
+			  //safeop_only = true;
 			}
 		} else {
 		    if (m3sys->over_step_cnt > 0)
@@ -179,17 +188,21 @@ bool M3RtSystem::Startup()
 #ifdef __RTAI__
 	hst=rt_thread_create((void*)rt_system_thread, (void*)this, 1000000);
 #else		
-	pthread_create((pthread_t *)&hst, NULL, (void *(*)(void *))rt_system_thread, (void*)this);
+	long hst=pthread_create((pthread_t *)&hst, NULL, (void *(*)(void *))rt_system_thread, (void*)this);
 #endif
-	for (int i=0;i<50;i++)
+	if(!hst){ //A.H : Added earlier check
+	  m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+	  return false;
+	}
+	for (int i=0;i<1000;i++)
 	{
-		usleep(100000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.
+		usleep(100000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
 		if (sys_thread_active)
 			break;
 	}
 	if (!sys_thread_active)
 	{
-		m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+		m3rt::M3_INFO("Startup of M3RtSystem thread failed, thread still not active.\n");
 		return false;
 	}
 	//Debugging
@@ -260,7 +273,9 @@ bool M3RtSystem::Shutdown()
 bool M3RtSystem::StartupComponents()
 {
 #ifdef __RTAI__
-	if (shm_ec = (M3EcSystemShm*) rtai_malloc (nam2num(SHMNAM_M3MKMD),1))
+	M3_INFO("Getting Kernel EC components.\n");
+	shm_ec = (M3EcSystemShm*) rtai_malloc (nam2num(SHMNAM_M3MKMD),1);
+	if (shm_ec)
 		M3_PRINTF("Found %d active M3 EtherCAT slaves\n",shm_ec->slaves_active);
 	else
 	{
@@ -287,7 +302,7 @@ bool M3RtSystem::StartupComponents()
 #endif	
 	if (!ext_sem)
 	{
-		M3_ERR("Unable to find the M3LEXT semaphore.\n",0);
+		M3_ERR("Unable to find the M3LEXT semaphore (ext_sem:[%d]).\n",&ext_sem);
 		return false;
 	}
 	M3_INFO("Reading component config files ...\n"); 
@@ -479,6 +494,7 @@ int M3RtSystem::GetComponentState(int idx)
 {
 	if (idx<GetNumComponents()&&idx>=0)
 		return GetComponent(idx)->GetState();
+	return -1;
 }
 
 void M3RtSystem::PrettyPrint()
@@ -526,7 +542,7 @@ void M3RtSystem::PrettyPrintComponents()
 	PrettyPrint();
 	for(int i=0;i<GetNumComponents();i++)
 		GetComponent(i)->PrettyPrint();
-	M3_PRINTF("\n\n\n",0);
+	M3_PRINTF("\n\n\n");
 }
 
 void M3RtSystem::PrettyPrintComponent(int idx)
@@ -537,7 +553,6 @@ void M3RtSystem::PrettyPrintComponent(int idx)
 	
 bool M3RtSystem::Step(bool safeop_only)
 {
-	int i;
 #ifdef __RTAI__
 	RTIME start, end, dt,start_c,end_c, start_p,end_p;
 #else
@@ -579,7 +594,9 @@ bool M3RtSystem::Step(bool safeop_only)
 	if (safeop_only) // in case we are too slow
 	{
 	  for(int i=0;i<GetNumComponents();i++)
-	    GetComponent(i)->SetStateSafeOp();
+	    if(GetComponent(i)->IsStateError()){
+	      GetComponent(i)->SetStateSafeOp();
+	    }
 	  
 	}
 	
@@ -620,7 +637,7 @@ bool M3RtSystem::Step(bool safeop_only)
 #else
 	int64_t ts=getNanoSec()/1000;
 #endif
-	for(i=0;i<GetNumComponents();i++) 
+	for(int i=0;i<GetNumComponents();i++) 
 		GetComponent(i)->SetTimestamp(ts);
 #ifdef __RTAI__
 	start_p = rt_get_cpu_time_ns();
@@ -648,7 +665,7 @@ bool M3RtSystem::Step(bool safeop_only)
 	//Set Status on non-EC components
 	for (int j=0; j<=MAX_PRIORITY; j++)
 	{
-		for(i=0; i<m3rt_list.size(); i++)
+		for(int i=0; i<m3rt_list.size(); i++)
 		{
 			if (m3rt_list[i]->GetPriority() == j)
 			{
@@ -683,7 +700,7 @@ bool M3RtSystem::Step(bool safeop_only)
 #endif
 	for (int j=MAX_PRIORITY; j>=0; j--)
 	{
-		for(i=0; i<m3rt_list.size(); i++)
+		for(int i=0; i<m3rt_list.size(); i++)
 		{
 				if (m3rt_list[i]->GetPriority() == j)
 				{
