@@ -21,15 +21,12 @@ import time
 import xmlrpclib
 import SocketServer
 import SimpleXMLRPCServer
-import os
-import glob
 import sys
 import ctypes
 from m3.toolbox_core import M3Exception
 flags = sys.getdlopenflags()
 sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL) #allow exceptions to be passed between dll's
 import m3.m3rt_system
-import m3.component_base_pb2 as m3b
 import socket
 import m3.rt_proxy as m3p
 import m3.toolbox_core as m3t
@@ -99,12 +96,13 @@ class client_thread(Thread):
         if self.make_all_op_no_shm:
             print("M3 INFO: make operational all (no shm)")
             self.proxy.make_operational_all()
-        time.sleep(2.0)
+        for i in xrange(20):
+            time.sleep(0.1)
     def run(self):
         try:
             self.stop_event.wait(timeout=None)
-        except Exception,e:
-            print e
+        finally:
+	    print "M3 INFO: Closing Client Thread."
             self.proxy.make_safe_operational_all()        
 
 class M3Server(Thread):
@@ -123,7 +121,7 @@ class M3Server(Thread):
             print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
             self.server.serve_forever()
         finally:
-            print "M3 INFO: Closing Socket"
+            print "M3 INFO: Closing Socket."
             self.server.socket.close()
 # ################################################################################
 
@@ -138,87 +136,89 @@ start_data_svc = False
 m3server = None
 m3client_thread = None
 
-if __name__ == '__main__':
-    for idx in range(1,len(sys.argv)):
-        if sys.argv[idx]=='-host' or sys.argv[idx]=='-h' and idx<len(sys.argv)-1:
-            host=sys.argv[idx+1]
-        elif sys.argv[idx]=='-port' or sys.argv[idx]=='-p' and idx<len(sys.argv)-1:
-            port=int(sys.argv[idx+1])
-        elif sys.argv[idx]=='-make_op_all' or sys.argv[idx]=='-m':
-            make_op_all = True
-        elif sys.argv[idx]=='-make_op_all_shm' or sys.argv[idx]=='-s':
-            make_op_all_shm = True
-        elif sys.argv[idx]=='-make_op_all_no_shm' or sys.argv[idx]=='-n':
-            make_op_all_no_shm = True
-        elif sys.argv[idx]=='-start_data_svc' or sys.argv[idx]=='-d':
-            start_data_svc = True
-        elif idx == 1 or sys.argv[idx]=='-help' or sys.argv[idx]=='--help':
-            print ''
-            print 'M3RT valid arguments:'
-            print '   -h, -host <hostname>   specify hostname for server'
-            print '   -p, -port <port>       specify port number for server'
-            print '   -m, -make_op_all       launch server and place all components in mode Operational'
-            print '   -s, -make_op_all_shm       launch server and place shared memory components in mode Operational'
-            print '   -n, -make_op_all_no_shm       launch server and place all components except shared memory in mode Operational'
-            print '   -d, -start_data_svc    start data service'
-            print '   -help                  this help screen'
-            print ''
-            sys.exit()
+
+for idx in range(1,len(sys.argv)):
+    if sys.argv[idx]=='-host' or sys.argv[idx]=='-h' and idx<len(sys.argv)-1:
+        host=sys.argv[idx+1]
+    elif sys.argv[idx]=='-port' or sys.argv[idx]=='-p' and idx<len(sys.argv)-1:
+        port=int(sys.argv[idx+1])
+    elif sys.argv[idx]=='-make_op_all' or sys.argv[idx]=='-m':
+        make_op_all = True
+	make_op_all_no_shm = False
+    elif sys.argv[idx]=='-make_op_all_shm' or sys.argv[idx]=='-s':
+        make_op_all_shm = True
+	make_op_all_no_shm = False
+    elif sys.argv[idx]=='-make_op_all_no_shm' or sys.argv[idx]=='-n':
+        make_op_all_no_shm = True
+    elif sys.argv[idx]=='-start_data_svc' or sys.argv[idx]=='-d':
+        start_data_svc = True
+    elif idx == 1 or sys.argv[idx]=='-help' or sys.argv[idx]=='--help':
+        print ''
+        print 'M3RT valid arguments:'
+        print '   -h, -host <hostname>   specify hostname for server'
+        print '   -p, -port <port>       specify port number for server'
+        print '   -m, -make_op_all       launch server and place all components in mode Operational'
+        print '   -s, -make_op_all_shm       launch server and place shared memory components in mode Operational'
+        print '   -n, -make_op_all_no_shm       launch server and place all components except shared memory in mode Operational'
+        print '   -d, -start_data_svc    start data service'
+        print '   -help                  this help screen'
+        print ''
+        sys.exit()
+
+try:
+    svc=m3.m3rt_system.M3RtService()
+    svc.Startup() # Let client start rt_system
+    for i in xrange(20):
+        time.sleep(0.1)
+    # Instanciate the server
+    while not svc.IsServiceThreadActive():
+        time.sleep(0.1)
+    try:
+        m3server = M3Server()
+    except Exception,e:
+        print "M3 EROOR: Error creating the server:",e
+        raise M3Exception("M3 RPC Server failed to start")
+    
+    # Start the server
+    m3server.start()
     
     try:
-        svc=m3.m3rt_system.M3RtService()
-        svc.Startup() # Let client start rt_system
-        for i in xrange(20):
-            time.sleep(0.1)
-        # Instanciate the server
-        while not svc.IsServiceThreadActive():
-            time.sleep(0.1)
-        try:
-            m3server = M3Server()
-        except Exception,e:
-            print "M3 EROOR: Error creating the server:",e
-            raise M3Exception("M3 RPC Server failed to start")
-        
-        # Start the server
-        m3server.start()
-        
-        try:
-            m3client_thread = client_thread(make_op_all , make_op_all_shm , make_op_all_no_shm,start_data_svc)
-        except Exception,e:
-            print "M3 ERROR: Error creating the client thread:",e
-            raise M3Exception("Client Thread failed to start")
-        
-        m3client_thread.start()
-        print "M3 INFO: M3RT is now running"
-        while m3server.is_alive():
-            try:
-                m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
-            except KeyboardInterrupt:
-                print 'M3 INFO: Shutdown signal caught'
-                break
+        m3client_thread = client_thread(make_op_all , make_op_all_shm , make_op_all_no_shm,start_data_svc)
     except Exception,e:
-        print 'M3 ERROR:',e    
-    #if svc.IsRtSystemRunning():
-    #    print "Shutting down M3 Services"
-    #    svc.Shutdown() #it's in the destructor !
-    if m3client_thread and m3client_thread.is_alive():
-        print "M3 INFO: Shutting down Client Thread"
-        m3client_thread.stop_event.set()
-        while m3client_thread.is_alive():
-            print 'M3 INFO: Waiting for client thread to shutdown'
-            time.sleep(0.2)
-        print 'M3 INFO: Client thread exited normally'
-        
-    if m3server and m3server.is_alive():
-        print "M3 INFO: Shutting down M3 RPC Server"
-        m3server.server.shutdown()
-        while m3server.is_alive():
-            print 'M3 INFO: Waiting for M3 RPC Server to shutdown'
-            time.sleep(0.2)
-        print 'M3 INFO: M3 RPC Server exited normally'
-    time.sleep(0.5)
-    print("M3 INFO: Exiting")
-    #exit()
+        print "M3 ERROR: Error creating the client thread:",e
+        raise M3Exception("Client Thread failed to start")
+    
+    m3client_thread.start()
+    #print "M3 INFO: M3RT is now running"
+    while m3server.is_alive():
+        try:
+            m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
+        except KeyboardInterrupt:
+            print 'M3 INFO: Shutdown signal caught.'
+            break
+except Exception,e:
+    print 'M3 ERROR:',e    
+#if svc.IsRtSystemRunning():
+#    print "Shutting down M3 Services"
+#    svc.Shutdown() #it's in the destructor !
+if m3client_thread and m3client_thread.is_alive():
+    print "M3 INFO: Shutting down Client Thread."
+    m3client_thread.stop_event.set()
+    while m3client_thread.is_alive():
+        print 'M3 INFO: Waiting for client thread to shutdown.'
+        time.sleep(0.2)
+    print 'M3 INFO: Client thread exited normally'
+    
+if m3server and m3server.is_alive():
+    print "M3 INFO: Shutting down M3 RPC Server"
+    m3server.server.shutdown()
+    while m3server.is_alive():
+        print 'M3 INFO: Waiting for M3 RPC Server to shutdown.'
+        time.sleep(0.2)
+    print 'M3 INFO: M3 RPC Server exited normally.'
+time.sleep(0.5)
+print("M3 INFO: Exiting")
+#exit()
 # ################################################################################
     
     

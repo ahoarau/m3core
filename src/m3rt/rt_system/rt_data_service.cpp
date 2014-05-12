@@ -78,7 +78,7 @@ void data_thread(void * arg)
 		}
 #ifdef __RTAI__
 		//rt_task_wait_period(); //A.H Just go as fast as you can (No locks for now) TODO: test this more
-		rt_sleep(4000); //250 Hz
+		rt_sleep(nano2count(4000000)); //250 Hz
 #else
 		usleep(10000); //100hz
 #endif
