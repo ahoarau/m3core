@@ -132,11 +132,11 @@ void * rt_system_thread(void * arg)
 		end = nano2count(rt_get_cpu_time_ns());
 		dt=end-start;
 
-		if (tmp_cnt++ == 1000)
+		/*if (tmp_cnt++ == 1000)
 		{
 		  M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
 		  tmp_cnt = 0;
-		}
+		}*/
 		/*
 		Check the time it takes to run components, and if it takes longer
 		than our period, make us run slower. Otherwise this task locks
