@@ -24,6 +24,7 @@ import SimpleXMLRPCServer
 import sys
 import ctypes
 from m3.toolbox_core import M3Exception
+
 flags = sys.getdlopenflags()
 sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL) #allow exceptions to be passed between dll's
 import m3.m3rt_system
@@ -32,6 +33,24 @@ import m3.rt_proxy as m3p
 import m3.toolbox_core as m3t
 from threading import Thread
 from threading import Event
+## Handle Ctrl+c even though ros is launched
+import signal
+stop_signal=Event()
+
+#try:
+#    import rospy
+#    from rospy.exceptions import *
+#    rospy.get_master()
+#    rospy.init_node("m3rt_server",disable_signals=True)
+#    use_ros = True
+#except Exception,e:
+#    print e,": cannot load rospy, continuing w/o ROS."
+    
+def stop_program(signal, frame):
+    print "STOP SIGNAL : ",signal,"|frame:",frame
+    stop_signal.set()
+
+
 
 class MyTCPServer(SocketServer.TCPServer):
     def server_bind(self):
@@ -180,6 +199,7 @@ try:
         raise M3Exception("M3 RPC Server failed to start")
     
     # Start the server
+    print "M3 INFO: Starting M3RT"
     m3server.start()
     
     try:
@@ -187,15 +207,18 @@ try:
     except Exception,e:
         print "M3 ERROR: Error creating the client thread:",e
         raise M3Exception("Client Thread failed to start")
-    
+    print "M3 INFO: Starting client thread"
     m3client_thread.start()
-    #print "M3 INFO: M3RT is now running"
-    while m3server.is_alive():
+    print "M3 INFO: M3RT is now running"
+    # Handling ctrl+c when ros is launched
+    signal.signal(signal.SIGINT, stop_program)
+    while not stop_signal.is_set():
         try:
             m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
+            print "stop signal : ",stop_signal.is_set()
         except KeyboardInterrupt:
             print 'M3 INFO: Shutdown signal caught.'
-            break
+    print "M3 INFO: Shutdown initiated."
 except Exception,e:
     print 'M3 ERROR:',e    
 #if svc.IsRtSystemRunning():
