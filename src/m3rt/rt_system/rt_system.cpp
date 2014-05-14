@@ -57,7 +57,7 @@ unsigned long long getNanoSec (void)  {
 void * rt_system_thread(void * arg)
 {
 	M3RtSystem * m3sys = (M3RtSystem *)arg;
-	sys_thread_end=false;
+	sys_thread_end=true; //gonna be at true is startup fails=> no wait
 	
 	
 	M3_INFO("Starting M3RtSystem real-time thread\n");
@@ -118,6 +118,7 @@ void * rt_system_thread(void * arg)
 	int tmp_cnt = 0;
 	m3sys->over_step_cnt = 0;
 	sys_thread_active=true;
+	sys_thread_end=false;
 	while(!sys_thread_end)
 	{
 #ifdef __RTAI__
@@ -191,9 +192,9 @@ bool M3RtSystem::Startup()
 #else		
 	long hst=pthread_create((pthread_t *)&hst, NULL, (void *(*)(void *))rt_system_thread, (void*)this);
 #endif
-	if(!hst){ //A.H : Added earlier check
-	  m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
-	  return false;
+	if(!hst || sys_thread_end==true){ //A.H : Added earlier check
+		m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+		return false;
 	}
 	for (int i=0;i<1000;i++)
 	{
