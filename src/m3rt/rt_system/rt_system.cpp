@@ -132,11 +132,11 @@ void * rt_system_thread(void * arg)
 		end = nano2count(rt_get_cpu_time_ns());
 		dt=end-start;
 
-		if (tmp_cnt++ == 1000)
+		/*if (tmp_cnt++ == 1000)
 		{
 		  M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
 		  tmp_cnt = 0;
-		}
+		}*/
 		/*
 		Check the time it takes to run components, and if it takes longer
 		than our period, make us run slower. Otherwise this task locks
@@ -154,7 +154,8 @@ void * rt_system_thread(void * arg)
 			  m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period),(double)count2nano(dt));
 			  tick_period=dt;
 			  rt_task_make_periodic(task, end + tick_period,tick_period);
-			  //safeop_only = true;
+			  safeop_only = true;
+			  m3sys->over_step_cnt=0;
 			}
 		} else {
 		    if (m3sys->over_step_cnt > 0)
@@ -302,7 +303,7 @@ bool M3RtSystem::StartupComponents()
 #endif	
 	if (!ext_sem)
 	{
-		M3_ERR("Unable to find the M3LEXT semaphore (ext_sem:[%d]).\n",&ext_sem);
+		M3_ERR("Unable to find the M3LEXT semaphore (probably hasn't been cleared properly).\n");
 		return false;
 	}
 	M3_INFO("Reading component config files ...\n"); 

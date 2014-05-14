@@ -35,22 +35,9 @@ from threading import Thread
 from threading import Event
 ## Handle Ctrl+c even though ros is launched
 import signal
-stop_signal=Event()
-
-#try:
-#    import rospy
-#    from rospy.exceptions import *
-#    rospy.get_master()
-#    rospy.init_node("m3rt_server",disable_signals=True)
-#    use_ros = True
-#except Exception,e:
-#    print e,": cannot load rospy, continuing w/o ROS."
-    
+stop_signal=Event() 
 def stop_program(signal, frame):
-    print "STOP SIGNAL : ",signal,"|frame:",frame
     stop_signal.set()
-
-
 
 class MyTCPServer(SocketServer.TCPServer):
     def server_bind(self):
@@ -106,14 +93,14 @@ class client_thread(Thread):
         self.proxy = m3p.M3RtProxy(rpc_port=port)
         self.proxy.start(start_data_svc, False)  
         if self.make_all_op:
-            print("M3 INFO: make operational all+shm")
+            print("M3 INFO: Launched with option -make operational all+shm")
             self.proxy.make_operational_all()
             self.proxy.make_operational_all_shm()
         if self.make_all_op_shm:  
-            print("M3 INFO: make operational shm only")          
+            print("M3 INFO: Launched with option -make operational shm only")          
             self.proxy.make_operational_all_shm()        
         if self.make_all_op_no_shm:
-            print("M3 INFO: make operational all (no shm)")
+            print("M3 INFO: Launched with option -make operational all (no shm)")
             self.proxy.make_operational_all()
         for i in xrange(20):
             time.sleep(0.1)
@@ -121,8 +108,9 @@ class client_thread(Thread):
         try:
             self.stop_event.wait(timeout=None)
         finally:
-	    print "M3 INFO: Closing Client Thread."
-            self.proxy.make_safe_operational_all()        
+            print "M3 INFO: Closing Client Thread."
+            self.proxy.make_safe_operational_all()
+            self.proxy.stop()    
 
 class M3Server(Thread):
     def __init__(self):
@@ -189,7 +177,7 @@ try:
     svc.Startup() # Let client start rt_system
     for i in xrange(20):
         time.sleep(0.1)
-    # Instanciate the server
+    # Instantiate the server
     while not svc.IsServiceThreadActive():
         time.sleep(0.1)
     try:
@@ -199,7 +187,7 @@ try:
         raise M3Exception("M3 RPC Server failed to start")
     
     # Start the server
-    print "M3 INFO: Starting M3RT"
+    print "M3 INFO: Starting M3Rt."
     m3server.start()
     
     try:
@@ -207,33 +195,32 @@ try:
     except Exception,e:
         print "M3 ERROR: Error creating the client thread:",e
         raise M3Exception("Client Thread failed to start")
-    print "M3 INFO: Starting client thread"
+    print "M3 INFO: Starting client thread."
     m3client_thread.start()
-    print "M3 INFO: M3RT is now running"
+    print "M3 INFO: M3Rt is now running."
     # Handling ctrl+c when ros is launched
     signal.signal(signal.SIGINT, stop_program)
     while not stop_signal.is_set():
         try:
             m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
-            print "stop signal : ",stop_signal.is_set()
         except KeyboardInterrupt:
             print 'M3 INFO: Shutdown signal caught.'
     print "M3 INFO: Shutdown initiated."
 except Exception,e:
     print 'M3 ERROR:',e    
-#if svc.IsRtSystemRunning():
-#    print "Shutting down M3 Services"
-#    svc.Shutdown() #it's in the destructor !
+if svc.IsRtSystemRunning():
+    print "M3 INFO: Shutting down M3Service."
+    svc.Shutdown() #it's in the destructor !
 if m3client_thread and m3client_thread.is_alive():
     print "M3 INFO: Shutting down Client Thread."
     m3client_thread.stop_event.set()
     while m3client_thread.is_alive():
         print 'M3 INFO: Waiting for client thread to shutdown.'
         time.sleep(0.2)
-    print 'M3 INFO: Client thread exited normally'
+    print 'M3 INFO: Client thread exited normally.'
     
 if m3server and m3server.is_alive():
-    print "M3 INFO: Shutting down M3 RPC Server"
+    print "M3 INFO: Shutting down M3 RPC Server."
     m3server.server.shutdown()
     while m3server.is_alive():
         print 'M3 INFO: Waiting for M3 RPC Server to shutdown.'

@@ -52,7 +52,7 @@ static void* service_thread(void * arg)
 
 M3RtService::~M3RtService()
 {
-	Shutdown();
+	//Shutdown(); //A.H: Let's call it ourselves
 }
 bool M3RtService::IsServiceThreadActive()
 {
@@ -86,15 +86,15 @@ bool M3RtService::Startup()
 
 void M3RtService::Shutdown()
 {
-	m3rt::M3_INFO("M3RtService Shutdown\n");
+	m3rt::M3_INFO("Begin shutdown of M3RtService...\n");
 	svc_thread_end=true;
 	void *end;
 	pthread_join((pthread_t)hlt, &end);
 
 	if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
-	m3rt::M3_INFO("M3RtService: Removing RTSystem\n");
+	m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
 	RemoveRtSystem();
-	m3rt::M3_INFO("M3RtService Shutdown Correctly\n");
+	m3rt::M3_INFO("Shutdown of M3RtService complete.\n");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
