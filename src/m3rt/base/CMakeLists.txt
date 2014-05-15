@@ -13,7 +13,7 @@ message("RTAI:${RTAI}")
 #set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 if(RTAI)
 find_package(RTAI REQUIRED)
 add_definitions(-D__RTAI__)
