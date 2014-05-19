@@ -617,17 +617,23 @@ class M3ScopeN():
                         self.y.append([0.0]*xwidth)
                 self.x=range(xwidth)
                 self.g = Gnuplot.Gnuplot(persist = 1)                
-                self.g('set data style lines')
-                self.g('set terminal x11 noraise')
+                #self.g('set data style linespoints')
+                self.g('set term x11 noraise')
+                self.g.title(title)
+            
                 if yrange is not None:
                         self.g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
+                self.data = []
+                for i in range(self.n):
+                    self.data.append(Gnuplot.Data(self.x,self.y[i]))
         def plot(self,y):
-                d=[]
                 for i in range(self.n):
                         self.y[i].pop(0)
                         self.y[i].append(y[i])
-                        d.append(Gnuplot.Data(self.x,self.y[i]))
-                self.g.plot(*d)
+                        self.data[i] = Gnuplot.Data(self.x,self.y[i],with_="lines")
+                self.g.plot(*self.data)
+        def stop(self):
+            self.g.close()
 # #############################################################################################	
 
 class M3Scope():
