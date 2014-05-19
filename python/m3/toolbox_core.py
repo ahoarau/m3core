@@ -637,31 +637,35 @@ class M3ScopeN():
 # #############################################################################################	
 
 class M3Scope():
-        def __init__(self,xwidth=200,yrange=None):
+        def __init__(self,xwidth=200,yrange=None,title='M3Scope'):
                 self.y=[0.0]*xwidth
                 self.x=range(xwidth)
                 self.g=None
                 self.yrange=yrange
+                self.title = title
         def plot(self,val):
                 self.y.pop(0)
                 self.y.append(val)
                 self.g=gplot(self.y,self.x,self.g,self.yrange)
+                self.g.title(self.title)
         def print_to_file(self,filename):
                 self.g.hardcopy(filename,color=1)
 
 class M3Scope2():
-        def __init__(self,xwidth=200,yrange=None):
+        def __init__(self,xwidth=200,yrange=None,title='M3Scope2'):
                 self.y1=[0.0]*xwidth
                 self.y2=[0.0]*xwidth
                 self.x=range(xwidth)
                 self.g=None
                 self.yrange=yrange
+                self.title=title
         def plot(self,yy1,yy2):
                 self.y1.pop(0)
                 self.y1.append(yy1)
                 self.y2.pop(0)
                 self.y2.append(yy2)
                 self.g=gplot2(self.y1,self.y2,self.x,self.g,self.yrange)
+                self.g.title(self.title)
         def print_to_file(self,filename):
                 self.g.hardcopy(filename,color=1)
 # ####################### Inplace  Operations ##########################

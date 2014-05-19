@@ -40,7 +40,7 @@ class M3Component:
 
     def read_config(self):
         """Assumes that the config file is shared between the 
-	server and proxy (NFS, etc)"""
+    server and proxy (NFS, etc)"""
         try:
             f=file(self.config_name,'r')
             self.config= yaml.safe_load(f.read())
@@ -52,7 +52,7 @@ class M3Component:
 
     def write_config(self):
         """Assumes that the config file is shared between the 
-	server and proxy (NFS, etc)"""
+    server and proxy (NFS, etc)"""
         if self.config.has_key('param'):
             self.load_config_from_attr(self.config['param'],self.param)
         try:
@@ -68,34 +68,34 @@ class M3Component:
         """Load message fields from config dictionary"""
         for k in config:
             if hasattr(obj,k):
-		if type(config[k])==list: #repeated field
+                if type(config[k])==list: #repeated field
                     attr=getattr(obj,k)
                     for i in range(len(config[k])):
                         if i<len(attr):
                             attr[i]=config[k][i]
                         else:
                             attr.append(config[k][i])
-		elif type(config[k])==dict: #Nested structure
-		    self.load_attr_from_config(config[k],getattr(obj,k))
+                elif type(config[k])==dict: #Nested structure.
+                     self.load_attr_from_config(config[k],getattr(obj,k))
                 else:
-                    setattr(obj,k,config[k])
+                     setattr(obj,k,config[k])
 
-		    
+            
     def load_config_from_attr(self,config,obj):
-	"""Load config dictionary from message fields"""
-	for k in config:
-	    if hasattr(obj,k):
-		    a=getattr(obj,k)
-		    if  hasattr(a,'__setitem__'): #repeated buf:
-			    config[k]=list(a)
-		    elif hasattr(a,'__getitem__'): # type google.protobuf.reflection.RepeatedCompositeFieldContainer
-			    for i in range(len(a)):
-				    self.load_config_from_attr(config[k][i],a[i])        
-		    elif hasattr(a,'HasField'): #A protobuf struct
-			    self.load_config_from_attr(config[k],a)
-		    else:
-			    config[k]=a	
-					
+        """Load config dictionary from message fields"""
+        for k in config:
+            if hasattr(obj,k):
+                a=getattr(obj,k)
+                if  hasattr(a,'__setitem__'): #repeated buf:
+                    config[k]=list(a)
+                elif hasattr(a,'__getitem__'): # type google.protobuf.reflection.RepeatedCompositeFieldContainer
+                    for i in range(len(a)):
+                        self.load_config_from_attr(config[k][i],a[i])        
+                elif hasattr(a,'HasField'): #A protobuf struct
+                    self.load_config_from_attr(config[k],a)
+            else:
+                config[k]=a    
+                    
 
     def update_status(self):
         """Called after every status msg recvd from proxy. Child may override if special processing required."""
