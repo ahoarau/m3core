@@ -12,7 +12,7 @@ m3rt_server_debug
 m3rt_server_kill
 m3rt_server_run
 m3rt_timestats_run
-unistall_m3
+uninstall_m3
 )
 
 message("Scripts:${M3RTSCRIPTS}")
