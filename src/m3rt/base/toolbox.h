@@ -22,7 +22,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <string>
-#include <m3rt/base/m3rt_def.h>
+#include "m3rt/base/m3rt_def.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
 #include <fstream>
@@ -37,13 +37,14 @@ void M3_ERR(const char * format, ...);
 void M3_INFO(const char * format, ...);
 void M3_DEBUG(const char * format, ...);
 void BannerPrint(int width, const char *format, ...);
+bool GetEnvironmentVariable(const char * var, vector<string>& result);
 bool GetEnvironmentVar(const char * var, string &s);
 vector<mReal> YamlReadVectorM(string s);
 vector<string> YamlReadVectorString(string s);
 vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 unsigned int xtoi(const char* xs);
-void WriteYamlDoc(const char * filename, YAML::Emitter &doc);
-void GetYamlDoc(const char * filename, YAML::Node & doc);
+void WriteYamlDoc(const char * filename, YAML::Emitter &doc,string subdir=string("/robot_config/"));
+void GetYamlDoc(const char * filename, YAML::Node & doc,string subdir=string("/robot_config/"));
 void operator >> (const YAML::Node& node, vector<mReal> & v);
 }
 

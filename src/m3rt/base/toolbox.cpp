@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with M3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <m3rt/base/toolbox.h>
+#include "m3rt/base/toolbox.h"
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h> 
@@ -63,11 +63,11 @@ namespace m3rt
 	FILE * pFile = NULL;
 	string path;
 	
-	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
+	/*if (GetEnvironmentVariable(M3_ROBOT_ENV_VAR, path))
 	{		
 		path.append(LOG_FILE);
 		pFile = fopen (path.c_str(),"a");
-	}	
+	}*/
    
 	 char buffer[256];
 	 va_list args;
@@ -144,6 +144,32 @@ void BannerPrint(int width, const char *format, ...)
 	M3_PRINTF("\n");
 }
 
+bool GetEnvironmentVariable(const char * var,vector<string>& result)
+{
+    //static vector<string> result;
+    result.clear();
+    if( !result.empty() )
+        return false;
+
+    const std::string PATH = getenv( var );
+    const char delimiter = ':';
+
+    if( PATH.empty() )
+        return false;
+
+    size_t previous = 0;
+    size_t index = PATH.find( delimiter );
+    while( index != string::npos )
+    {
+        result.push_back( PATH.substr(previous, index-previous));
+        previous=index+1;
+        index = PATH.find( delimiter, previous );
+    }
+    result.push_back( PATH.substr(previous) );
+
+    return true;
+}
+
 bool GetEnvironmentVar(const char * var, string &s)
 {
 	char *p=getenv(var);
@@ -216,34 +242,49 @@ unsigned int xtoi(const char* xs)
 	return n;
 }
 
-void WriteYamlDoc(const char * filename, YAML::Emitter &doc)
+void WriteYamlDoc(const char * filename, YAML::Emitter &doc,string sub_dir)
 {
 	string s(filename);
 	string path;
-	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
-	{		
-		path.append("/robot_config/");
-		path.append(s);
-	}
+        vector<string> vpath;
+	if (GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath))
+        {
+                for(size_t i=0; i<vpath.size(); i++)
+                {
+                        vpath[i]+=sub_dir;
+                        vpath[i]+=s;
+                }
+        }
+        path=vpath[0];
 	std::ofstream fout(path.c_str());
 	fout << doc.c_str();
 	fout.close();
 }
 
-void GetYamlDoc(const char * filename, YAML::Node & doc)
+void GetYamlDoc(const char * filename, YAML::Node & doc,string sub_dir)
 {	
 	string s(filename);
 	string path;
-	
-	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
+        vector<string> vpath;
+	if (GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath))
+        {
+                for(size_t i=0; i<vpath.size(); i++)
+                {
+                        vpath[i]+=sub_dir;
+                        vpath[i]+=s;
+                }
+        }
+        path=vpath[0];
+        cout<<"path:"<<path<<endl;
+	/*if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
 	{		
 		path.append("/robot_config/");
 		path.append(s);
-	}
+	}*/
 	ifstream fin(path.c_str());
 	if (fin.fail())
 	{		
-		M3_ERR("could not read %s \n", path.c_str());	
+		M3_ERR("Could not read %s \n", path.c_str());	
 	}
 
    	YAML::Parser parser(fin);

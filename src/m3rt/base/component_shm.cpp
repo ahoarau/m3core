@@ -19,7 +19,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#include <m3rt/base/component_shm.h>
+#include "m3rt/base/component_shm.h"
 
 namespace m3rt
 {

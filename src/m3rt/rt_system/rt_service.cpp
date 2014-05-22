@@ -60,6 +60,7 @@ bool M3RtService::IsServiceThreadActive()
 }
 bool M3RtService::Startup()
 {
+        factory.Startup();
 #ifdef __RTAI__
 	rt_allow_nonroot_hrt();
 #endif

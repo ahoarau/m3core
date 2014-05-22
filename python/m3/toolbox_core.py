@@ -149,21 +149,33 @@ def get_int(default=None):
 
 def get_m3_ros_config_path():
         try:
-                return os.environ['M3_ROBOT']+'/ros_config/'
+                vpath=os.environ['M3_ROBOT']
+                vpath = vpath.split(':')
+                #Tmp : just get the first one
+                path = vpath[0]+'/ros_log/'
+                return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
         return ''
 
 def get_m3_config_path():
         try:
-                return os.environ['M3_ROBOT']+'/robot_config/'
+                vpath=os.environ['M3_ROBOT']
+                vpath = vpath.split(':')
+                #Tmp : just get the first one
+                path = vpath[0]+'/robot_config/'
+                return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
         return ''
 
 def get_m3_log_path():
         try:
-                return os.environ['M3_ROBOT']+'/robot_log/'
+                vpath=os.environ['M3_ROBOT']
+                vpath = vpath.split(':')
+                #Tmp : just get the first one
+                path = vpath[0]+'/robot_log/'
+                return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
         return ''
@@ -894,7 +906,7 @@ def get_log_dir(logname,logpath=None):
         if logpath is not None:
                 return logpath+'/'+logname
         try:
-                logpath=os.environ['M3_ROBOT']+'/robot_log'
+                logpath=get_m3_log_path()
                 if not os.path.isdir(logpath):
                         print 'Directory does not exist: '+logpath
                         return None

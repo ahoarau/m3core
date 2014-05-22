@@ -45,7 +45,7 @@ extern "C" {
 	
 class M3RtService{
 public:
-	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){factory.Startup();}
+	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){}
 	~M3RtService();
 	bool Startup();
 	void Shutdown();

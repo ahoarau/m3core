@@ -83,24 +83,10 @@ bool M3RtRosService::Startup()
 	}
 	
 	string s("ros/ros.yml");
+        
 	string path;
-	
-	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
-	{		
-		path.append("/robot_config/");
-		path.append(s);
-	}
-	ifstream fin(path.c_str());
-	if (fin.fail())
-	{		
-		M3_ERR("Could not read %s \n", path.c_str());	
-		return false;
-	}	
-
-   	YAML::Parser parser(fin);
-   	YAML::Node doc;
-   	parser.GetNextDocument(doc);
-	fin.close();
+        YAML::Node doc;
+	m3rt::GetYamlDoc(s,doc);
 	string name;
 	
 	ros::VP_string remappings;

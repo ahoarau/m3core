@@ -35,6 +35,7 @@ class M3RtProxy:
 	start/stop the run-time system, create a DataService connection,
 	and publish/subscribe desired components to the DataService.
 	The DataService uses a faster TCP/IP socket on port 10000"""
+		self.stopped = False
 		self.host=host
 		self.verbose=verbose
 		if host is None:
@@ -59,8 +60,7 @@ class M3RtProxy:
 		self.nsl=0
 		self.data_svc=None
 		self.ros_svc =None
-		self.stopped = False
-		self.use_timeout=False
+		self.use_timeout=True
 		try:
 			self.proxy = xmlrpclib.ServerProxy('http://'+self.host+':'+str(self.rpc_port))
 			if self.verbose: print 'Starting M3 RPC Client at ',self.host, 'on Port ',self.rpc_port,'...'
@@ -311,7 +311,10 @@ class M3RtProxy:
 	def start_log_service(self,logname, sample_freq_hz=100,samples_per_file=100,logpath=None,verbose=True):
 		"""Start logging registered components to directory logname"""
 		if logpath is None:
-			logpath=os.environ['M3_ROBOT']+'/robot_log'
+			logpath=os.environ['M3_ROBOT']
+			logpath = logpath.split(':')
+			#Tmp : just get the first one
+			logpath = logpath[0]++'/robot_log'
 		if not self.proxy.IsRtSystemRunning():
 			raise m3t.M3Exception('Cannot start log. M3RtSystem is not yet running on the server')
 		return self.proxy.start_log_service(logname,float(sample_freq_hz),self.log_names,int(samples_per_file),logpath,verbose)

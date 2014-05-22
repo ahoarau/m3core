@@ -140,6 +140,7 @@ make_op_all_shm = False
 make_op_all_no_shm = True
 start_data_svc = False
 
+svc = None
 m3server = None
 m3client_thread = None
 
@@ -207,8 +208,9 @@ try:
             print 'M3 INFO: Shutdown signal caught.'
     print "M3 INFO: Shutdown initiated."
 except Exception,e:
-    print 'M3 ERROR:',e    
-if svc.IsRtSystemRunning():
+    print 'M3 ERROR:',e  
+    
+if svc:
     print "M3 INFO: Shutting down M3Service."
     svc.Shutdown() #it's in the destructor !
 if m3client_thread and m3client_thread.is_alive():

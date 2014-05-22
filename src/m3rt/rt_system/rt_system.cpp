@@ -185,14 +185,18 @@ M3RtSystem::~M3RtSystem(){}
 bool M3RtSystem::Startup()
 {
 	sys_thread_active=false;
-	sys_thread_end=false;
+	sys_thread_end=true;
 	BannerPrint(60,"Startup of M3RtSystem");
 #ifdef __RTAI__
 	hst=rt_thread_create((void*)rt_system_thread, (void*)this, 1000000);
 #else		
 	long hst=pthread_create((pthread_t *)&hst, NULL, (void *(*)(void *))rt_system_thread, (void*)this);
 #endif
-	if(!hst || sys_thread_end==true){ //A.H : Added earlier check
+        for (int i=0;i<100;i++)
+        {
+                usleep(100000);
+        }
+	if(!hst || sys_thread_end){ //A.H : Added earlier check
 		m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
 		return false;
 	}
@@ -305,7 +309,7 @@ bool M3RtSystem::StartupComponents()
 	if (!ext_sem)
 	{
 		M3_ERR("Unable to find the M3LEXT semaphore (probably hasn't been cleared properly).\n");
-		return false;
+		//return false;
 	}
 	M3_INFO("Reading component config files ...\n"); 
 #ifdef __RTAI__	
