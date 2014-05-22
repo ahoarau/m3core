@@ -5,7 +5,6 @@
 set(M3RTSCRIPTS
 disable_ros
 lsec
-m3project_create.py
 m3rt_insmods
 m3rt_rmmods
 m3rt_rotate_logs
@@ -13,6 +12,7 @@ m3rt_server_debug
 m3rt_server_kill
 m3rt_server_run
 m3rt_timestats_run
+unistall_m3
 )
 
 message("Scripts:${M3RTSCRIPTS}")
