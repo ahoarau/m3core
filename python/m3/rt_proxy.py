@@ -24,6 +24,7 @@ import m3.toolbox_core as m3t
 import time
 import os
 import string
+import select
 
 
 class M3RtProxy:
@@ -58,6 +59,7 @@ class M3RtProxy:
 		self.nsl=0
 		self.data_svc=None
 		self.ros_svc =None
+		self.stopped = False
 		try:
 			self.proxy = xmlrpclib.ServerProxy('http://'+self.host+':'+str(self.rpc_port))
 			if self.verbose: print 'Starting M3 RPC Client at ',self.host, 'on Port ',self.rpc_port,'...'
@@ -90,7 +92,11 @@ class M3RtProxy:
 
 		if start_ros_svc:
 			self.__start_ros_service()
-
+	def __del__(self):
+		if not self.stopped:
+			print 'M3 WARNING: Be sure to call proxy.stop() at the end of your script.'
+			self.stop()
+			
 	def stop(self, force_safeop=True):
 		"""Stop the RtSystem and any running data service on the server. 
 	This should be called at client process shutdown
@@ -115,6 +121,7 @@ class M3RtProxy:
 			self.command_raw=mbs.M3CommandAll()
 		except socket.error, msg:
 			pass #Ok because shutting down
+		self.stopped=True
 
 	# On startup of the M3RtSystem on the server, all components start in state SAFEOP
 	# SAFEOP components can only update status data
@@ -386,13 +393,21 @@ class M3RtProxy:
 		sc=self.command_raw.SerializeToString()
 		self.data_socket.sendall(nh+nc+sc)
 		
-	def __do_receive(self,nr):
+	def __do_receive(self,nr,timeout_total=2.0,timeout_chunk = 1.0):
 		msg = ''
-		while len(msg) < nr:
-			chunk = self.data_socket.recv(nr-len(msg))
+		chunk=''
+		time_s_total = time.time()
+		while len(msg) < nr and not(time.time()-time_s_total>timeout_total):
+			# A.H: That shouldn't take too long
+			# => Adding a timeout
+			ready = select.select([self.data_socket], [], [], timeout_chunk)
+			if ready[0]:
+			    chunk = self.data_socket.recv(nr-len(msg))
+			    msg = msg + chunk
+			#chunk = self.data_socket.recv()
 			if chunk == '':
 				raise m3t.M3Exception('Proxy socket connection broken')
-			msg = msg + chunk
+			
 		return msg
 
 	def __recv_status(self):
@@ -459,6 +474,7 @@ class M3RtProxy:
 			pass #Ok because shutting down
 
 	def __start_data_service(self):
+		print 'Starting Data Service'
 		#Create data service
 		if self.proxy is None:
 			raise m3t.M3Exception('M3RtProxy not started')
@@ -476,6 +492,9 @@ class M3RtProxy:
 		#Create data stream socket
 		try:
 			self.data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.data_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.data_socket.setblocking(0) # w a timeout
+			self.data_socket.settimeout(2.0) # Only works for connect
 		except socket.error, msg:
 			self.__stop_data_service()
 			raise m3t.M3Exception('Error: '+msg[1])
