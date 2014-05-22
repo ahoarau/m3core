@@ -90,6 +90,7 @@ private:
 #endif
 	std::vector<int> ports;
 	int next_port;
+        int hst;
 	int num_rtsys_attach;
 };
 

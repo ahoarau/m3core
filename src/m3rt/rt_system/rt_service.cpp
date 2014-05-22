@@ -72,7 +72,7 @@ bool M3RtService::Startup()
 //#ifdef __RTAI__
 //	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
 //#else		
-	int hst=pthread_create((pthread_t *)&hlt, NULL, (void *(*)(void *))service_thread, (void*)this);
+	hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
 //#endif
 	
 	usleep(100000);
@@ -89,7 +89,7 @@ void M3RtService::Shutdown()
 	m3rt::M3_INFO("Begin shutdown of M3RtService...\n");
 	svc_thread_end=true;
 	void *end;
-	pthread_join((pthread_t)hlt, &end);
+        if (hst != 0) pthread_join((pthread_t)hlt, &end);
 
 	if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
 	m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
