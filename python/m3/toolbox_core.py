@@ -616,7 +616,7 @@ class M3ScopeN():
                 for i in range(n):
                         self.y.append([0.0]*xwidth)
                 self.x=range(xwidth)
-                self.g = Gnuplot.Gnuplot(persist = 1)                
+                self.g = Gnuplot.Gnuplot()#(persist = 1)                
                 #self.g('set data style linespoints')
                 self.g('set term x11 noraise')
                 self.g.title(title)
