@@ -60,6 +60,7 @@ class M3RtProxy:
 		self.data_svc=None
 		self.ros_svc =None
 		self.stopped = False
+		self.use_timeout=False
 		try:
 			self.proxy = xmlrpclib.ServerProxy('http://'+self.host+':'+str(self.rpc_port))
 			if self.verbose: print 'Starting M3 RPC Client at ',self.host, 'on Port ',self.rpc_port,'...'
@@ -397,17 +398,21 @@ class M3RtProxy:
 		msg = ''
 		chunk=''
 		time_s_total = time.time()
-		while len(msg) < nr and not(time.time()-time_s_total>timeout_total):
-			# A.H: That shouldn't take too long
-			# => Adding a timeout
-			ready = select.select([self.data_socket], [], [], timeout_chunk)
-			if ready[0]:
-			    chunk = self.data_socket.recv(nr-len(msg))
-			    msg = msg + chunk
-			#chunk = self.data_socket.recv()
-			if chunk == '':
-				raise m3t.M3Exception('Proxy socket connection broken')
-			
+		if self.use_timeout:
+			while len(msg) < nr and not(time.time()-time_s_total>timeout_total):
+				# A.H: That shouldn't take too long
+				# => Adding a timeout
+				ready = select.select([self.data_socket], [], [], timeout_chunk)
+				if ready[0]:
+				    chunk = self.data_socket.recv(nr-len(msg))
+				    msg = msg + chunk
+				#chunk = self.data_socket.recv()
+				if chunk == '':
+					raise m3t.M3Exception('Proxy socket connection broken')
+		else:
+			while len(msg) < nr :
+				    chunk = self.data_socket.recv(nr-len(msg))
+				    msg = msg + chunk
 		return msg
 
 	def __recv_status(self):
@@ -493,8 +498,9 @@ class M3RtProxy:
 		try:
 			self.data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.data_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.data_socket.setblocking(0) # w a timeout
-			self.data_socket.settimeout(2.0) # Only works for connect
+			if self.use_timeout:
+				self.data_socket.setblocking(0) # w a timeout
+				self.data_socket.settimeout(2.0) # Only works for connect
 		except socket.error, msg:
 			self.__stop_data_service()
 			raise m3t.M3Exception('Error: '+msg[1])
