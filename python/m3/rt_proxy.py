@@ -314,7 +314,7 @@ class M3RtProxy:
 			logpath=os.environ['M3_ROBOT']
 			logpath = logpath.split(':')
 			#Tmp : just get the first one
-			logpath = logpath[0]++'/robot_log'
+			logpath = logpath[0]+'/robot_log'
 		if not self.proxy.IsRtSystemRunning():
 			raise m3t.M3Exception('Cannot start log. M3RtSystem is not yet running on the server')
 		return self.proxy.start_log_service(logname,float(sample_freq_hz),self.log_names,int(samples_per_file),logpath,verbose)
