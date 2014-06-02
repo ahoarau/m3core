@@ -43,8 +43,9 @@ vector<mReal> YamlReadVectorM(string s);
 vector<string> YamlReadVectorString(string s);
 vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 unsigned int xtoi(const char* xs);
-void WriteYamlDoc(const char * filename, YAML::Emitter &doc,string subdir=string("/robot_config/"));
-void GetYamlDoc(const char * filename, YAML::Node & doc,string subdir=string("/robot_config/"));
+void WriteYamlDoc(const char * filename, YAML::Emitter &doc,std::string subdir=string("/robot_config/"));
+void GetYamlDoc(const char * filename, YAML::Node & doc,std::string subdir=string("/robot_config/"));
+void GetYamlStream(const char *filename, YAML::Emitter& out,std::string subdir=string("/robot_config/"));
 void operator >> (const YAML::Node& node, vector<mReal> & v);
 }
 
