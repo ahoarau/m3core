@@ -30,23 +30,36 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-using namespace std;
 #define M3_PRINTF printf
 void M3_WARN(const char * format, ...);
 void M3_ERR(const char * format, ...);
 void M3_INFO(const char * format, ...);
 void M3_DEBUG(const char * format, ...);
 void BannerPrint(int width, const char *format, ...);
-bool GetEnvironmentVariable(const char * var, vector<string>& result);
-bool GetEnvironmentVar(const char * var, string &s);
-vector<mReal> YamlReadVectorM(string s);
-vector<string> YamlReadVectorString(string s);
-vector<mReal> YamlReadVectorM(const YAML::Node& seq);
+bool GetEnvironmentVariable(const char * var, std::vector<std::string>& result);
+bool GetEnvironmentVar(const char * var, std::string &s);
+std::vector<mReal> YamlReadVectorM(std::string s);
+std::vector<std::string> YamlReadVectorString(std::string s);
+std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 unsigned int xtoi(const char* xs);
-void WriteYamlDoc(const char * filename, YAML::Emitter &doc,std::string subdir=string("/robot_config/"));
-void GetYamlDoc(const char * filename, YAML::Node & doc,std::string subdir=string("/robot_config/"));
-void GetYamlStream(const char *filename, YAML::Emitter& out,std::string subdir=string("/robot_config/"));
-void operator >> (const YAML::Node& node, vector<mReal> & v);
+
+void GetRobotConfigPath(std::vector< std::string >& vpath,std::string sub_dir= std::string("/robot_config/"));
+
+void GetFileConfigPath(const char *filename,std::vector<std::string>& vpath);
+
+void WriteYamlDoc(const char *filename, YAML::Emitter &doc, std::string sub_dir= std::string("/robot_config/"));
+
+bool GetYamlDoc(const char *filename, YAML::Node &doc,std::string * doc_path=NULL, const char *find_c=NULL);
+
+//void GetYamlDoc2(const char * filename, YAML::Node & doc);
+
+void GetYamlStream(const char *filename, YAML::Emitter& out);
+
+//void GetYamlParser(const char *filename, YAML::Parser &parser);
+
+//std::auto_ptr< YAML::Node > GetYamlDocs(const char *filename );
+
+void operator >> (const YAML::Node& node, std::vector<mReal> & v);
 }
 
 

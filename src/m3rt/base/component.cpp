@@ -95,43 +95,41 @@ bool M3Component::ReadConfig(const char *filename)
 {
     std::string name;
     std::string version;
-    
-    YAML::Node doc;
-    YAML::Emitter out;
-    m3rt::GetYamlStream(filename,out);
-    std::stringstream stream(out.c_str());
-    YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc)) {
-        try {
-            doc["name"] >> name;
-        } catch(YAML::BadDereference e) {}
-        GetBaseStatus()->set_name(name);
-        if(name == "") return false;
-        try {
-            doc["version"] >> version;
-            GetBaseStatus()->set_version(version);
-        } catch(YAML::TypedKeyNotFound<string> e) {
-            //M3_WARN("Missing version key in config file for component %s. Defaulting to default\n",name.c_str());
-            GetBaseStatus()->set_version("default");
-        }
 
-        //Ugly solution...
-        //Search to find the registered id to the given name
-        int found = 0;
-        for(int i = 0; i < version_names.size(); i++) {
-            if(version_names[i] == GetBaseStatus()->version()) {
-                version_id = version_ids[i];
-                found = 1;
-                break;
-            }
-        }
-        if(!found) {
-            M3_ERR("Component %s was unable to find registered version %s upon loading\n", GetName().c_str(), GetBaseStatus()->version().c_str());
-            return false;
-        }
-        version_ids.clear(); //no longer needed
-        version_names.clear();
+    //YAML::Node doc;
+    if(!m3rt::GetYamlDoc(filename, doc)) {
+        return false;
     }
+    try {
+        doc["name"] >> name;
+    } catch(YAML::BadDereference e) {
+        return false;
+    }
+    GetBaseStatus()->set_name(name);
+    try {
+        doc["version"] >> version;
+        GetBaseStatus()->set_version(version);
+    } catch(YAML::TypedKeyNotFound<string> e) {
+        //M3_WARN("Missing version key in config file for component %s. Defaulting to default\n", name.c_str());
+        GetBaseStatus()->set_version("default");
+    }
+
+    //Ugly solution...
+    //Search to find the registered id to the given name
+    int found = 0;
+    for(int i = 0; i < version_names.size(); i++) {
+        if(version_names[i] == GetBaseStatus()->version()) {
+            version_id = version_ids[i];
+            found = 1;
+            break;
+        }
+    }
+    if(!found) {
+        M3_ERR("Component %s was unable to find registered version %s upon loading\n", GetName().c_str(), GetBaseStatus()->version().c_str());
+        return false;
+    }
+    version_ids.clear(); //no longer needed
+    version_names.clear();
     return true;
 }
 

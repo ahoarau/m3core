@@ -86,7 +86,7 @@ bool M3RtRosService::Startup()
         
 	string path;
         YAML::Node doc;
-	m3rt::GetYamlDoc(s,doc);
+        m3rt::GetYamlDoc(filename,doc);
 	string name;
 	
 	ros::VP_string remappings;

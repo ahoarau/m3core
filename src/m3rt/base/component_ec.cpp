@@ -58,11 +58,13 @@ bool M3ComponentEc::SetSlaveEcShm(M3EcSlaveShm * slaves, int slaves_responding)
 
 bool M3ComponentEc::ReadConfig(const char * filename)
 {
-	YAML::Node doc;
 	int val;
 	string version;
 	if (!M3Component::ReadConfig(filename)) return false;
-	GetYamlDoc(filename, doc);
+        
+	//YAML::Node doc;
+	//if(!m3rt::GetYamlDoc(filename,doc)){return false;}
+        
 	const YAML::Node& ec = doc["ethercat"];
 	M3EtherCATStatus * status = GetEcStatus();
 	ec["serial_number"] >> val;
@@ -99,7 +101,6 @@ bool M3ComponentEc::ReadConfig(const char * filename)
 	}
 	pdo_ids.clear(); //no longer needed
 	pdo_names.clear();
-	
 	return true;
 }
 

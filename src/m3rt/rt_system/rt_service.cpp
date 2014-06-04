@@ -90,11 +90,12 @@ void M3RtService::Shutdown()
 	m3rt::M3_INFO("Begin shutdown of M3RtService...\n");
 	svc_thread_end=true;
 	void *end;
-        if (hst != 0) pthread_join((pthread_t)hlt, &end);
-
-	if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
-	m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
-	RemoveRtSystem();
+        if (hst != 0){
+		pthread_join((pthread_t)hlt, &end);
+		//if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
+	}
+	//m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
+	//RemoveRtSystem();
 	m3rt::M3_INFO("Shutdown of M3RtService complete.\n");
 }
 
@@ -123,7 +124,7 @@ int M3RtService::RemoveRtSystem()
 {
 	if (rt_system==NULL)
 	{
-		m3rt::M3_INFO("No RtSystem found\n");
+		//m3rt::M3_INFO("No RtSystem found\n");
 		num_rtsys_attach=0;
 		return 0;
 	}

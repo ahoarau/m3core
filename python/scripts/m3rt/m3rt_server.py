@@ -130,6 +130,7 @@ class M3Server(Thread):
         finally:
             print "M3 INFO: Closing Socket."
             self.server.socket.close()
+            
 # ################################################################################
 
 ## THE DEFAULT ARGUMENTS TO START THE SERVER
@@ -176,11 +177,11 @@ for idx in range(1,len(sys.argv)):
 try:
     svc=m3.m3rt_system.M3RtService()
     svc.Startup() # Let client start rt_system
-    for i in xrange(20):
-        time.sleep(0.1)
+    for i in xrange(40):
+        time.sleep(0.05)
     # Instantiate the server
     while not svc.IsServiceThreadActive():
-        time.sleep(0.1)
+        time.sleep(0.05)
     try:
         m3server = M3Server()
     except Exception,e:
@@ -216,17 +217,17 @@ if svc:
 if m3client_thread and m3client_thread.is_alive():
     print "M3 INFO: Shutting down Client Thread."
     m3client_thread.stop_event.set()
+    print 'M3 INFO: Waiting for client thread to shutdown.'
     while m3client_thread.is_alive():
-        print 'M3 INFO: Waiting for client thread to shutdown.'
-        time.sleep(0.2)
+        time.sleep(0.05)
     print 'M3 INFO: Client thread exited normally.'
     
 if m3server and m3server.is_alive():
     print "M3 INFO: Shutting down M3 RPC Server."
     m3server.server.shutdown()
+    print 'M3 INFO: Waiting for M3 RPC Server to shutdown.'
     while m3server.is_alive():
-        print 'M3 INFO: Waiting for M3 RPC Server to shutdown.'
-        time.sleep(0.2)
+        time.sleep(0.05)
     print 'M3 INFO: M3 RPC Server exited normally.'
 time.sleep(0.5)
 print("M3 INFO: Exiting")

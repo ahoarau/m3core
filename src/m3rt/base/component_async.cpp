@@ -147,7 +147,7 @@ void M3ComponentAsync::Shutdown()
       {
 	stop_thread = true;	
 	rt_thread_join(rc);	
-	rc = NULL;
+	rc = -1;
       }
 }
 
@@ -157,11 +157,11 @@ bool M3ComponentAsync::ReadConfig(const char * filename)
 {	
 	int val;
 	mReal mval;
-	YAML::Node doc;
+	//YAML::Node doc;
 
 	if (!M3Component::ReadConfig(filename))
 		return false;
-	GetYamlDoc(filename, doc);
+	//GetYamlDoc(filename, doc);
 	
 	
 	return true;

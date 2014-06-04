@@ -105,6 +105,8 @@ class M3Component{
 		vector<string> version_names;
 		vector<int> version_ids;
 		int version_id;
+		YAML::Node doc;
+		//std::string doc_path;
 };
 
 //Factory defn.

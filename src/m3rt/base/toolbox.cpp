@@ -28,6 +28,9 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <time.h>
 #include <ios>
+#include <ctime>
+#include <sstream>
+#include <map>
 namespace m3rt
 {
 using namespace std;
@@ -234,66 +237,176 @@ unsigned int xtoi(const char *xs)
     return n;
 }
 
-void WriteYamlDoc(const char *filename, YAML::Emitter &doc, string sub_dir)
+void WriteYamlDoc(const char *filepath, YAML::Emitter &doc, string sub_dir)
 {
-    string s(filename);
-    string path;
-    vector<string> vpath;
-    if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
-        for(size_t i = 0; i < vpath.size(); i++) {
-            vpath[i] += sub_dir;
-            vpath[i] += s;
-        }
-    }
-    path = vpath[0];
-    std::ofstream fout(path.c_str());
+	cout<<"Trying to write the file "<<filepath;
+    std::ofstream fout(filepath);
     fout << doc.c_str();
     fout.close();
+    cout<<" ...OK"<<endl;
 }
-void GetYamlStream(const char *filename,YAML::Emitter& out, string sub_dir)
+void GetRobotConfigPath(vector<string>& vpath,string sub_dir)
 {
-    string s(filename);
-    string path;
-    vector<string> vpath;
-    if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
+        vpath.clear();
+        if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
         for(size_t i = 0; i < vpath.size(); i++) {
             vpath[i] += sub_dir;
-            vpath[i] += s;
         }
     }
-    YAML::Parser parser_in;
-    YAML::Node node;
-    //YAML::Emitter out;
-    
-    for(size_t i = 0; i < vpath.size(); i++) {
-        
-        path = vpath[i];
-        ifstream fin(path.c_str());
-        if(fin.fail()) {
-            //M3_INFO("Could not read %s \n", path.c_str());
-            continue;
-        }
-        parser_in.Load(fin);
-        while(parser_in.GetNextDocument(node)) {
-            out << node; 
-        }
-        fin.close();
-    }
-    assert(out.good());
-    return ;//out;
+    return;
 }
 
-void GetYamlDoc(const char *filename, YAML::Node &doc, string sub_dir)
+void GetFileConfigPath(const char *filename,vector<string>& vpath)
+{
+        string s(filename);
+        vpath.clear();
+	GetRobotConfigPath(vpath);
+        for(size_t i = 0; i < vpath.size(); i++) {
+            vpath[i] += s;
+        }
+    return;
+}
+
+/*void GetYamlParser(const char *filename, YAML::Parser &parser )
+{
+    string path;
+    YAML::Node node;
+    vector<string> vpath; 
+    YAML::Emitter out;
+    GetFileConfigPath(filename,vpath);
+    for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+        ifstream fin((*it).c_str());
+        if(fin.fail()) { continue;}
+        parser.Load(fin);
+        while(parser.GetNextDocument(node)) {
+            out << node;
+        }
+        fin.close();
+        fin.clear();
+    }
+    assert(out.good());
+    parser.PrintTokens(cout);
+    return;
+}*/
+
+/*std::auto_ptr<YAML::Node> GetYamlDocs(const char *filename)
+{
+    YAML::Parser parser;
+    YAML::Node docs;
+    vector<string> vpath; 
+    GetFileConfigPath(filename,vpath);
+    for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+        ifstream fin((*it).c_str());
+        if(fin.fail()) { continue;}
+        parser.Load(fin);
+        //parser.GetNextDocument(docs);
+        fin.close();
+        fin.clear();
+    }
+    parser.PrintTokens(cout);
+    return docs.Clone();
+}*/
+
+void GetYamlStream(const char *filename, YAML::Emitter &out)
+{
+    string path;
+    YAML::Node node;
+    YAML::Parser parser;
+    vector<string> vpath; 
+    GetFileConfigPath(filename,vpath);
+    for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+        ifstream fin((*it).c_str());
+        if(fin.fail()) { continue;}
+        parser.Load(fin);
+        while(parser.GetNextDocument(node)) {
+            out << node;
+        }
+        fin.close();
+        fin.clear();
+    }
+    assert(out.good());
+    parser.PrintTokens(cout);
+    return;
+}
+/*void GetYamlDoc(const char *filename, YAML::Node &doc, string sub_dir){
+        YAML::Emitter out;
+        m3rt::GetYamlStream(filename,out);
+        std::stringstream stream(out.c_str());
+        YAML::Parser parser(stream);
+        while(parser.GetNextDocument(doc)) {}
+        return;
+}*/
+bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_path, const char *find_c)
+{
+    string s(filename);
+    string find_str;
+    
+    find_c==NULL ? find_str=string():find_str=string(find_c);
+    
+    vector<string> vpath;
+    GetFileConfigPath(filename,vpath);
+    vector<string> vpath_root;
+    GetRobotConfigPath(vpath_root);
+    assert(vpath.size()==vpath_root.size());
+    
+    map<string, string> paths;
+    std::map<string,string>::iterator it = paths.begin();
+    for(size_t i=0;i<vpath.size();i++)
+	    paths.insert(it,pair<string,string>(vpath[i],vpath_root[i]));
+	    
+    bool verbose = paths.size()>1;
+    YAML::Parser parser;
+    
+    for(std::map<string,string>::reverse_iterator it = paths.rbegin(); it != paths.rend(); ++it) {
+        //cout<<"Trying with path:"<<(*it).c_str()<<" find_str:"<<find_str<<endl;
+        //A.H: Let's start by the very last one i.e a local version.
+        //If the file exists, load it, otherwise go to previous path (down to original robot_config)
+        //If the file is loaded, then check for an optional find_str provided to checkif this is the right file to load, otherwise go to previous path
+        string path = it->first;
+	string root_path = it->second;
+	
+        ifstream fin(path.c_str());
+        if(fin.fail()) {
+            if(verbose)
+            cout<<"Could not read "<<path<<" , trying the next one."<<endl;
+            continue;
+        }
+        if(verbose)
+        cout << "For component " << s << " ,loading file : " << path;
+        parser.Load(fin);
+        parser.GetNextDocument(doc);
+        fin.close();
+        fin.clear();
+	if(doc_root_path!=NULL){
+		*doc_root_path = root_path;
+	}
+        if(find_str.empty()) {
+            if(verbose)
+            cout << " ...OK" << endl;
+            return true;
+        } else {
+           if(!doc.FindValue(find_str)){
+                   if(verbose)
+                   cout <<" but key \""<< find_str<<"\" NOT FOUND, trying with the next one." << endl;
+                   continue;
+           }else{
+                   if(verbose)
+                   cout <<" and key \""<< find_str<<"\" FOUND, returning true." << endl;
+                   return true;
+           }
+           
+        }
+    }
+    //M3_ERR("Error while trying to load %s\n",s.c_str());
+    return false;
+}
+
+/*void GetYamlDoc2(const char *filename, YAML::Node &doc)
 {
     string s(filename);
     string path;
-    vector<string> vpath;
-    if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
-        for(size_t i = 0; i < vpath.size(); i++) {
-            vpath[i] += sub_dir;
-            vpath[i] += s;
-        }
-    }
+    vector<string> vpath; 
+    GetFileConfigPath(filename,vpath);
     YAML::Parser parser;
     YAML::Node node;
     YAML::Emitter out;
@@ -307,17 +420,16 @@ void GetYamlDoc(const char *filename, YAML::Node &doc, string sub_dir)
         }
         parser.Load(fin);
         while(parser.GetNextDocument(node)) {
-            out << node; 
+            out << node;
         }
-
+        
         fin.close();
     }
     assert(out.good());
     std::stringstream stream(out.c_str());
     parser.Load(stream);
     parser.GetNextDocument(doc);
-    
     return;
-}
+}*/
 
 }

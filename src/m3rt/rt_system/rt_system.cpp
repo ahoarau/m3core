@@ -731,16 +731,16 @@ bool M3RtSystem::ReadConfigEc(const char *filename)
         //Make sure an ec_component section
         if(!doc.FindValue("ec_components")) {
             M3_INFO("No ec_components key in m3_config.yml. Proceeding without it...\n");
-            return true;
+            continue;
         }
-
-        for(YAML::Iterator it = doc["ec_components"].begin(); it != doc["ec_components"].end(); ++it) {
+	const YAML::Node& ec_components = doc["ec_components"];
+        for(YAML::Iterator it = ec_components.begin(); it != ec_components.end(); ++it) {
             string dir;
 
             it.first() >> dir;
 
-            for(YAML::Iterator it_dir = doc["ec_components"][dir.c_str()].begin();
-                    it_dir != doc["ec_components"][dir.c_str()].end(); ++it_dir) {
+            for(YAML::Iterator it_dir = ec_components[dir.c_str()].begin();
+                    it_dir != ec_components[dir.c_str()].end(); ++it_dir) {
                 string  name, type;
                 it_dir.first() >> name;
                 it_dir.second() >> type;
@@ -783,20 +783,19 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
     m3rt::GetYamlStream(filename, out);
     std::stringstream stream(out.c_str());
     YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc)) {
-
+    while(parser.GetNextDocument(doc) ){
+	
         if(!doc.FindValue("rt_components")) {
             M3_INFO("No rt_components key in m3_config.yml. Proceeding without it...\n");
-            return true;
+            continue;
         }
-
-        for(YAML::Iterator it = doc["rt_components"].begin(); it != doc["rt_components"].end(); ++it) {
+	const YAML::Node& rt_components = doc["rt_components"];
+        for(YAML::Iterator it = rt_components.begin(); it != rt_components.end(); ++it) {
             string dir;
 
             it.first() >> dir;
-
-            for(YAML::Iterator it_dir = doc["rt_components"][dir.c_str()].begin();
-                    it_dir != doc["rt_components"][dir.c_str()].end(); ++it_dir) {
+            for(YAML::Iterator it_dir = rt_components[dir.c_str()].begin();
+                    it_dir != rt_components[dir.c_str()].end(); ++it_dir) {
                 string  name, type;
                 it_dir.first() >> name;
                 it_dir.second() >> type;
@@ -805,7 +804,8 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
                     m->SetFactory(factory);
                     string f = dir + "/" + name + ".yml";
                     try {
-                        if(m->ReadConfig(f.c_str())) {
+                        if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
+				cout<<"Adding "<<m->GetName()<<endl;
                             m3rt_list.push_back(m);
                             idx_map_rt.push_back(GetNumComponents() - 1);
                         } else {
