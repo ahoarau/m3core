@@ -98,7 +98,7 @@ void *rt_system_thread(void *arg)
     //Give other threads a chance to load before starting
 #ifdef __RTAI__
     RTIME now = rt_get_time();
-    rt_sleep(nano2count(1000000000));
+	//rt_sleep(nano2count(1000000000));
     if(rt_task_make_periodic(task, now + tick_period, tick_period)) {
         M3_ERR("Couldn't make rt_system task periodic.\n");
         return 0;
