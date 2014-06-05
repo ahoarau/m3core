@@ -93,17 +93,15 @@ class client_thread(Thread):
         self.proxy = m3p.M3RtProxy(rpc_port=port)
         self.proxy.start(start_data_svc, False)  
         if self.make_all_op:
-            print("M3 INFO: Launched with option -make operational all+shm")
+            print("M3 INFO: M3 is now running (with option -make operational all+shm)")
             self.proxy.make_operational_all()
             self.proxy.make_operational_all_shm()
         if self.make_all_op_shm:  
-            print("M3 INFO: Launched with option -make operational shm only")          
+            print("M3 INFO: M3 is now running (with option -make operational shm only)")          
             self.proxy.make_operational_all_shm()        
         if self.make_all_op_no_shm:
-            print("M3 INFO: Launched with option -make operational all (no shm)")
+            print("M3 INFO: M3 is now running (with option -make operational all (no shm))")
             self.proxy.make_operational_all()
-        for i in xrange(20):
-            time.sleep(0.1)
     def run(self):
         try:
             self.stop_event.wait(timeout=None)
@@ -144,7 +142,7 @@ start_data_svc = False
 svc = None
 m3server = None
 m3client_thread = None
-
+signal.signal(signal.SIGINT, stop_program)
 
 for idx in range(1,len(sys.argv)):
     if sys.argv[idx]=='-host' or sys.argv[idx]=='-h' and idx<len(sys.argv)-1:
@@ -177,8 +175,8 @@ for idx in range(1,len(sys.argv)):
 try:
     svc=m3.m3rt_system.M3RtService()
     svc.Startup() # Let client start rt_system
-    for i in xrange(40):
-        time.sleep(0.05)
+    #for i in xrange(40):
+    #    time.sleep(0.05)
     # Instantiate the server
     while not svc.IsServiceThreadActive():
         time.sleep(0.05)
@@ -189,19 +187,20 @@ try:
         raise M3Exception("M3 RPC Server failed to start")
     
     # Start the server
-    print "M3 INFO: Starting M3Rt."
+    #print "M3 INFO: Starting M3Rt."
     m3server.start()
-    
+    #print "M3 INFO: Starting client thread."
     try:
         m3client_thread = client_thread(make_op_all , make_op_all_shm , make_op_all_no_shm,start_data_svc)
+        for i in xrange(40):
+	    time.sleep(0.5)
     except Exception,e:
         print "M3 ERROR: Error creating the client thread:",e
         raise M3Exception("Client Thread failed to start")
-    print "M3 INFO: Starting client thread."
+    
     m3client_thread.start()
-    print "M3 INFO: M3Rt is now running."
+    #print "M3 INFO: M3 is now running."
     # Handling ctrl+c when ros is launched
-    signal.signal(signal.SIGINT, stop_program)
     while not stop_signal.is_set():
         try:
             m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
