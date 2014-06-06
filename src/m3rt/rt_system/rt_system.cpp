@@ -805,7 +805,6 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
                     string f = dir + "/" + name + ".yml";
                     try {
                         if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
-				cout<<"Adding "<<m->GetName()<<endl;
                             m3rt_list.push_back(m);
                             idx_map_rt.push_back(GetNumComponents() - 1);
                         } else {
