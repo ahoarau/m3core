@@ -17,14 +17,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with M3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "m3rt/rt_system/rt_log_service.h"
+#include "rt_log_service.h"
 #include "m3rt/base/m3rt_def.h"
 #include "m3rt/base/component_base.pb.h"
-#include "m3rt/rt_system/rt_system.h"
+#include "rt_system.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include <unistd.h>
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {

@@ -39,6 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <rtai_sem.h>
 #include <rtai_registry.h>
 /*
+// Not needed anymore
 #include "ecrt.h"
 #include "slave.h"
 #include "slave_config.h"
@@ -62,15 +63,6 @@ typedef struct
 	unsigned int offset_status[MAX_NUM_SLAVE];
 	unsigned int offset_command[MAX_NUM_SLAVE];	
 	uint8_t *domain_pd[NUM_EC_DOMAIN];
-	
-	//ec_slave_config_t  *     slave_config[MAX_NUM_SLAVE];
-	//ec_slave_config_state_t  slave_state[MAX_NUM_SLAVE];
-	
-	//ec_master_t *master;
-	//ec_domain_t *domain[NUM_EC_DOMAIN];
-	
-	//ec_master_state_t master_state;
-	//ec_domain_state_t domain_state[NUM_EC_DOMAIN];
 	int num_domain;
 	int domain_idx;
 		
@@ -108,90 +100,17 @@ cycles_t t_critical;
 
 int check_master_state(void)
 {
-	//ec_master_state_t ms;
-/*
-	spin_lock(&master_lock);
-	//ecrt_master_state(sys.master, &ms);
-	spin_unlock(&master_lock);
-
-	//sys.shm->link_up=ms.link_up;
-	//sys.shm->slaves_responding=ms.slaves_responding;
-	
-	if (ms.slaves_responding != sys.master_state.slaves_responding)
-	{
-		M3_INFO("Dropped slaves. Now %u slave(s). Was %u slaves\n",ms.slaves_responding,sys.master_state.slaves_responding);
-		sys.shm->slaves_dropped= sys.master_state.slaves_responding-ms.slaves_responding;
-		return 0;
-	}
-		
-	if (ms.al_states != sys.master_state.al_states)
-		M3_INFO("AL states: 0x%02X.\n", ms.al_states);
-	if (ms.link_up != sys.master_state.link_up)
-	{
-		M3_INFO("Link is %s.\n", ms.link_up ? "up" : "down");
-		if (!sys.master_state.link_up)
-			return 0;
-	}
-
-	sys.master_state = ms;
-	*/
 	return 1;
 }
 /*****************************************************************************/
 void check_domain_state(void)
 {
-	/*int i;
-	ec_domain_state_t ds;
-	for (i=0;i<sys.num_domain;i++)
-	{
-		spin_lock(&master_lock);
-		ecrt_domain_state(sys.domain[i], &ds);
-		spin_unlock(&master_lock);
-
-	//This can bog down syslog...
-		if (ds.working_counter != sys.domain_state[i].working_counter)
-			M3_INFO("Domain: WC %u.\n", ds.working_counter);
-		if (ds.wc_state != sys.domain_state[i].wc_state)
-			{
-				if (sys.domain_state[i].wc_state==EC_WC_INCOMPLETE)
-					M3_INFO("Domain: State EC_WC_INCOMPLETE\n");
-				if (sys.domain_state[i].wc_state==EC_WC_ZERO)
-					M3_INFO("Domain: State EC_WC_ZERO\n");
-				if (sys.domain_state[i].wc_state==EC_WC_COMPLETE)
-					M3_INFO("Domain: State EC_WC_COMPLETE\n");
-		}
-		sys.domain_state[i] = ds;
-	}*/
+	return;
 }
 /*****************************************************************************/
 void check_slave_state(void)
 {
-	/*int i;
-	M3EcSlaveShm * ss;
-	
-	for (i=0;i<sys.shm->slaves_responding;i++)
-	{
-		if (sys.slave_config[i]!=NULL)
-		{
-			ec_slave_config_state_t s;
-			ss=&(sys.shm->slave[i]);
-			
-			spin_lock(&master_lock);
-			ecrt_slave_config_state(sys.slave_config[i], &s);
-			spin_unlock(&master_lock);
-		
-			if (s.al_state != sys.slave_state[i].al_state)
-				M3_INFO("Slave %d: State 0x%02X.\n",i, s.al_state);
-			if (s.online != sys.slave_state[i].online)
-				M3_INFO("Slave %d: %s.\n",i, s.online ? "online" : "offline");
-			if (s.operational != sys.slave_state[i].operational)
-				M3_INFO("Slave %d: %soperational.\n",i,	s.operational ? "" : "Not ");
-			sys.slave_state[i]= s;
-			ss->online=s.online;
-			ss->al_state=s.al_state;
-			ss->operational=s.operational;
-		}
-	}*/
+	return;
 }
 /*****************************************************************************/
 void run(long shm)
@@ -216,11 +135,6 @@ void run(long shm)
 	RTIME ts6;
 	
 	M3_INFO("EtherCAT kernel loop starting...\n");
-#ifdef USE_DISTRIBUTED_CLOCKS
-	struct timeval tv;
-	unsigned int _ref_counter = 0;	
-	count2timeval(nano2count(rt_get_real_time_ns()), &tv);
-#endif
 	sys.shm->counter=0;
 	tstart=rt_get_time_ns();
 	while (1) {
@@ -234,23 +148,10 @@ void run(long shm)
 		//ecrt_domain_process(sys.domain[sys.domain_idx]);
 		rt_sem_signal(&master_sem);
 		ts2=rt_get_time_ns();
-#ifdef USE_DISTRIBUTED_CLOCKS	
-	// use tv for timestamping to match EC
-		tv.tv_usec += RT_KMOD_TIMER_TICKS_NS/1000;
-		if (tv.tv_usec >= 1000000)  {
-			tv.tv_usec -= 1000000;
-			tv.tv_sec++;
-		}
-#endif
 	//Exchange data with shared memory
 		rt_sem_wait(&shm_sem);
 		ts3=rt_get_time_ns();
-#ifdef USE_DISTRIBUTED_CLOCKS	
-		sys.shm->timestamp_ns=EC_TIMEVAL2NANO(tv);
-#else
 		sys.shm->timestamp_ns=rt_get_time_ns()-tstart;
-#endif
-	
 		for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
 		{
 			s=&(sys.shm->slave[sidx]);
@@ -276,16 +177,6 @@ void run(long shm)
 		}
 		ts4=rt_get_time_ns();
 	//Send data out
-#ifdef USE_DISTRIBUTED_CLOCKS	
-	// Set Slave DC Ref Clks
-		ecrt_master_application_time(sys.master, EC_TIMEVAL2NANO(tv));
-		if (sync_ref_counter) {
-			sync_ref_counter--;
-		} else {
-			sync_ref_counter = 9;
-			ecrt_master_sync_reference_clock(sys.master);
-		}
-#endif
 		rt_sem_wait(&master_sem);
 		ts5=rt_get_time_ns();
 		//ecrt_domain_queue(sys.domain[sys.domain_idx]);
@@ -369,145 +260,19 @@ int m3sys_startup(void)
 	int pcode;
 	M3EcSlaveShm * s;
 	int found=0,ps=0;
-	//ec_pdo_t *pdo, *next_pdo;
-	//ec_pdo_entry_t * pe, *npe;
-	/*if (!(!sys.master = ecrt_request_master(0))) {
-		M3_ERR("Requesting master 0 failed!\n");
-		return 0;
-	}*/
-	//ecrt_master_callbacks(sys.master, request_lock, release_lock, NULL);
-
-	//ecrt_master_state(sys.master, &sys.master_state);
-	//sys.shm->slaves_responding=sys.master_state.slaves_responding; 
 	M3_INFO("Slaves Responding: %d\n",sys.shm->slaves_responding);
 
 	sys.num_domain=MAX(1,MIN(sys.shm->slaves_responding,NUM_EC_DOMAIN));
 	M3_INFO("Creating %d domains...\n",sys.num_domain);
 	sys.domain_idx=0;
-	for (i=0;i<sys.num_domain;i++)
-	{
-		/*if (!(sys.domain[i] = ecrt_master_create_domain(sys.master))) {
-			M3_ERR("Domain creation failed!\n");
-			goto out_release_master;
-		}*/
-	}
-	
 	M3_INFO("Registering PDOs...\n");
-	//Search for an M3 product code for each slave
 	sys.shm->slaves_active=0;
-	for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
-	{
-		s=&(sys.shm->slave[sidx]);
-		M3_INFO("Registering slave: %d\n",sidx);
-		found=0;
-		for (pcode=M3_PRODUCT_CODE_START;pcode<=M3_PRODUCT_CODE_END;pcode++)
-		{
-			s->network_id=sidx;
-			s->active=0;
-			s->product_code=-1;
-			s->serial_number=-1;
-
-			/*sys.slave_config[sidx]=ecrt_master_slave_config(
-					sys.master,
-     0,
-     sidx,
-     MEKA_VENDOR_ID,
-     pcode);*/
-					
-			/*if (sys.slave_config[sidx]!=NULL)
-			{
-				if (sys.slave_config[sidx]->slave) //Attached
-				{
-					found=1;
-					M3_INFO("Attached Slave %d to Product Id %d\n",sidx,pcode);
-					s->product_code=pcode;
-					s->serial_number=sys.slave_config[sidx]->slave->sii.serial_number;
-					sys.shm->slaves_active++;
-					s->active=1;
-					
-
-					s->n_byte_status=0;
-					s->n_byte_cmd=0;
-					//In M3 EEPROM standard, SYNCM0 is for Command, SYNCM1 is for Status
-					//The status/command blocks are broken up into n entries of max 30 bytes each
-					//Since 255 is max size of bit_length field
-					/*list_for_each_entry_safe(pdo, next_pdo, &sys.slave_config[sidx]->slave->sii.pdos, list) 
-					{
-						list_for_each_entry_safe(pe, npe, &pdo->entries, list) 
-						{
-							if (pdo->sync_index==0)
-								s->n_byte_cmd+=pe->bit_length/8;
-							if (pdo->sync_index==1)
-								s->n_byte_status+=pe->bit_length/8;
-						}
-					}
-					M3_INFO("Slave %d PDO Byte Sizes: Command %d, Status %d\n",sidx,s->n_byte_cmd,s->n_byte_status);					
-					break;
-				}
-				else
-				{
-					//This is ugly hack into master, hopefully newer rev will allow graceful failure on adding slaves
-					M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,pcode);
-					list_del(&(sys.slave_config[sidx]->list));
-					/////////////::::ec_slave_config_clear(sys.slave_config[sidx]);
-				}
-			}*/
-		}
-		if (!found)
-			M3_WARN("Slave %d was not matched to an M3 EtherCAT product\n", sidx);
-	}
-	//Assign the PDOs for the M3 Slaves
-	/*for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
-	{
-		s=&(sys.shm->slave[sidx]);
-		if (sys.slave_config[sidx]!=NULL && s->active)
-		{
-			sys.offset_status[sidx]=ecrt_slave_config_reg_pdo_entry( 
-					sys.slave_config[sidx],
-     M3EC_PDO_STATUS_INDEX,
-     M3EC_PDO_STATUS_SUBINDEX,
-     sys.domain[sidx%sys.num_domain],NULL );	
-			if (sys.offset_status[sidx]<0)
-			{
-				M3_ERR("ecrt_slave_config_reg_pdo_entry STATUS failed for slave %d with %d\n", sidx,sys.offset_status[sidx]);
-				goto out_release_master;
-			}
-			sys.offset_command[sidx]=ecrt_slave_config_reg_pdo_entry( 
-					sys.slave_config[sidx],
-     M3EC_PDO_CMD_INDEX,
-     M3EC_PDO_CMD_SUBINDEX,
-     sys.domain[sidx%sys.num_domain],NULL );
-			if (sys.offset_command[sidx]<0)
-			{
-				M3_ERR("ecrt_slave_config_reg_pdo_entry CMD failed for slave %d with %d\n", sidx,sys.offset_command[sidx]);
-				goto out_release_master;
-			}
-#ifdef USE_DISTRIBUTED_CLOCKS
-			// configure SYNC signals for slaves
-			M3_INFO("Setting up SYNC0 for Slave %d\n", sidx);
-			ecrt_slave_config_dc(sys.slave_config[sidx], (uint16_t)0x0300, (uint32_t)1000000, (uint32_t)0, 0, 0);
-#endif
-		}
-	}*/
-
 	M3_INFO("Successful Setup of all slaves\n");
-
 	M3_INFO("Activating master...\n");
-	/*if (ecrt_master_activate(sys.master)) {
-		M3_ERR("Failed to activate master!\n");
-		goto out_release_master;
-	}
-	for (i=0;i<sys.num_domain;i++)
-	{
-		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
-		ps=ecrt_domain_size (sys.domain[i]);   	
-		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
-	}*/
 	return 1;
 	
 out_release_master:
 		M3_ERR("Releasing master...\n");
-	//ecrt_release_master(sys.master);
 	return 0;
 	
 }

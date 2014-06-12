@@ -25,17 +25,15 @@ import exceptions
 import yaml
 import Gnuplot
 import numpy as nu
-#import Numeric
 import glob
 import datetime
 from datetime import timedelta
 from m3.unit_conversion import *
 from threading import Thread
 import m3.component_base_pb2 as mbs
-#import roslib; roslib.load_manifest('m3_toolbox_ros')
-#import rospy
-#import rosbag
 
+m3_config_filename = 'm3_config.yml'
+m3_robot_vatr = 'M3_ROBOT'
 # ###########################################
 
 class M3Exception(exceptions.Exception):
@@ -145,41 +143,73 @@ def get_int(default=None):
                                 return default
                         print 'Invalid value, try again'
         return x
+def get_m3_robot_path():
+    vpath=os.environ['M3_ROBOT']
+    return vpath.split(':')
 
 def get_m3_ros_config_path():
         try:
-                return os.environ['M3_ROBOT']+'/ros_config/'
+                vpath = get_m3_robot_path()
+                path = [p+'/ros_log/' for p in vpath]
+                return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
         return ''
 
+
 def get_m3_config_path():
         try:
-                return os.environ['M3_ROBOT']+'/robot_config/'
+                vpath = get_m3_robot_path()
+                path = [p+'/robot_config/' for p in vpath]
+                path.reverse() 
+                return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
         return ''
 
 def get_m3_log_path():
         try:
-                return os.environ['M3_ROBOT']+'/robot_log/'
+                vpath = get_m3_robot_path()
+                path = [p+'/robot_log/' for p in vpath]
+                return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
         return ''
 
+    
+
 def get_config_hostname():
-        path=get_m3_config_path()
-        filename= path+'m3_config.yml'
-        f=file(filename,'r')
-        config= yaml.safe_load(f.read())
-        f.close()
-        try:
-                h = config['hostname']
-        except KeyError:
-                h = None
+        config= get_m3_config()
+        h=None
+        for c in config:
+            try:
+                    h = c['hostname']
+                    return h
+            except KeyError:
+                    pass
         return h
 
+def set_config_hostname(hostname):
+        path=get_m3_config_path()
+        filename= path[-1]+'m3_config.yml'
+        f = open(filename, 'r')
+        config= yaml.safe_load(f)
+        old_hostname = config['hostname']
+        f.close()
+        try:
+                 f = open(filename, 'w')
+                 config['hostname']=hostname
+                 yaml.safe_dump(config,f,default_flow_style=False)
+                 f.close()
+        except KeyError:
+                return False
+        print "Config hostname changed (",old_hostname,"->",hostname,")"
+        return True
 
+def configure_virtual_meka():
+    local_hostname = get_local_hostname()
+    set_config_hostname(local_hostname)
+    
 def get_local_hostname():
 	cmd='hostname'
 	stdout_handle = os.popen(cmd, "r")
@@ -190,72 +220,88 @@ def get_local_hostname():
 def get_component_config(name):
         config= None	
         try:
-                f=file(get_component_config_filename(name),'r')
+                config_filename = get_component_config_filename(name)
+                print 'Config filename for',name,':',config_filename
+                f=open(config_filename,'r')
                 config= yaml.safe_load(f.read())
         except (IOError, EOFError):
-                print 'Config file not present:',get_component_config_filename(name),'for',name
+                print 'Config file not present for component ',name
         return config
 
 def get_m3_config():
-        path=get_m3_config_path()
-        filename= path+'m3_config.yml'
-        f=file(filename,'r')
-        config= yaml.safe_load(f.read())
+        vpath=get_m3_config_path()
+        filename= [p+m3_config_filename for p in vpath]
+        fstream = ''
+        for fname,path in zip(filename,vpath):
+            try:
+                f = open(fname,'r')
+                if fstream is not '':
+                    fstream =fstream +'\n---\n' + f.read() + '\nconfig_path: ' + path
+                else:
+                    fstream = f.read() + '\nconfig_path: ' + path
+            except (IOError, EOFError):
+                print 'Config file not present:',fname,' Please check your M3_ROBOT variable'
+        config=yaml.safe_load_all(fstream)
         return config
 
 
 def get_ec_component_names():
-        c=get_m3_config()
+        config= get_m3_config()
         x=[]
-        if c.has_key('ec_components'):
-                for k in c['ec_components'].keys():
-                        x.extend(c['ec_components'][k].keys())
-        return x
+        for c in config:
+            if c.has_key('ec_components'):
+                    for k in c['ec_components'].keys():
+                            x.extend(c['ec_components'][k].keys())
+            return x
 
 def get_component_config_type(name):
-        path=get_m3_config_path()
-        filename= path+'m3_config.yml'
-        f=file(filename,'r')
-        config= yaml.safe_load(f.read())
-        try:
-                for cdir in config['ec_components'].keys():
-                        for c in config['ec_components'][cdir].keys():
+        config= get_m3_config()
+        for conf in config:
+            try:
+                    for cdir in conf['ec_components'].keys():
+                            for c in conf['ec_components'][cdir].keys():
                                 if (c==name):
-                                        return config['ec_components'][cdir][c]
-        except KeyError:
+                                        return conf['ec_components'][cdir][c]
+            except KeyError:
                 pass
-        try:
-                for cdir in config['rt_components'].keys():
-                        for c in config['rt_components'][cdir].keys():
-                                if (c==name):
-                                        return config['rt_components'][cdir][c]
-        except KeyError:
+                #print "No ec_components for",name,"trying with rt_components"
+            try:
+                    for cdir in conf['rt_components'].keys():
+                            for c in conf['rt_components'][cdir].keys():
+                                    if (c==name):
+                                        return conf['rt_components'][cdir][c]
+            except KeyError:
                 pass
+                    #print "No rt_components for",name," trying with the next config file"
+        print "No config type found for component ",name
         return ''
 
 
 def get_component_config_filename(name):
-
-        path=get_m3_config_path()
-        filename= path+'m3_config.yml'
-        f=file(filename,'r')
-        config= yaml.safe_load(f.read())
-        try:
-                for cdir in config['ec_components'].keys():
-                        for c in config['ec_components'][cdir].keys():
-                                if (c==name):
-                                        return path+cdir+'/'+name+'.yml'
-        except KeyError:
+        config= get_m3_config()
+        for conf in config:
+            try:
+                    for cdir in conf['ec_components'].keys():
+                            for c in conf['ec_components'][cdir].keys():
+                                    if (c==name):
+                                            fileout = conf['config_path']+cdir+'/'+name+'.yml'
+                                            return fileout
+            except KeyError:
                 pass
-        try:
-                for cdir in config['rt_components'].keys():
-                        for c in config['rt_components'][cdir].keys():
-                                if (c==name):
-                                        return path+cdir+'/'+name+'.yml'
-        except KeyError:
-                pass
+                    #print "No ec_components for",name,"trying with rt_components"
+            try:
+                    for cdir in conf['rt_components'].keys():
+                            for c in conf['rt_components'][cdir].keys():
+                                    if (c==name):
+                                        fileout = conf['config_path']+cdir+'/'+name+'.yml'
+                                        return fileout
+            except KeyError:
+                    print "No rt_components for",name," trying with the next config file"
+        print "No config file found for component ",name
         return ''
 
+"""
+#DEPRECATED
 def get_component_config_path(name):
         path=get_m3_config_path()
         filename= path+'m3_config.yml'
@@ -276,7 +322,7 @@ def get_component_config_path(name):
         except KeyError:
                 pass
         return ''
-
+"""
 def time_string():
         time_stamp = time.localtime()
         output="_".join([('0'*(2-len(str(i)))+str(i)) for i in time_stamp[:6]])
@@ -394,7 +440,7 @@ def gplot(x,y=None,g=None,yrange=None,persist_in=1):
                 g = Gnuplot.Gnuplot(persist = persist_in)
                 g.title('M3 Plot')
                 g('set data style lines')
-                g('set term x11 noraise')
+                g('set terminal x11 noraise')
                 if yrange is not None:
                         g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
         g.plot(zip(y,x))
@@ -407,7 +453,7 @@ def gplot2(x1,x2,y=None,g=None,yrange=None,persist_in=1):
                 g = Gnuplot.Gnuplot(persist = persist_in)
                 g.title('M3 Plot')
                 g('set data style lines')
-                g('set term x11 noraise')
+                g('set terminal x11 noraise')
                 if yrange is not None:
                         g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
         d = Gnuplot.Data(y,x1)
@@ -525,6 +571,8 @@ def user_select_components_interactive(names,single=False,item='Components'):
                                 return select
                         idx=(idx+1)%len(names)
                 elif r=='q':
+                        if not len(select):
+                            select.append(names[idx])
                         return select
                 elif r=='i':
                         print 'Enter ',item, 'index: '
@@ -590,46 +638,56 @@ class M3ScopeN():
                 for i in range(n):
                         self.y.append([0.0]*xwidth)
                 self.x=range(xwidth)
-                self.g = Gnuplot.Gnuplot(persist = 1)                
-                self.g('set data style lines')
+                self.g = Gnuplot.Gnuplot()#(persist = 1)                
+                #self.g('set data style linespoints')
                 self.g('set term x11 noraise')
+                self.g.title(title)
+            
                 if yrange is not None:
                         self.g('set yrange ['+str(yrange[0])+':'+str(yrange[1])+']')
+                self.data = []
+                for i in range(self.n):
+                    self.data.append(Gnuplot.Data(self.x,self.y[i]))
         def plot(self,y):
-                d=[]
                 for i in range(self.n):
                         self.y[i].pop(0)
                         self.y[i].append(y[i])
-                        d.append(Gnuplot.Data(self.x,self.y[i]))
-                self.g.plot(*d)
+                        self.data[i] = Gnuplot.Data(self.x,self.y[i],with_="lines")
+                self.g.plot(*self.data)
+        def stop(self):
+            self.g.close()
 # #############################################################################################	
 
 class M3Scope():
-        def __init__(self,xwidth=200,yrange=None):
+        def __init__(self,xwidth=200,yrange=None,title='M3Scope'):
                 self.y=[0.0]*xwidth
                 self.x=range(xwidth)
                 self.g=None
                 self.yrange=yrange
+                self.title = title
         def plot(self,val):
                 self.y.pop(0)
                 self.y.append(val)
                 self.g=gplot(self.y,self.x,self.g,self.yrange)
+                self.g.title(self.title)
         def print_to_file(self,filename):
                 self.g.hardcopy(filename,color=1)
 
 class M3Scope2():
-        def __init__(self,xwidth=200,yrange=None):
+        def __init__(self,xwidth=200,yrange=None,title='M3Scope2'):
                 self.y1=[0.0]*xwidth
                 self.y2=[0.0]*xwidth
                 self.x=range(xwidth)
                 self.g=None
                 self.yrange=yrange
+                self.title=title
         def plot(self,yy1,yy2):
                 self.y1.pop(0)
                 self.y1.append(yy1)
                 self.y2.pop(0)
                 self.y2.append(yy2)
                 self.g=gplot2(self.y1,self.y2,self.x,self.g,self.yrange)
+                self.g.title(self.title)
         def print_to_file(self,filename):
                 self.g.hardcopy(filename,color=1)
 # ####################### Inplace  Operations ##########################
@@ -858,7 +916,7 @@ def get_log_dir(logname,logpath=None):
         if logpath is not None:
                 return logpath+'/'+logname
         try:
-                logpath=os.environ['M3_ROBOT']+'/robot_log'
+                logpath=get_m3_log_path()
                 if not os.path.isdir(logpath):
                         print 'Directory does not exist: '+logpath
                         return None
@@ -900,3 +958,26 @@ def make_log_dir(logdir):
         else:
                 print 'Unable to make log directory: ',logdir
                 return False
+            
+            
+"""
+import pprint
+print 'Getting config : '
+
+config = get_m3_config()
+pprint.pprint(config)
+
+print get_config_hostname()
+
+print get_component_config('m3actuator_ms4_j7') 
+
+print get_component_config('my_class_v1')
+print get_component_config_filename('m3actuator_ec_ma17_j0')
+print get_component_config_type('m3actuator_ec_ma17_j0') 
+print get_component_config_type('m3actuator_ms4_j7')  
+
+
+"""
+
+
+

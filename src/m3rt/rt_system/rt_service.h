@@ -23,9 +23,9 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/m3rt_def.h"
 #include "m3rt/base/toolbox.h"
 #include "m3rt/base/component_factory.h"
-#include "m3rt/rt_system/rt_data_service.h"
-#include "m3rt/rt_system/rt_log_service.h"
-#include "m3rt/rt_system/rt_system.h"
+#include "rt_data_service.h"
+#include "rt_log_service.h"
+#include "rt_system.h"
 #include <pthread.h>
 
 #ifdef __RTAI__
@@ -41,12 +41,11 @@ extern "C" {
 #include <semaphore.h>
 #endif
 
-
 //No m3rt namespace for swig-ability
 	
 class M3RtService{
 public:
-	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){factory.Startup();}
+	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){}
 	~M3RtService();
 	bool Startup();
 	void Shutdown();
@@ -67,6 +66,7 @@ public:
 	bool IsLogServiceRunning(){return log_service!=NULL;}
 	bool IsRosServiceRunning(){return false;}
 	bool IsRtSystemRunning(){return rt_system !=NULL;}
+	bool IsServiceThreadActive();
 	int GetNumComponents();
 	const char *  GetComponentName(int idx);
 	const char *  GetComponentType(int idx);
@@ -90,6 +90,7 @@ private:
 #endif
 	std::vector<int> ports;
 	int next_port;
+        int hst;
 	int num_rtsys_attach;
 };
 

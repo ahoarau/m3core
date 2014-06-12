@@ -1,8 +1,10 @@
-#!/bin/sh
-
+#!/bin/bash
+echo 'Running insmods'
 /usr/local/bin/m3rt_insmods
 /usr/local/bin/m3rt_rotate_logs
+echo 'Running m3rt_server.py'
 /usr/local/bin/m3rt_server.py $@
+echo 'Running rmmods'
 /usr/local/bin/m3rt_rmmods
 
 

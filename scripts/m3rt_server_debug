@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export LD_LIBRARY_PATH=/usr/local/lib:/opt/ros/cturtle/ros/3rdparty/xmlrpcpp/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/cturtle/ros/core/roscpp/lib

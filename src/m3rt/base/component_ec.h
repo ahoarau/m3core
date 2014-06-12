@@ -20,10 +20,10 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef  M3RT_COMPONENT_EC_H
 #define  M3RT_COMPONENT_EC_H
 
-#include <m3rt/base/component.h>
-#include <m3rt/base/component_base.pb.h>
-#include <m3rt/base/m3ec_def.h>
-#include <m3rt/base/toolbox.h>
+#include "m3rt/base/component.h"
+#include "m3rt/base/component_base.pb.h"
+#include "m3rt/base/m3ec_def.h"
+#include "m3rt/base/toolbox.h"
 
 
 

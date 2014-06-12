@@ -19,7 +19,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "rt_data_service.h"
 #include "m3rt/base/m3rt_def.h"
-
+#include <unistd.h>
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +48,11 @@ void data_thread(void * arg)
 	M3RtDataService * svc = (M3RtDataService *)arg;
 	svc->data_thread_active=true;
 	svc->data_thread_end=false;
+		if (!svc->StartServer()) //blocks until connection
+	{
+		svc->data_thread_active=false;
+		return;
+	}
 #ifdef __RTAI__
 	RT_TASK *task;
 
@@ -64,11 +69,6 @@ void data_thread(void * arg)
 	}
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 #endif
-	if (!svc->StartServer()) //blocks until connection
-	{
-		svc->data_thread_active=false;
-		return;
-	}
 	while(!svc->data_thread_end)
 	{
 		if (!svc->Step())
@@ -76,7 +76,12 @@ void data_thread(void * arg)
 		   svc->data_thread_error=true;		   
 		   break;
 		}
+#ifdef __RTAI__
+		//rt_task_wait_period(); //A.H Just go as fast as you can (No locks for now) TODO: test this more
+		rt_sleep(nano2count(4000000)); //250 Hz
+#else
 		usleep(10000); //100hz
+#endif
 	}	
 #ifdef __RTAI__
 	rt_task_delete(task);
@@ -97,20 +102,21 @@ bool M3RtDataService::Startup()
 	if (data_thread_active)
 	{
 		M3_ERR("M3RtDataService thread already active\n",0);
-		return false;
+		return true;
 	}
 	M3_INFO("Startup of M3RtDataService, port %d...\n",portno);
 	ext_sem=sys->GetExtSem();
 #ifdef __RTAI__
+	M3_INFO("Creating rt_threadDataService...\n");
 	hdt=rt_thread_create((void*)data_thread,this,10000);  // wait until thread starts
 #else
-	pthread_create((pthread_t *)&hdt, NULL, (void *(*)(void *))data_thread, (void*)this);
+	long int hdt = pthread_create((pthread_t *)&hdt, NULL, (void *(*)(void *))data_thread, (void*)this);
 #endif
 	usleep(100000);
-	if (!data_thread_active)
+	if (!data_thread_active || !hdt)
 	{
 		M3_ERR("Unable to start M3RtDataSevice\n",0);
-		return false;
+		return true;
 	}
 	return data_thread_active;
 }

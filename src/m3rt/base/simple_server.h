@@ -31,7 +31,7 @@ namespace m3rt
 class M3SimpleServer
 {
 public:
-	M3SimpleServer():nb_rx(0),buf_rx(0),nb_tx(0),buf_tx(0),socket_fd(-1),listener(-1){}
+	M3SimpleServer():nb_rx(0),nb_tx(0),buf_rx(0),buf_tx(0),socket_fd(-1),listener(-1){}
 	~M3SimpleServer();
 	bool Startup(int port);//Non-blocking
 	void Shutdown();
@@ -41,10 +41,10 @@ protected:
 	bool HandleNewConnection();//Non-blocking
 	bool IsActiveSocket(){return socket_fd!=-1;}
 	int portno;
-	unsigned char * buf_rx;
 	int nb_rx;
-	unsigned char * buf_tx;
 	int nb_tx;
+	unsigned char * buf_rx;
+	unsigned char * buf_tx;
 	fd_set master;   // master file descriptor list
 	fd_set read_fds; // temp file descriptor list for select()
 	fd_set write_fds; // temp file descriptor list for select()

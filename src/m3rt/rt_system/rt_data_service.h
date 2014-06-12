@@ -23,7 +23,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/simple_server.h"
 #include "m3rt/base/component_base.pb.h"
 #include "m3rt/base/toolbox.h"
-#include "m3rt/rt_system/rt_system.h"
+#include "rt_system.h"
 #include <pthread.h>
 #include <string>
 

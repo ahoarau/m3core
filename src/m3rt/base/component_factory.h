@@ -20,7 +20,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef  M3RT_COMPONENT_FACTORY_H
 #define  M3RT_COMPONENT_FACTORY_H
 
-#include <m3rt/base/component.h>
+#include "m3rt/base/component.h"
 #include <string>
 #include <vector>
 

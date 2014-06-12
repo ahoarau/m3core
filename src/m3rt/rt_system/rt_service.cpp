@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with M3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "m3rt/rt_system/rt_service.h"
+#include "rt_service.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -33,6 +33,7 @@ static void* service_thread(void * arg)
 	M3RtService * svc = (M3RtService *)arg;
 	svc_thread_active=true;
 	svc_thread_end=false;
+	m3rt::M3_INFO("Running Service Thread\n");
 	while(!svc_thread_end)
 	{
 		usleep(100000);
@@ -51,11 +52,15 @@ static void* service_thread(void * arg)
 
 M3RtService::~M3RtService()
 {
-	Shutdown();
+	//Shutdown(); //A.H: Let's call it ourselves
 }
-
+bool M3RtService::IsServiceThreadActive()
+{
+	return svc_thread_active;
+}
 bool M3RtService::Startup()
 {
+        factory.Startup();
 #ifdef __RTAI__
 	rt_allow_nonroot_hrt();
 #endif
@@ -65,9 +70,14 @@ bool M3RtService::Startup()
 		m3rt::M3_ERR("M3RtService thread already active\n",0);
 		return false;
 	}
-	pthread_create((pthread_t *)&hlt, NULL, (void *(*)(void *))service_thread, (void*)this);
+//#ifdef __RTAI__
+//	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
+//#else		
+	hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
+//#endif
+	
 	usleep(100000);
-	if (!svc_thread_active)
+	if (hst != 0) //A.H : ie there was an error initializing the thread
 	{
 		m3rt::M3_ERR("Unable to start M3RtService\n",0);
 		return false;
@@ -77,12 +87,16 @@ bool M3RtService::Startup()
 
 void M3RtService::Shutdown()
 {
+	m3rt::M3_INFO("Begin shutdown of M3RtService...\n");
 	svc_thread_end=true;
-	pthread_join((pthread_t)hlt, NULL);
-
-	if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
-	
-	RemoveRtSystem();
+	void *end;
+        if (hst != 0){
+		pthread_join((pthread_t)hlt, &end);
+		//if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
+	}
+	//m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
+	//RemoveRtSystem();
+	m3rt::M3_INFO("Shutdown of M3RtService complete.\n");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -108,10 +122,9 @@ int M3RtService::AttachRtSystem()
 
 int M3RtService::RemoveRtSystem()
 {
-	m3rt::M3_INFO("Removing RtSystem\n");
 	if (rt_system==NULL)
 	{
-		m3rt::M3_INFO("No RtSystem found\n");
+		//m3rt::M3_INFO("No RtSystem found\n");
 		num_rtsys_attach=0;
 		return 0;
 	}
@@ -231,7 +244,7 @@ bool M3RtService::RemoveDataService(int port)
 			data_services[i]->Shutdown();		
 			delete data_services[i];			
 			data_services[i] = NULL;			
-			ports[i] = NULL;			
+			ports[i] = 0;			
 			break;
 		}
 	}

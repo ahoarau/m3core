@@ -95,11 +95,11 @@ class M3GuiServer:
 
 class M3Gui(M3GuiServer): 
 	"""Builds the GUI client from the link"""
-	def __init__(self,stride_ms=125):
+	def __init__(self,title="M3 GUI",stride_ms=125):
 		M3GuiServer.__init__(self)
 		self.first_update=False
 		self.window = gtk.Window()
-		self.window.set_title('M3 GUI')
+		self.window.set_title(title)
 		self.window.set_border_width(5)
 		self.window.connect('destroy', self.quit)
 		self.sw = gtk.ScrolledWindow()
@@ -126,6 +126,7 @@ class M3Gui(M3GuiServer):
 				self.args = [args]	
 		self.process_cb=process_cb
 		self.update_source_id = gobject.timeout_add(self.stride_ms, self.update)
+		self.window.show_all()
 		gtk.main()
 		
 	def build(self):
