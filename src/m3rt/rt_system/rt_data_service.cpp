@@ -48,6 +48,11 @@ void data_thread(void * arg)
 	M3RtDataService * svc = (M3RtDataService *)arg;
 	svc->data_thread_active=true;
 	svc->data_thread_end=false;
+		if (!svc->StartServer()) //blocks until connection
+	{
+		svc->data_thread_active=false;
+		return;
+	}
 #ifdef __RTAI__
 	RT_TASK *task;
 
@@ -64,11 +69,6 @@ void data_thread(void * arg)
 	}
 	mlockall(MCL_CURRENT | MCL_FUTURE);
 #endif
-	if (!svc->StartServer()) //blocks until connection
-	{
-		svc->data_thread_active=false;
-		return;
-	}
 	while(!svc->data_thread_end)
 	{
 		if (!svc->Step())
@@ -102,7 +102,7 @@ bool M3RtDataService::Startup()
 	if (data_thread_active)
 	{
 		M3_ERR("M3RtDataService thread already active\n",0);
-		return false;
+		return true;
 	}
 	M3_INFO("Startup of M3RtDataService, port %d...\n",portno);
 	ext_sem=sys->GetExtSem();
@@ -116,7 +116,7 @@ bool M3RtDataService::Startup()
 	if (!data_thread_active || !hdt)
 	{
 		M3_ERR("Unable to start M3RtDataSevice\n",0);
-		return false;
+		return true;
 	}
 	return data_thread_active;
 }

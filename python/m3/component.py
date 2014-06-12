@@ -41,12 +41,7 @@ class M3Component:
     def read_config(self):
         """Assumes that the config file is shared between the 
     server and proxy (NFS, etc)"""
-        try:
-            f=file(self.config_name,'r')
-            self.config= yaml.safe_load(f.read())
-        except (IOError, EOFError):
-            print 'Config file not present:',self.config_name
-            return
+        self.config= m3t.get_component_config(self.name)
         if self.config.has_key('param'):
             self.load_attr_from_config(self.config['param'],self.param)
 
@@ -56,10 +51,10 @@ class M3Component:
         if self.config.has_key('param'):
             self.load_config_from_attr(self.config['param'],self.param)
         try:
-            f=file(self.config_name,'w')
-            print 'Saving...',self.config_name
-            f.write(yaml.safe_dump(self.config, default_flow_style=False,width=200))
-            f.close()
+            with open(self.config_name,'w') as f:
+                print 'Saving...',self.config_name
+                f.write(yaml.safe_dump(self.config, default_flow_style=False,width=200))
+            #f.close()
         except (IOError, EOFError):
             print 'Config file not present:',self.config_file
             return

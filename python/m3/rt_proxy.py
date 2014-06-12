@@ -93,6 +93,7 @@ class M3RtProxy:
 
 		if start_ros_svc:
 			self.__start_ros_service()
+		
 	def __del__(self):
 		if not self.stopped:
 			print 'M3 WARNING: Be sure to call proxy.stop() at the end of your script.'
@@ -206,21 +207,21 @@ class M3RtProxy:
 	# TODO: Currently only supports some of protobuf data type (float, string, array of messages)
 
 	def get_status_dict(self):
-		"""Build dictionary from all subscribed status messasges"""
+		"""Build dictionary from all subscribed status messages"""
 		d={}
 		for k,v in self.subscribed.items():
 			d[k]=m3t.GetDictFromMsg(v['status'])
 		return d
 
 	def get_command_dict(self):
-		"""Build dictionary from all published command messasges"""
+		"""Build dictionary from all published command messages"""
 		d={}
 		for k,v in self.published_command.items():
 			d[k]=m3t.GetDictFromMsg(v['command'])
 		return d
 
 	def get_param_dict(self):
-		"""Build dictionary from all published param messasges"""
+		"""Build dictionary from all published param messages"""
 		d={}
 		for k,v in self.published_param.items():
 			d[k]=m3t.GetDictFromMsg(v['param'])
@@ -314,7 +315,7 @@ class M3RtProxy:
 			logpath=os.environ['M3_ROBOT']
 			logpath = logpath.split(':')
 			#Tmp : just get the first one
-			logpath = logpath[0]+'/robot_log'
+			logpath = logpath[-1]+'/robot_log'
 		if not self.proxy.IsRtSystemRunning():
 			raise m3t.M3Exception('Cannot start log. M3RtSystem is not yet running on the server')
 		return self.proxy.start_log_service(logname,float(sample_freq_hz),self.log_names,int(samples_per_file),logpath,verbose)

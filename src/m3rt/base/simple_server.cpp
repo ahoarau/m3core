@@ -186,10 +186,12 @@ bool M3SimpleServer::Startup ( int port ) {
     FD_ZERO ( &read_fds );
     if ( ( listener = socket ( PF_INET, SOCK_STREAM, 0 ) ) == -1 ) {
         M3_ERR ( "ERROR opening socket %d\n",portno );
+	this->Shutdown();
         return false;
         }
-    if ( setsockopt ( listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof ( int ) ) == -1 ) {
+    if ( setsockopt ( listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof ( yes ) ) == -1 ) {
         M3_ERR ( "ERROR in setsockopt for Port %d\n",portno );
+	this->Shutdown();
         return false;
         }
     myaddr.sin_family = AF_INET; // bind
@@ -200,10 +202,12 @@ bool M3SimpleServer::Startup ( int port ) {
     int res_bind = ::bind ( listener, ( struct sockaddr * ) &myaddr, sizeof ( myaddr ) );
     if (  res_bind == -1 ) {
         M3_ERR ( "ERROR on bind for Port %d\n",portno );
+	this->Shutdown();
         return false;
         }
     if ( listen ( listener, 10 ) == -1 ) {
         M3_ERR ( "ERROR on listen for Port %d\n",portno );
+	this->Shutdown();
         return false;
         }
     FD_SET ( listener, &master ); // add the listener to the master set
