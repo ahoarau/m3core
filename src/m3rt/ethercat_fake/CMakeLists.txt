@@ -18,12 +18,13 @@ Set( MODULE_OUTPUT_FILES    m3ec.o
                             m3ec.mod.o
                             m3ec.ko )
 
-Set( MODULE_SOURCE_FILES  m3ec.c )
+Set( MODULE_SOURCE_FILES  Kbuild
+			m3ec.c )
 
 Set( DRIVER_FILE        m3ec.ko )
 Set( DRIVER_TARGET_NAME m3ec-module )
 Set( DRIVER_BIN_FILE    ${CMAKE_CURRENT_BINARY_DIR}/${DRIVER_FILE} )
-Set( MODULE_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR} )
+Set( MODULE_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR} )
 
 Set( KERNEL_DIR "/lib/modules/${CMAKE_SYSTEM_VERSION}/build" )
 message("-- Kernel dir : ${KERNEL_DIR} (Should be rtai-patched)")
@@ -35,7 +36,7 @@ Set( KBUILD_CMD ${CMAKE_MAKE_PROGRAM}
 Add_Custom_Command( OUTPUT  ${DRIVER_BIN_FILE}
                             ${MODULE_OUTPUT_FILES}
                     COMMAND ${KBUILD_CMD}
-                    #COMMAND cp -f ${DRIVER_FILE} ${DRIVER_BIN_FILE}
+		    COMMAND cp -f ${DRIVER_FILE} ${DRIVER_BIN_FILE}
                     WORKING_DIRECTORY ${MODULE_SOURCE_DIR}
                     DEPENDS ${MODULE_SOURCE_FILES} VERBATIM )
 
