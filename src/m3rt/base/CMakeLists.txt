@@ -21,7 +21,16 @@ endif(RTAI)
 #find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
 #find_package(M3rt REQUIRED)
 find_package(Boost  REQUIRED)
-find_package(YamlCpp 0.3 REQUIRED)
+
+
+## YAML CPP 
+find_package(PkgConfig REQUIRED)
+#find_package(YamlCpp  REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp<=0.5)
+if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+
 #find_package(Eigen3 REQUIRED)
 find_package(Protobuf REQUIRED)
 
@@ -43,7 +52,7 @@ add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # force the g
 # End Protobuf stuff
 
 SET(LIBS ${YAMLCPP_LIBRARY} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES}  pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../ ${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIR} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
 
 ## Get all the files sources and headers
 
