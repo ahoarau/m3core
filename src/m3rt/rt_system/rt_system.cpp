@@ -98,7 +98,7 @@ void *rt_system_thread(void *arg)
     //Give other threads a chance to load before starting
 #ifdef __RTAI__
     RTIME now = rt_get_time();
-	//rt_sleep(nano2count(1000000000));
+    rt_sleep(nano2count(1000000000));
     if(rt_task_make_periodic(task, now + tick_period, tick_period)) {
         M3_ERR("Couldn't make rt_system task periodic.\n");
         return 0;
@@ -423,13 +423,11 @@ void M3RtSystem::CheckComponentStates()
 {
     for(int i = 0; i < GetNumComponents(); i++) {
         if(GetComponent(i)->IsStateError() && !safeop_required) { //All or none in OP
-            M3_WARN("Component error detected for %s. Forcing all in to state SAFEOP\n", GetComponent(i)->GetName().c_str());
+            M3_WARN("Component error detected for %s. Forcing to state SAFEOP\n", GetComponent(i)->GetName().c_str());
 
-            safeop_required = true;
-            for(int j = 0; j < GetNumComponents(); j++) {
-                GetComponent(j)->SetStateSafeOp();
-            }
-            return;
+		safeop_required = true;
+                GetComponent(i)->SetStateSafeOp();
+            //return;
         }
     }
 }
