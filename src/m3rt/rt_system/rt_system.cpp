@@ -79,7 +79,7 @@ void *rt_system_thread(void *arg)
     M3_INFO("Use fpu initialized.\n");
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
-    RTIME tick_period = nano2count(RT_TIMER_TICKS_NS + 200000); //TODO : why +200000 ?
+    RTIME tick_period = nano2count(RT_TIMER_TICKS_NS ); //TODO : why +200000 ?
 
 #ifndef __SOFTREALTIME__
     M3_INFO("Hard real time initialized.\n");
@@ -127,11 +127,11 @@ void *rt_system_thread(void *arg)
         end = nano2count(rt_get_cpu_time_ns());
         dt = end - start;
 
-        /*if (tmp_cnt++ == 1000)
+        if (tmp_cnt++ == 1000)
         {
           M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
           tmp_cnt = 0;
-        }*/
+        }
         /*
         Check the time it takes to run components, and if it takes longer
         than our period, make us run slower. Otherwise this task locks
