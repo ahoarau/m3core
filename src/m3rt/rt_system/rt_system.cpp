@@ -127,11 +127,11 @@ void *rt_system_thread(void *arg)
         end = nano2count(rt_get_cpu_time_ns());
         dt = end - start;
 
-        if (tmp_cnt++ == 1000)
+        /*if (tmp_cnt++ == 1000)
         {
           M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
           tmp_cnt = 0;
-        }
+        }*/
         /*
         Check the time it takes to run components, and if it takes longer
         than our period, make us run slower. Otherwise this task locks
@@ -146,7 +146,7 @@ void *rt_system_thread(void *arg)
                 m3rt::M3_WARN("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n", step_cnt);
                 m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period), (double)count2nano(dt));
                 tick_period = dt;
-                rt_task_make_periodic(task, end + tick_period, tick_period);
+                //rt_task_make_periodic(task, end + tick_period, tick_period);
                 safeop_only = true;
                 m3sys->over_step_cnt = 0;
             }
