@@ -192,7 +192,7 @@ try:
     #print "M3 INFO: Starting client thread."
     try:
         m3client_thread = client_thread(make_op_all , make_op_all_shm , make_op_all_no_shm,start_data_svc)
-        for i in xrange(50):
+        for i in xrange(400):
             time.sleep(0.01)
     except Exception,e:
         print "M3 ERROR: Error creating the client thread:",e
