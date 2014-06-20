@@ -9,11 +9,13 @@ elif [[ $a == "Y" || $a == "y" ]]; then
 
 echo 'Removing libraries.'
 sudo rm -rf /usr/local/lib/libm3*
+sudo rm -rf /usr/local/lib/libholomni_pcv
 echo 'Removing header files and scripts.'
 sudo rm -rf /usr/local/include/m3/
 sudo rm -rf /usr/local/include/m3rt/
 echo 'Removing python scripts.'
 sudo rm -rf /usr/local/lib/python2.7/dist-packages/m3/
+sudo rm -rf /usr/local/lib/python2.7/dist-packages/m3*
 sudo rm -rf /usr/local/lib/python2.7/dist-packages/m3rt/
 echo 'm3 successfuly unistalled.'
 fi
