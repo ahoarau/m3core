@@ -22,8 +22,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include <linux/module.h>
 
-#include "../base/m3rt_def.h"
-#include "../base/m3ec_def.h"
+#include "m3rt/base/m3rt_def.h"
+#include "m3rt/base/m3ec_def.h"
 
 // Linux
 
@@ -256,10 +256,10 @@ void release_lock(void *shm)
 int m3sys_startup(void)
 {
 	 
-	int sidx,i;
-	int pcode;
-	M3EcSlaveShm * s;
-	int found=0,ps=0;
+	//int sidx,i;
+	//int pcode;
+	//M3EcSlaveShm * s;
+	//int found=0,ps=0;
 	M3_INFO("Slaves Responding: %d\n",sys.shm->slaves_responding);
 
 	sys.num_domain=MAX(1,MIN(sys.shm->slaves_responding,NUM_EC_DOMAIN));
@@ -271,8 +271,8 @@ int m3sys_startup(void)
 	M3_INFO("Activating master...\n");
 	return 1;
 	
-out_release_master:
-		M3_ERR("Releasing master...\n");
+//out_release_master:
+//		M3_ERR("Releasing master...\n");
 	return 0;
 	
 }
