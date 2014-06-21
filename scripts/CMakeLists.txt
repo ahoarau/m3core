@@ -15,8 +15,6 @@ m3rt_timestats_run
 uninstall_m3
 )
 
-message("Scripts:${M3RTSCRIPTS}")
-
 install (
 	FILES ${M3RTSCRIPTS} 
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ WORLD_EXECUTE
