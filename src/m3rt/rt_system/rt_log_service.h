@@ -39,14 +39,13 @@ extern "C" {
 
 namespace m3rt
 {
-	using namespace std;
 
 #define MAX_PAGE_QUEUE 300 //In case log service not stopped properly, force shutdown
 
 class M3RtLogService
 {
 public:
-	M3RtLogService(M3RtSystem * s, string n, string p, mReal freq,int ps,int vb):
+	M3RtLogService(M3RtSystem * s, std::string n, std::string p, mReal freq,int ps,int vb):
 		sys(s),name(n),path(p),start_idx(0),page(NULL),entry(NULL),page_size(ps),verbose(vb),num_page_write(0),num_kbyte_write(0),num_kbytes_in_buffer(0),entry_idx(0),page_idx_read(0),page_idx_write(0),pages_written(0)
 	{
 		downsample_rate = MAX(0,((int)((mReal)RT_TASK_FREQUENCY)/freq)-1); 
@@ -55,7 +54,7 @@ public:
 	bool Startup();					//Called by M3RtService
 	void Shutdown();				//Called by M3RtService
 	bool WritePagesToDisk();			//Called by M3RtLogService thread
-	void AddComponent(string name);			//Called by M3RtService
+	void AddComponent(std::string name);			//Called by M3RtService
 	bool Step();					//Called by M3RtSystem
 	bool WriteEntry(bool final);	
 	M3StatusLogPage * GetNextPageToRead();
@@ -64,13 +63,13 @@ public:
 	void MarkPageFull();
 private:
 	
-	string GetNextFilename(int num_entry);
-	string name;
-	string path;
+	std::string GetNextFilename(int num_entry);
+	std::string name;
+	std::string path;
 	M3StatusAll * entry;
-	vector<M3StatusLogPage*> pages;
-	vector<bool> is_page_full;
-	vector<M3Component *> components;
+	std::vector<M3StatusLogPage*> pages;
+	std::vector<bool> is_page_full;
+	std::vector<M3Component *> components;
 	int start_idx;
 	int downsample_cnt;
 	int downsample_rate;

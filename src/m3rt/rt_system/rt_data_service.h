@@ -23,7 +23,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/simple_server.h"
 #include "m3rt/base/component_base.pb.h"
 #include "m3rt/base/toolbox.h"
-#include "rt_system.h"
+#include "m3rt/rt_system/rt_system.h"
 #include <pthread.h>
 #include <string>
 
@@ -43,7 +43,6 @@ extern "C" {
 
 namespace m3rt
 {
-	using namespace std;
 class M3RtDataService
 {
 public:
@@ -52,7 +51,7 @@ public:
 	void Shutdown();						//Stop thread, close port
 	bool StartServer(){return server.Startup(portno);}
 	bool Step();
-	void ClientSubscribeStatus(string name);
+	void ClientSubscribeStatus(std::string name);
 	bool data_thread_active;
 	bool data_thread_end;
 	bool data_thread_error;
@@ -62,10 +61,10 @@ private:
 	M3SimpleServer server;
 	int portno;
 	
-	string sread;
-	string swrite;
+	std::string sread;
+	std::string swrite;
 	M3RtSystem * sys;
-	vector<string> status_names;
+	std::vector<std::string> status_names;
 	long hdt;
 #ifdef __RTAI__	
 	SEM * ext_sem;

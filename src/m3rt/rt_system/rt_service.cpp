@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with M3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "rt_service.h"
+#include "m3rt/rt_system/rt_service.h"
 
 #include <stdio.h>
 #include <unistd.h>

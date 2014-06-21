@@ -21,7 +21,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-
+using namespace std;
 
 bool M3Component::ParseCommand(std::string &s)
 {
@@ -75,7 +75,7 @@ void M3Component::PrettyPrint()
     BannerPrint(80, "M3 Component");
     M3_PRINTF("Name: %s\n", GetName().c_str());
     M3_PRINTF("Version: %s\n", GetBaseStatus()->version().c_str());
-    M3_PRINTF("Timestamp (uS): %lld\n", GetBaseStatus()->timestamp());
+    M3_PRINTF("Timestamp (uS): %ld\n", static_cast<long int>(GetBaseStatus()->timestamp()));
     const char *m3sys_state_names[] = {
         "M3COMP_STATE_INIT",
         "M3COMP_STATE_ERR",

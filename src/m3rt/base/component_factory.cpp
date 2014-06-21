@@ -25,7 +25,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <list>
 #include <vector>
 #include <string>
-#include <dlfcn.h>
 #include <stdio.h>
 #include <unistd.h>
 

@@ -40,8 +40,6 @@ extern "C" {
 
 namespace m3rt
 {
-	using namespace std;
-
 	static int num_asyncs = 0;
 	
 class M3ComponentAsync : public M3Component

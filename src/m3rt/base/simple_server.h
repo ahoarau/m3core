@@ -27,7 +27,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-	using namespace std;
 class M3SimpleServer
 {
 public:
@@ -35,8 +34,8 @@ public:
 	~M3SimpleServer();
 	bool Startup(int port);//Non-blocking
 	void Shutdown();
-	int WriteStringToPort(string & s); //Non-blocking
-	int  ReadStringFromPort(string & s, int & size);//Non-blocking
+	int WriteStringToPort(std::string & s); //Non-blocking
+	int  ReadStringFromPort(std::string & s, int & size);//Non-blocking
 protected:
 	bool HandleNewConnection();//Non-blocking
 	bool IsActiveSocket(){return socket_fd!=-1;}

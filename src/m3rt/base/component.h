@@ -30,7 +30,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-using namespace std;
 class M3ComponentFactory;
 class M3RtSystem;
 
@@ -61,7 +60,7 @@ class M3Component{
 		virtual ~M3Component(){}
 		friend class M3RtSystem;
 		friend class M3RtLogService;
-		string GetName(){return GetBaseStatus()->name();}
+		std::string GetName(){return GetBaseStatus()->name();}
 		int  GetState(){return (int)GetBaseStatus()->state();}
 		int  GetPriority(){return priority;}
 		void  SetPriority(int p){priority=p;}
@@ -90,30 +89,30 @@ class M3Component{
 		virtual google::protobuf::Message *  GetCommand()=0;
 		virtual google::protobuf::Message *  GetStatus()=0;
 		virtual google::protobuf::Message *  GetParam()=0;
-		void ParseCommandTest(string & s){}
-		virtual bool SerializeStatus(string & s);
+		void ParseCommandTest(std::string & s){}
+		virtual bool SerializeStatus(std::string & s);
 	protected:
 		void RegisterVersionID(const char * name, int id);
-		virtual bool ParseCommand(string & s);
-		virtual bool ParseParam(string & s);		
+		virtual bool ParseCommand(std::string & s);
+		virtual bool ParseParam(std::string & s);		
 		virtual bool LinkDependentComponents(){return true;}
 		virtual M3BaseStatus *  GetBaseStatus()=0;
 	protected:
 		virtual bool ReadConfig(const char * filename);
 		M3ComponentFactory * factory;
 		int priority;
-		vector<string> version_names;
-		vector<int> version_ids;
+		std::vector<std::string> version_names;
+		std::vector<int> version_ids;
 		int version_id;
 		YAML::Node doc;
-		//std::string doc_path;
+		//std::std::string doc_path;
 };
 
 //Factory defn.
 typedef M3Component * create_comp_t();
 typedef void destroy_comp_t(M3Component *);
-extern map< string, create_comp_t *, less<string> > creator_factory;	//global
-extern map< string, destroy_comp_t *, less<string> > destroyer_factory; //global
+extern std::map< std::string, create_comp_t *, std::less<std::string> > creator_factory;	//global
+extern std::map< std::string, destroy_comp_t *, std::less<std::string> > destroyer_factory; //global
 
 }
 

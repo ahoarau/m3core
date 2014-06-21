@@ -3,7 +3,7 @@ setup(
     name = "m3core",
     package_dir={ '': '${CMAKE_CURRENT_SOURCE_DIR}' },
     packages = ["m3", "m3rt"],
-    version = "1.6.1",
+    version = "1.9.1",
     description = "Python bindings for the M3 real time control software",
     author = "Meka Robotics LLC",
     author_email = "info@mekabot.com",

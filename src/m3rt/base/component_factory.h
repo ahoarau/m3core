@@ -26,8 +26,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-using namespace std;
-
 
 //Because of Protocol Buffers implementation
 //Only one instance of libprotobuf can be loaded
@@ -38,23 +36,23 @@ public:
 	~M3ComponentFactory(){}
 	bool Startup();												//Load libraries
 	void Shutdown();											//Free libraries, release components
-	M3Component * CreateComponent(string type);			//Instantiate a component of this type
+	M3Component * CreateComponent(std::string type);			//Instantiate a component of this type
 	bool ReleaseComponent(M3Component * c);						//Safe delete of a component
 	void ReleaseAllComponents();								//Safe delete of all components
 	M3Component *  	GetComponent(int idx);
-	string  	GetComponentType(int idx);
-	int 			GetComponentIdx(string name); 			//Returns -1 if not found
-	M3Component * 	GetComponent(string name);
-	string  	GetComponentName(int idx);
+	std::string  	GetComponentType(int idx);
+	int 			GetComponentIdx(std::string name); 			//Returns -1 if not found
+	M3Component * 	GetComponent(std::string name);
+	std::string  	GetComponentName(int idx);
 	int 			GetNumComponents();
 	M3MonitorStatus * GetMonitorStatus(){return &monitor_status;}
 private:
 	bool ReadConfig(const char * filename);
-	bool AddComponentLibrary(string lib);
-	vector<M3Component *>	m3_list;
-	vector<string>	m3_types;
-	vector<void *> 		dl_list; 						//handles for dynamic libs
-	vector<string> 	dl_types;
+	bool AddComponentLibrary(std::string lib);
+	std::vector<M3Component *>	m3_list;
+	std::vector<std::string>	m3_types;
+	std::vector<void *> 		dl_list; 						//handles for dynamic libs
+	std::vector<std::string> 	dl_types;
 	M3MonitorStatus  monitor_status; 					//Container for all component rt stats
 };
 

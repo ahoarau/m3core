@@ -6,20 +6,11 @@ set(LIBNAME "m3base")
 
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
-
-message("RTAI:${RTAI}")
-
-#set(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
-#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 if(RTAI)
 find_package(RTAI REQUIRED)
 add_definitions(-D__RTAI__)
 endif(RTAI)
-#find_package(M3 COMPONENTS HARDWARE ROBOTS CHAINS TOOLBOX SHARED_MEM REQUIRED)
-#find_package(M3rt REQUIRED)
+
 find_package(Boost  REQUIRED)
 
 
@@ -38,9 +29,7 @@ find_package(Protobuf REQUIRED)
 # Start Protobuf stuff
 include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
-#file(GLOB ProtoFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.proto)
-message("ProtoFiles:${ProtoFiles} to ${CMAKE_CURRENT_SOURCE_DIR} ")
-PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_SOURCE_DIR} ${ProtoFiles})
+PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_BINARY_DIR} ${ProtoFiles})
 add_custom_target(${LIBNAME}_protobuf_output ALL DEPENDS ${ProtoSources}) # force the generation
 
 find_package(PythonLibs 2.7 REQUIRED)
@@ -53,7 +42,7 @@ add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # force the g
 # End Protobuf stuff
 
 SET(LIBS  ${YAMLCPP_LIBRARIES} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES}  pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../ ${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIRS} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS})
+include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIRS} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR})
 
 ## Get all the files sources and headers
 

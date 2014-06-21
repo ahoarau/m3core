@@ -5,8 +5,6 @@ set(LIBNAME "rt_system")
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 OPTION(ROS "Enable/Disable ROS" OFF)
 
-message("RTAI:${RTAI}")
-message("ROS:${ROS}")
 INCLUDE_DIRECTORIES(${M3RT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}../base)
 

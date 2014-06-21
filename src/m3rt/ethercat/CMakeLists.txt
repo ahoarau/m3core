@@ -1,46 +1,57 @@
 cmake_minimum_required(VERSION 2.8)
 project(ethercat)
 
-
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-# RTAI
 find_package(RTAI REQUIRED)
-add_definitions(-D__RTAI__)
-add_definitions(-D__IN_RTAI__)
-include_directories(${RTAI_INCLUDE_DIR})
-# end RTAI
+find_package(M3rt)
+include_directories(${M3RT_INCLUDE_DIR})
 
-add_definitions(-ffast-math)
+SET( MODULE_NAME
+	m3ec
+)
 
+SET( MODULE_SOURCE_FILES
+	m3ec.c
+)
 
-Set( MODULE_OUTPUT_FILES    m3ec.o
-                            m3ec.mod.c
-                            m3ec.mod.o
-                            m3ec.ko )
+SET( MODULE_FILE
+	${MODULE_NAME}.ko
+)
 
-Set( MODULE_SOURCE_FILES  Kbuild
-			m3ec.c )
+SET( MODULE_OUTPUT_DIR
+	${CMAKE_CURRENT_BINARY_DIR}
+)
 
-Set( DRIVER_FILE        m3ec.ko )
-Set( DRIVER_TARGET_NAME m3ec-module )
-Set( DRIVER_BIN_FILE    ${CMAKE_CURRENT_BINARY_DIR}/${DRIVER_FILE} )
-Set( MODULE_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR} )
+SET( KERNEL_DIR
+	"/lib/modules/${CMAKE_SYSTEM_VERSION}/build"
+)
 
-Set( KERNEL_DIR "/lib/modules/${CMAKE_SYSTEM_VERSION}/build" )
-message("-- Kernel dir : ${KERNEL_DIR} (Should be rtai-patched)")
-Set( KBUILD_CMD ${CMAKE_MAKE_PROGRAM}
-                -C ${KERNEL_DIR}
-                M=${MODULE_SOURCE_DIR}
-                modules )
+SET( KBUILD_COMMAND
+	${CMAKE_MAKE_PROGRAM} -C ${KERNEL_DIR} M=${MODULE_OUTPUT_DIR} modules
+)
+CONFIGURE_FILE(
+	Kbuild.in
+	${MODULE_OUTPUT_DIR}/Kbuild
+)
+FOREACH( MODULE_SOURCE_FILE ${MODULE_SOURCE_FILES} )
+message("MODULE_SOURCE_FILE:${MODULE_SOURCE_FILE}")
+	CONFIGURE_FILE(
+		${MODULE_SOURCE_FILE}
+		${MODULE_OUTPUT_DIR}/${MODULE_SOURCE_FILE}
+		COPYONLY
+	)
+ENDFOREACH( MODULE_SOURCE_FILE )
 
-Add_Custom_Command( OUTPUT  ${DRIVER_BIN_FILE}
-                            ${MODULE_OUTPUT_FILES}
-                    COMMAND ${KBUILD_CMD}
-		    COMMAND cp -f ${DRIVER_FILE} ${DRIVER_BIN_FILE}
-                    WORKING_DIRECTORY ${MODULE_SOURCE_DIR}
-                    DEPENDS ${MODULE_SOURCE_FILES} VERBATIM )
+ADD_CUSTOM_COMMAND(
+	OUTPUT ${MODULE_OUTPUT_DIR}/${MODULE_FILE}
+	COMMAND ${KBUILD_COMMAND}
+	WORKING_DIRECTORY ${MODULE_OUTPUT_DIR}
+	DEPENDS ${MODULE_SOURCE_FILES} Kbuild.in
+	VERBATIM
+)
 
-Add_Custom_Target ( ${DRIVER_TARGET_NAME}
-                    ALL
-                    DEPENDS ${DRIVER_BIN_FILE} )
-Install(FILES ${DRIVER_FILE} DESTINATION /lib/modules/${CMAKE_SYSTEM_VERSION}/extra/)
+ADD_CUSTOM_TARGET(
+	${MODULE_NAME}
+	ALL
+	DEPENDS ${MODULE_OUTPUT_DIR}/${MODULE_FILE}
+)
+Install(FILES ${MODULE_OUTPUT_DIR}/${MODULE_FILE} DESTINATION /lib/modules/${CMAKE_SYSTEM_VERSION}/extra/)

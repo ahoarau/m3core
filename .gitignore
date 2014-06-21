@@ -1,44 +1,6 @@
+# Where everything should be built
 build
-.svn*
-*.log
-*.log.*
-.Trash*
-*.pyc
+# tmp files
 *~
-*.kde*
-.libs
-*.o
-*.pb.h
-*.pb.cc
-*.pb.cpp
-*.la
-.deps/
-.libs/
-Makefile
-Makefile.in
-*.status
-libtool
-configure
-Makefile.in
-Makefile
-m3rt_system_wrap.cpp
-aclocal.m4
-.project
-.pydevproject
-config/ 
-m4/
-*.txt.user
-config/
-*pb2.py
-autom4te.cache/
-
-
-# Kernel build tmp
-*.cmd
-.tmp_versions/
-Module.symvers
-*.ko
-*.mod.c
-*.order
-
-
+# Kdevelop stuff
+*kdev4*

@@ -22,7 +22,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef M3EC_H
 #define M3EC_H
 
-#include "m3rt_def.h"
+#include "m3rt/base/m3rt_def.h"
 
 #ifdef __KERNEL__
 #define int16_t short

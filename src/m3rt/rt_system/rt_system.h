@@ -50,8 +50,6 @@ extern "C" {
 
 namespace m3rt
 {
-using namespace std;
-
 
 class M3RtSystem
 {
@@ -69,12 +67,12 @@ public:
 	void PrettyPrintComponents();
 	void PrettyPrintComponent(int idx);
 	void PrettyPrintComponentNames();
-	M3Component * 	GetComponent(string name){return factory->GetComponent(name);}
+	M3Component * 	GetComponent(std::string name){return factory->GetComponent(name);}
 	M3Component *  	GetComponent(int idx){return factory->GetComponent(idx);}
-	string  	GetComponentName(int idx){return factory->GetComponentName(idx);}
-	string  	GetComponentType(int idx){return factory->GetComponentType(idx);}
+	std::string  	GetComponentName(int idx){return factory->GetComponentName(idx);}
+	std::string  	GetComponentType(int idx){return factory->GetComponentType(idx);}
 	int 		GetNumComponents(){return factory->GetNumComponents();}	
-	int 		GetComponentIdx(string name){return factory->GetComponentIdx(name);}
+	int 		GetComponentIdx(std::string name){return factory->GetComponentIdx(name);}
 	int			GetComponentState(int idx);	
 	bool SetComponentStateOp(int idx);
 	bool SetComponentStateSafeOp(int idx);
@@ -89,7 +87,7 @@ public:
 	
 	void RemoveLogService(){log_service=NULL;M3_DEBUG("Log service stopped at %d\n",log_service);}
 	bool ParseCommandFromExt(M3CommandAll & msg);  //Must be thread safe
-	bool SerializeStatusToExt(M3StatusAll & msg, vector<string>& names); //Must be thread safe
+	bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
 	bool logging;
 	int over_step_cnt;
 protected:
@@ -106,8 +104,8 @@ private:
 	M3ComponentFactory * factory;
 	M3EcSystemShm *  shm_ec;
 	bool safeop_required;
-	vector<M3ComponentEc *>	m3ec_list;
-	vector<M3Component *>	m3rt_list;
+	std::vector<M3ComponentEc *>	m3ec_list;
+	std::vector<M3Component *>	m3rt_list;
 #ifdef __RTAI__
 	SEM * shm_sem;
 	SEM * sync_sem;
@@ -121,8 +119,8 @@ private:
 #endif
 	M3RtLogService * log_service;
 	
-	vector<int> idx_map_ec;
-	vector<int> idx_map_rt;
+	std::vector<int> idx_map_ec;
+	std::vector<int> idx_map_rt;
 	long hst;
 	double test;
 	

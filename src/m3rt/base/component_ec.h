@@ -68,8 +68,8 @@ class M3ComponentEc: public M3Component{
 		M3EcSlaveShm * shm;
 		bool IsEcError();
 		int pdo_id;
-		vector<string> pdo_names;
-		vector<int> pdo_ids;
+		std::vector<std::string> pdo_names;
+		std::vector<int> pdo_ids;
 		int tmp_cnt;
 		bool virtual_mode;
 };

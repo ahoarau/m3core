@@ -15,10 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
-#TODO: make the rtai dir chosen from autoconf
+#TODO: add ${ETHERLAB_INCLUDE_DIR} and ${ETHERCAT_MASTER_INCLUDE_DIR}
 
 EXTRA_CFLAGS := -I/opt/etherlab/include/ \
 		-I/usr/local/src/ethercat/master/ \
-		-I/usr/realtime/include \
+		-I${RTAI_INCLUDE_DIR} \
+		-I${M3RT_SRC} \
 		-D__IN_RTAI__ -ffast-math 
-obj-m := m3ec.o
+
+obj-m := ${MODULE_NAME}.o
+
+EXTRA_CFLAGS += -I${PROJECT_SOURCE_DIR}

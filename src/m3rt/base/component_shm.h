@@ -69,7 +69,7 @@ class M3CompShm: public M3Component{
 		M3Sds * shm;				
 		SEM * status_sem;
 		SEM * command_sem;	
-		string shm_id;
+		std::string shm_id;
 };
 
 }

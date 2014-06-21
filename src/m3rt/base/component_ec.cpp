@@ -21,7 +21,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-	
+using namespace std;
 //Search for matching slave ID
 bool M3ComponentEc::SetSlaveEcShm(M3EcSlaveShm * slaves, int slaves_responding)
 {
