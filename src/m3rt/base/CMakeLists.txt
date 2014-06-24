@@ -29,6 +29,16 @@ find_package(Protobuf REQUIRED)
 # Start Protobuf stuff
 include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
+
+foreach(ProtoFile ${ProtoFiles})
+get_filename_component(proto ${ProtoFile} NAME)
+CONFIGURE_FILE(
+		${ProtoFile}
+		${CMAKE_CURRENT_BINARY_DIR}/${proto}
+		COPYONLY
+	)
+endforeach()
+
 PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_BINARY_DIR} ${ProtoFiles})
 add_custom_target(${LIBNAME}_protobuf_output ALL DEPENDS ${ProtoSources}) # force the generation
 
