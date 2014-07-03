@@ -188,10 +188,10 @@ bool M3RtSystem::Startup()
 #else
     long hst = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
 #endif
-    for (int i=0;i<10;i++)
+    /*for (int i=0;i<10;i++)
     {
             usleep(1000000);
-    }
+    }*/
     if(!hst) { //A.H : Added earlier check
         m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
         return false;
