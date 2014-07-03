@@ -13,6 +13,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/src # Include this directory for the generated protobufs headers
 )
 
-
+add_subdirectory(scripts)
 add_subdirectory(src)
 add_subdirectory(python)

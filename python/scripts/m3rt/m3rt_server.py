@@ -230,7 +230,7 @@ if m3server and m3server.is_alive():
     print 'M3 INFO: M3 RPC Server exited normally.'
 time.sleep(0.5)
 print("M3 INFO: Exiting")
-#exit()
+exit(0)
 # ################################################################################
     
     

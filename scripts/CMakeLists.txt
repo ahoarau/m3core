@@ -13,6 +13,7 @@ m3rt_server_kill
 m3rt_server_run
 m3rt_timestats_run
 uninstall_m3
+disable_kdl_ros
 )
 
 install (

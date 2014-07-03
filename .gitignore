@@ -2,5 +2,14 @@
 build
 # tmp files
 *~
+
 # Kdevelop stuff
 *kdev4*
+
+# Eclipse files
+.project
+.pydevproject
+.settings
+
+# CMake tmp
+*.txt.user

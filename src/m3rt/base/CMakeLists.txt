@@ -88,7 +88,8 @@ ${ProtoHeaders}
 ${ProtoFiles}
 )
 
-add_library(${LIBNAME} SHARED ${all_srcs} )
+add_library(${LIBNAME} SHARED ${all_srcs})
+add_dependencies(${LIBNAME} rt_system)
 target_link_libraries(${LIBNAME} ${LIBS})
 #set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
 
