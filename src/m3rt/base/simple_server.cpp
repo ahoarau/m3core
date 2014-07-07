@@ -95,7 +95,7 @@ int M3SimpleServer:: WriteStringToPort ( string & s ) {
     return 0;
     }
 
-#define MAX_STRING_SIZE 8192 //as a safety measure
+#define MAX_STRING_SIZE 65536 //8192 //as a safety measure
 //Return true if a packet is successfully recieved. Size is the data size minus the header.
 // return -1 if error
 // return -2 if no cmd data
@@ -120,7 +120,6 @@ int M3SimpleServer::ReadStringFromPort ( string & s, int & size ) {
         }
     if ( nfd && FD_ISSET ( socket_fd, &read_fds ) ) {
         nr = recv ( socket_fd, &header, sizeof ( sizes_type ), MSG_WAITALL );
-        //cout<<"nr:"<<nr<<" header:"<<header<<" sizeof:"<<sizeof(sizes_type)<<endl;
         if ( nr<= 0 ) {
             // got error on client side
             if ( nr == 0 ) {
@@ -149,7 +148,7 @@ int M3SimpleServer::ReadStringFromPort ( string & s, int & size ) {
         nr = recv ( socket_fd, &tmp, sizeof ( sizes_type ), MSG_WAITALL );
         size = static_cast<int> ( tmp );
         if ( size>MAX_STRING_SIZE||size<0 ) {
-            M3_ERR ( "Packet size out of bounds, may be corrupted data: %x %d\n",size,MAX_STRING_SIZE );
+            M3_ERR ( "Packet size out of bounds, may be corrupted data: %d>%d\n",size,MAX_STRING_SIZE );
             return -1;
             }
         if ( size==0 ) {
