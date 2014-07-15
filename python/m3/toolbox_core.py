@@ -631,8 +631,8 @@ class M3Slew():
                 return self.val
 # #############################################################################################	
 
-class M3ScopeN():
-        def __init__(self,n=12,xwidth=200,yrange=None,title='M3ScopeN'):
+class M3ScopeN_():
+        def __init__(self,n=12,xwidth=200,yrange=None,title='M3ScopeN_'):
                 assert(n>=1)
                 self.n=n
                 self.y=[]
@@ -659,8 +659,8 @@ class M3ScopeN():
             self.g.close()
 # #############################################################################################	
 
-class M3ScopeN_():
-        def __init__(self,xwidth=200,yrange=None,title='M3ScopeN_'):
+class M3ScopeN():
+        def __init__(self,xwidth=200,yrange=None,title='M3ScopeN',options='lines'):
                 assert(xwidth>0)
                 self.g = Gnuplot.Gnuplot()#(persist = 1)                
                 self.g('set term x11 noraise')
@@ -672,28 +672,28 @@ class M3ScopeN_():
                 self.y=[]
                 self.xwidth=xwidth
                 self.initialized=False
+                self.options = options
         def plot(self,*data):
             if not self.initialized:
                 for y,idx in zip(data,xrange(len(data))):
                         if not isinstance(y, list):
                             y=[y]
                         if not self.initialized:
-                            y_tmp=[]
+                            y_tmp=[0.0]*self.xwidth
                             for _ in y:
-                                y_tmp.append([0.0]*self.xwidth)
-                            self.data.append(Gnuplot.Data(range(self.xwidth),y_tmp,with_="lines"))
-                            self.y.append(y_tmp)
+                                #y_tmp.append([0.0]*self.xwidth)
+                                self.data.append(Gnuplot.Data(range(self.xwidth),y_tmp))
+                                self.y.append(y_tmp)
                 self.initialized=True
 
-            print self.y
             for y,idx in zip(data,xrange(len(data))):
                     if not isinstance(y, list):
                         y=[y]
                     for i in xrange(len(y)):
-                        self.y[idx][i].pop(0)
-                        self.y[idx][i].append(y[i])
-                    print self.y[idx]
-                    self.data[i] = Gnuplot.Data(range(self.xwidth),self.y[idx],with_="lines")
+                        self.y[idx].pop(0)
+                        self.y[idx].append(y[i])
+
+                    self.data[idx] = Gnuplot.Data(range(self.xwidth),self.y[idx],with_=self.options)
             self.g.plot(*self.data)
         
         def __del__(self):
@@ -1021,6 +1021,10 @@ print get_component_config_type('m3actuator_ms4_j7')
 
 
 """
-
-
-
+"""
+p = M3ScopeN(xwidth=200)
+for i in xrange(100):
+    time.sleep(0.05)
+    p.plot([math.sin(10*i*3.14/180.0)+nu.random.rand()],[2.2])
+raw_input()
+"""
