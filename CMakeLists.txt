@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(m3core)
+
+
+OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
+
+
 # Tmp solution for the FindXXX.cmake 
 set(CMAKE_MODULE_PATH 
     "${CMAKE_CURRENT_SOURCE_DIR}/../meka-cmake-modules/Modules/"
