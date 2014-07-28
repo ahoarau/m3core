@@ -4,8 +4,8 @@ if $(python /usr/local/bin/m3rt_check_server.py) 2>/dev/null ; then
     echo 'Running insmods'
     /usr/local/bin/m3rt_insmods
     /usr/local/bin/m3rt_rotate_logs
-    echo 'Disabling ROS KDL (tmp workaround)'
-    source /usr/local/bin/disable_kdl_ros
+    #echo 'Disabling ROS KDL (tmp workaround)'
+    #source /usr/local/bin/disable_kdl_ros
     echo 'Running m3rt_server.py'
     /usr/local/bin/m3rt_server.py $@
     echo 'Running rmmods'
