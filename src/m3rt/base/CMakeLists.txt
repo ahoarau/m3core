@@ -9,7 +9,7 @@ OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 if(RTAI)
 add_definitions(-D__RTAI__)
 find_package(RTAI REQUIRED)
-SET(LIBS ${LIBS} ${RTAI_LIBRARIES})
+SET(LIBS ${RTAI_LIBRARY})
 include_directories(${RTAI_INCLUDE_DIR})
 endif(RTAI)
 
@@ -104,7 +104,7 @@ target_link_libraries(${LIBNAME} ${LIBS})
 #set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 
-install(TARGETS ${LIBNAME} DESTINATION lib)
+install(TARGETS ${LIBNAME} DESTINATION lib COMPONENT library)
 install(FILES ${all_hdrs} DESTINATION include/${SUBPROJECT_INSTALL_DIR_NAME}/${SUBPROJECT_INSTALL_NAME})
 
 execute_process ( 

@@ -1,0 +1,3 @@
+# This file configures the environement variables for ${PROJECT_NAME}
+export PATH=${CMAKE_INSTALL_PREFIX}/bin/m3/:$PATH
+export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/${M3CORE_PYTHON_DIR}:$PYTHONPATH
