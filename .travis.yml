@@ -7,8 +7,6 @@ compiler:
 env:
   - M3CORE_BUILD_TYPE=Debug
   - M3CORE_BUILD_TYPE=Release
-  - RTAI=OFF
-  - RTAI=ON
 
 before_script:
   - sudo apt-get install -qq moc cmake libeigen3-dev libprotobuf-dev protobuf-compiler libboost-dev python-dev python-protobuf python-matplotlib python-yaml python-gnuplot python-scipy python-sip-dev python-sip
