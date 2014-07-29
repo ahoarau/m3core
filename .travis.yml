@@ -7,8 +7,22 @@ compiler:
 env:
   - M3CORE_BUILD_TYPE=Debug
   - M3CORE_BUILD_TYPE=Release
-
-before_script:
+  
+before_install:
+  - wget http://yaml-cpp.googlecode.com/files/yaml-cpp-0.3.0.tar.gz
+  - tar -xjf yaml-cpp-0.3.0.tar.gz yaml-cpp0.3
+  - cd yaml-cpp0.3
+  - mkdir build;cd build;
+  - cmake .. -DBUILD_SHARED_LIBS
+  - make -j5
+  - sudo make install
+  - git clone git@bitbucket.org:ensta/meka-cmake-modules.git
+  - cd meka-cmake-modules
+  - mkdir build; cd build
+  - cmake .. -DOVERWRITE=1
+  - sudo make install
+  
+install:
   - sudo apt-get install -qq moc cmake libeigen3-dev libprotobuf-dev protobuf-compiler libboost-dev python-dev python-protobuf python-matplotlib python-yaml python-gnuplot python-scipy python-sip-dev python-sip
   #- wget http://perso.ensta-paristech.fr/~hoarau/rtmeka-kern/$(uname -p)/linux-image-rt.deb
   #- sudo dpkg -i linux-headers-rt.deb 
