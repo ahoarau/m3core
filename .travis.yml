@@ -18,7 +18,8 @@ before_script:
   #build m3core
   - mkdir build
   - cd build
-  - cmake -DETHERCAT=0 -DROS=0 -DRTAI=0 -DCMAKE_BUILD_TYPE=${M3CORE_BUILD_TYPE} ...#-DKERNEL_NAME=$rtkernel..
+  #-DKERNEL_NAME=$rtkernel..
+  - cmake -DETHERCAT=0 -DROS=0 -DRTAI=0 -DCMAKE_BUILD_TYPE=${M3CORE_BUILD_TYPE} ... 
   
 script:
   # compile and install m3core
