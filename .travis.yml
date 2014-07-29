@@ -11,8 +11,7 @@ env:
   - RTAI=ON
 
 before_script:
-  - sudo apt-get install -qq moc cmake libeigen3-dev libprotobuf-dev protobuf-compiler libboost-dev python-dev python-protobuf python-matplotlib python-yaml python-gnuplot python-scipy python-sip-dev python-sip sip-dev
-  #- wget http://perso.ensta-paristech.fr/~hoarau/rtmeka-kern/$(uname -p)/linux-headers-rt.deb
+  - sudo apt-get install -qq moc cmake libeigen3-dev libprotobuf-dev protobuf-compiler libboost-dev python-dev python-protobuf python-matplotlib python-yaml python-gnuplot python-scipy python-sip-dev python-sip
   #- wget http://perso.ensta-paristech.fr/~hoarau/rtmeka-kern/$(uname -p)/linux-image-rt.deb
   #- sudo dpkg -i linux-headers-rt.deb 
   #- sudo dpkg -i linux-image-rt.deb
