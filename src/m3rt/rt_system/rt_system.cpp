@@ -188,16 +188,16 @@ bool M3RtSystem::Startup()
 #else
     long hst = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
 #endif
-    /*for (int i=0;i<100;i++)
+    /*for (int i=0;i<10;i++)
     {
-            usleep(100000);
+            usleep(1000000);
     }*/
     if(!hst) { //A.H : Added earlier check
         m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
         return false;
     }
-    for(int i = 0; i < 1000; i++) {
-        usleep(100000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
+    for(int i = 0; i < 100; i++) {
+        usleep(1000000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
         if(sys_thread_active)
             break;
     }
@@ -230,13 +230,21 @@ bool M3RtSystem::Shutdown()
     //Stop RtSystem thread
     sys_thread_end = true;
 #ifdef __RTAI__
-    rt_thread_join(hst);
+    //RTIME timeout = nano2count(rt_get_cpu_time_ns());
+    int timeout_us = 1000;
+    RTIME start_time = rt_get_time();
+///rt_thread_join(hst);
+    while(sys_thread_active && (rt_get_time_ns()-start_time < nano2count(timeout_us*1000)))
+    {
+	    M3_INFO("Waiting for Real-Time thread to shutdown...\n");
+	    usleep(1000000);
+    }
 #else
     pthread_join((pthread_t)hst, NULL);
 #endif
     if(sys_thread_active) {
         m3rt::M3_WARN("M3RtSystem thread did not shutdown correctly\n");
-        return false;
+        //return false;
     }
 #ifdef __RTAI__
     if(shm_ec != NULL)

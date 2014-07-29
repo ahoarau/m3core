@@ -7,8 +7,10 @@ set(LIBNAME "m3base")
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
 if(RTAI)
-find_package(RTAI REQUIRED)
 add_definitions(-D__RTAI__)
+find_package(RTAI REQUIRED)
+SET(LIBS ${RTAI_LIBRARY})
+include_directories(${RTAI_INCLUDE_DIR})
 endif(RTAI)
 
 find_package(Boost  REQUIRED)
@@ -29,6 +31,16 @@ find_package(Protobuf REQUIRED)
 # Start Protobuf stuff
 include_directories(${PROTOBUF_INCLUDE_DIR} ${M3RT_SOURCE_DIR})
 file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/*.proto" )
+
+foreach(ProtoFile ${ProtoFiles})
+get_filename_component(proto ${ProtoFile} NAME)
+CONFIGURE_FILE(
+		${ProtoFile}
+		${CMAKE_CURRENT_BINARY_DIR}/${proto}
+		COPYONLY
+	)
+endforeach()
+
 PROTOBUF_GENERATE_CPP(ProtoSources ProtoHeaders ${CMAKE_CURRENT_BINARY_DIR} ${ProtoFiles})
 add_custom_target(${LIBNAME}_protobuf_output ALL DEPENDS ${ProtoSources}) # force the generation
 
@@ -41,8 +53,8 @@ add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # force the g
 
 # End Protobuf stuff
 
-SET(LIBS  ${YAMLCPP_LIBRARIES} ${PROTOBUF_LIBRARIES} ${RTAI_LIBRARIES}  pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
-include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIRS} ${RTAI_INCLUDE_DIR} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR})
+SET(LIBS  ${LIBS} ${YAMLCPP_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
+include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIRS} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR})
 
 ## Get all the files sources and headers
 
@@ -51,22 +63,30 @@ component_async.cpp
 component.cpp
 component_ec.cpp
 component_factory.cpp
-component_shm.cpp
 simple_server.cpp
 toolbox.cpp
 )
+if(RTAI)
+list(APPEND all_srcs
+component_shm.cpp
+)
+endif()
+
 set(all_hdrs
 component_async.h
 component_ec.h
 component_factory.h
 component.h
-component_shm.h
 m3ec_def.h
 m3rt_def.h
 simple_server.h
 toolbox.h
 )
-
+if(RTAI)
+list(APPEND all_srcs
+component_shm.h
+)
+endif()
 list(APPEND 
 all_srcs
 ${ProtoSources}
@@ -78,12 +98,13 @@ ${ProtoHeaders}
 ${ProtoFiles}
 )
 
-add_library(${LIBNAME} SHARED ${all_srcs} )
+add_library(${LIBNAME} SHARED ${all_srcs})
+add_dependencies(${LIBNAME} rt_system)
 target_link_libraries(${LIBNAME} ${LIBS})
 #set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 
-install(TARGETS ${LIBNAME} DESTINATION lib)
+install(TARGETS ${LIBNAME} DESTINATION lib COMPONENT library)
 install(FILES ${all_hdrs} DESTINATION include/${SUBPROJECT_INSTALL_DIR_NAME}/${SUBPROJECT_INSTALL_NAME})
 
 execute_process ( 

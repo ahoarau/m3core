@@ -19,7 +19,7 @@ import yaml
 import os 
 import m3.toolbox_core as m3t
 import m3.component_base_pb2 as mbs
-
+from pprint import pprint
 
 class M3Component:
     """Base class for all Python M3 components.
@@ -53,10 +53,11 @@ class M3Component:
         try:
             with open(self.config_name,'w') as f:
                 print 'Saving...',self.config_name
-                f.write(yaml.safe_dump(self.config, default_flow_style=False,width=200))
+                pprint(self.config)
+                f.write(yaml.safe_dump(self.config, default_flow_style=False))
             #f.close()
         except (IOError, EOFError):
-            print 'Config file not present:',self.config_file
+            print 'Config file not present:',self.config_name
             return
 
     def load_attr_from_config(self,config, obj):
@@ -88,8 +89,8 @@ class M3Component:
                         self.load_config_from_attr(config[k][i],a[i])        
                 elif hasattr(a,'HasField'): #A protobuf struct
                     self.load_config_from_attr(config[k],a)
-            else:
-                config[k]=a    
+                else:
+                    config[k]=a    
                     
 
     def update_status(self):

@@ -201,7 +201,7 @@ try:
     m3client_thread.start()
     #print "M3 INFO: M3 is now running."
     # Handling ctrl+c when ros is launched
-    while not stop_signal.is_set():
+    while svc.IsRtSystemOperational() and not stop_signal.is_set():
         try:
             m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
         except KeyboardInterrupt:
@@ -230,7 +230,7 @@ if m3server and m3server.is_alive():
     print 'M3 INFO: M3 RPC Server exited normally.'
 time.sleep(0.5)
 print("M3 INFO: Exiting")
-#exit()
+exit(0)
 # ################################################################################
     
     

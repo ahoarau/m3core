@@ -398,7 +398,7 @@ class M3RtProxy:
 		sc=self.command_raw.SerializeToString()
 		self.data_socket.sendall(nh+nc+sc)
 		
-	def __do_receive(self,nr,timeout_total=2.0,timeout_chunk = 1.0):
+	def __do_receive(self,nr,timeout_total=4.0,timeout_chunk = 2.0):
 		msg = ''
 		chunk=''
 		time_s_total = time.time()
