@@ -16,7 +16,6 @@ before_script:
   ### Get the kernel dir from the debian
   #- rtkernel=$(dpkg-deb --info linux-headers-rt.deb |grep Package -m 1 | grep -Po "linux-headers-\K(.*)")
   #build m3core
-  - cd m3core
   - mkdir build
   - cd build
   - cmake -DETHERCAT=0 -DROS=0 -DRTAI=0 -DCMAKE_BUILD_TYPE=${M3CORE_BUILD_TYPE} ...#-DKERNEL_NAME=$rtkernel..
