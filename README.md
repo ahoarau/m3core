@@ -12,3 +12,7 @@ M3 is an open-source real-time control software provided by Meka Robotics LLC to
 
 Maintainer : Antoine Hoarau <hoarau.robotics@gmail.com>
 >For more information on m3, please visit [mekabot.com/wiki](https://mekabot.com/wiki).
+
+### Build Status
+
+[![Build Status](https://travis-ci.org/ahoarau/m3core.svg?branch=master)](https://travis-ci.org/ahoarau/m3core)
