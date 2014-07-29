@@ -6,8 +6,12 @@ SET(PATCH_VERSION "3")
 set(M3CORE_VERSION
   ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
   
-  
-message("Install dir:  ${CMAKE_INSTALL_PREFIX}")
+OPTION(KERNEL_NAME "The rtai patched kernel to use (default is uname -a)")
+if(KERNEL_NAME)
+set(CMAKE_SYSTEM_VERSION ${KERNEL_NAME})
+message("-- Custom kernel : ${KERNEL_NAME}")
+endif()
+
 
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
@@ -39,7 +43,7 @@ SET(CPACK_SET_DESTDIR "on")
 SET(CPACK_PACKAGING_INSTALL_PREFIX "/tmp")
 SET(CPACK_GENERATOR "DEB")
  
-SET(CPACK_PACKAGE_DESCRIPTION "m3core : core components to the control the meka robots")
+SET(CPACK_PACKAGE_DESCRIPTION "m3core : core components to control the meka robots")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Real-time control system for robot control - interfaced with ROS")
 SET(CPACK_PACKAGE_VENDOR "Antoine Hoarau")
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Antoine Hoarau <hoarau.robotics@gmail.com>")
