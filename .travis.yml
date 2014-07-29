@@ -10,8 +10,8 @@ env:
   
 before_install:
   - wget http://yaml-cpp.googlecode.com/files/yaml-cpp-0.3.0.tar.gz
-  - tar -xf yaml-cpp-0.3.0.tar.gz yaml-cpp0.3
-  - cd yaml-cpp0.3
+  - tar -xf yaml-cpp-0.3.0.tar.gz yaml-cpp
+  - cd yaml-cpp
   - mkdir build;cd build;
   - cmake .. -DBUILD_SHARED_LIBS
   - make -j5
