@@ -16,7 +16,7 @@ before_install:
   - cmake .. -DBUILD_SHARED_LIBS=1
   - make -j5
   - sudo make install
-  - git clone git@bitbucket.org:ensta/meka-cmake-modules.git
+  - git clone https://bitbucket.org/ensta/meka-cmake-modules.git
   - cd meka-cmake-modules
   - mkdir build; cd build
   - cmake .. -DOVERWRITE=1
