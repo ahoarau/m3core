@@ -9,7 +9,7 @@ env:
   - M3CORE_BUILD_TYPE=Release
 
 before_script:
-  - sudo apt-get install -qq libqt4-dev moc g++ libncurses5-dev kernel-package gcc-multilib libc6-dev libtool automake cmake git openssh-server openssh-client libyaml-cpp0.3-dev libeigen3-dev libprotobuf-dev protobuf-compiler gnuplot-x11 libyaml-cpp0.3-dev libboost-dev protobuf-compiler python-dev libprotobuf-dev python-protobuf python-matplotlib python-yaml python-gnuplot python-scipy python-sip-dev python-sip sip-dev
+  - sudo apt-get install -qq moc cmake libeigen3-dev libprotobuf-dev protobuf-compiler libboost-dev python-dev python-protobuf python-matplotlib python-yaml python-gnuplot python-scipy python-sip-dev python-sip sip-dev
 
 
 script:
