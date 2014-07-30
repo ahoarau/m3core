@@ -4,9 +4,9 @@ compiler:
   - gcc
   - clang
 
-env:
-  - M3CORE_BUILD_TYPE=Debug
-  - M3CORE_BUILD_TYPE=Release
+#env:
+#  - M3CORE_BUILD_TYPE=Debug
+#  - M3CORE_BUILD_TYPE=Release
   
 before_install:
   - wget http://yaml-cpp.googlecode.com/files/yaml-cpp-0.3.0.tar.gz
