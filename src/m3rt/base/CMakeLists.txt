@@ -11,6 +11,8 @@ add_definitions(-D__RTAI__)
 find_package(RTAI REQUIRED)
 SET(LIBS ${RTAI_LIBRARY})
 include_directories(${RTAI_INCLUDE_DIR})
+else()
+message("-- RTAI is OFF")
 endif(RTAI)
 
 find_package(Boost  REQUIRED)
@@ -83,7 +85,7 @@ simple_server.h
 toolbox.h
 )
 if(RTAI)
-list(APPEND all_srcs
+list(APPEND all_hdrs
 component_shm.h
 )
 endif()

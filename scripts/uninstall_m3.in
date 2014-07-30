@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo "************************************************"
-echo "Are you sure you want to unistall completely m3 ? (y/n)"
+echo "Are you sure you want to uninstall completely m3 ? (y/n)"
 read a
 if [[ $a == "N" || $a == "n" ]]; then
-        echo "m3 NOT unistalled"
+        echo "m3 NOT uninstalled"
 elif [[ $a == "Y" || $a == "y" ]]; then
 
 echo 'Removing libraries.'

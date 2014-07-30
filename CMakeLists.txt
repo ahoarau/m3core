@@ -42,7 +42,7 @@ INCLUDE(InstallRequiredSystemLibraries)
 SET(CPACK_SET_DESTDIR "on")
 SET(CPACK_PACKAGING_INSTALL_PREFIX "/tmp")
 SET(CPACK_GENERATOR "DEB")
- 
+
 SET(CPACK_PACKAGE_DESCRIPTION "m3core : core components to control the meka robots")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Real-time control system for robot control - interfaced with ROS")
 SET(CPACK_PACKAGE_VENDOR "Antoine Hoarau")
@@ -57,7 +57,7 @@ SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MIN
 #SET(CPACK_DEBIAN_PACKAGE_DEPENDS " kate , plasma-desktop, libc6 (>= 2.1.3) ")
  
 #dependencies for this service menu
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python2.7,libqt4-dev,moc,g++,libncurses5-dev,kernel-package,gcc-multilib,libc6-dev,libtool,automake,cmake,git,openssh-server,openssh-client,libeigen3-dev,libprotobuf-dev,protobuf-compiler,libboost-dev,protobuf-compiler,python-dev,libprotobuf-dev,python-protobuf,python-matplotlib,python-yaml,python-gnuplot,python-scipy,python-sip-dev,python-sip,sip-dev ")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python2.7,swig,moc,libeigen3-dev,libprotobuf-dev,protobuf-compiler,libboost-dev,python-dev,python-protobuf,python-matplotlib,python-yaml,python-gnuplot,python-scipy,python-sip-dev,python-sip")
  
 SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 SET(CPACK_DEBIAN_PACKAGE_SECTION "libraries")
