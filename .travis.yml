@@ -30,6 +30,7 @@ install:
   ### Get the kernel dir from the debian
   #- rtkernel=$(dpkg-deb --info linux-headers-rt.deb |grep Package -m 1 | grep -Po "linux-headers-\K(.*)")
   #build m3core
+  - cd ~/ahoarau/m3core
   - mkdir build
   - cd build
   #-DKERNEL_NAME=$rtkernel..
