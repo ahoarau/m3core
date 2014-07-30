@@ -9,6 +9,7 @@ compiler:
 #  - M3CORE_BUILD_TYPE=Release
   
 before_install:
+  - export CI_SOURCE_PATH=$(pwd)
   - wget http://yaml-cpp.googlecode.com/files/yaml-cpp-0.3.0.tar.gz
   - tar -xf yaml-cpp-0.3.0.tar.gz
   - cd yaml-cpp
@@ -30,7 +31,7 @@ install:
   ### Get the kernel dir from the debian
   #- rtkernel=$(dpkg-deb --info linux-headers-rt.deb |grep Package -m 1 | grep -Po "linux-headers-\K(.*)")
   #build m3core
-  - cd ~/ahoarau/m3core
+  - cd $CI_SOURCE_PATH
   - mkdir build
   - cd build
   #-DKERNEL_NAME=$rtkernel..
