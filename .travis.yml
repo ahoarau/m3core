@@ -42,4 +42,4 @@ script:
   # compile and install m3core
   - make -j$(nproc)
   - sudo make install
-  - cpack ..
+#  - cpack ..
