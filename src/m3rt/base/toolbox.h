@@ -23,13 +23,28 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 #include "m3rt/base/m3rt_def.h"
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 #include <iostream>
 #include <fstream>
-
+#include <algorithm>
 
 namespace m3rt
 {
+	
+#ifdef YAMLCPP_05	
+template <typename _T >
+void operator >>(const YAML::Node& input, _T& value) {
+	try {
+		value = input.as<_T>();
+		//input >> value;
+	} catch (YAML::Exception &e) {
+		std::cout<<"Error converting from YAML! " << e.what()<<std::endl;
+	}
+}
+	
+#endif
+void operator >> (const YAML::Node& node, std::vector<mReal> & v);
+
 #define M3_PRINTF printf
 void M3_WARN(const char * format, ...);
 void M3_ERR(const char * format, ...);
@@ -59,9 +74,7 @@ void GetYamlStream(const char *filename, YAML::Emitter& out);
 
 //std::auto_ptr< YAML::Node > GetYamlDocs(const char *filename );
 
-void operator >> (const YAML::Node& node, std::vector<mReal> & v);
 }
-
 
 
 

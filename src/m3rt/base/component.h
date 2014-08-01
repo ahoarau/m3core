@@ -24,7 +24,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/component_base.pb.h"
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
-#include "yaml-cpp/yaml.h"
 #include <iostream>
 #include "m3rt/base/toolbox.h"
 

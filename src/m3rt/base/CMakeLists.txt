@@ -19,9 +19,12 @@ find_package(Boost  REQUIRED)
 ## YAML CPP 
 find_package(PkgConfig REQUIRED)
 #find_package(YamlCpp  REQUIRED)
-pkg_check_modules(YAMLCPP REQUIRED yaml-cpp<=0.5)
+pkg_check_modules(YAMLCPP REQUIRED yaml-cpp)
 if(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
-add_definitions(-DHAVE_NEW_YAMLCPP)
+set_property(
+   DIRECTORY
+   PROPERTY COMPILE_DEFINITIONS YAMLCPP_05
+   )
 endif(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
 link_directories(${YAMLCPP_LIBRARY_DIRS})
 
