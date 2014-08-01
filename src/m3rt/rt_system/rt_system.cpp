@@ -735,26 +735,51 @@ bool M3RtSystem::ReadConfigEc(const char *filename)
     YAML::Node doc;
     YAML::Emitter out;
     m3rt::GetYamlStream(filename, out);
+#ifndef YAMLCPP_05
+    
     std::stringstream stream(out.c_str());
     YAML::Parser parser(stream);
     while(parser.GetNextDocument(doc)) {
-
+#else
+	    std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
+	    for(std::vector<YAML::Node>::const_iterator it=all_docs.begin(); it!=all_docs.end();++it){
+		doc = *it;
+#endif
         //Make sure an ec_component section
+#ifndef YAMLCPP_05
         if(!doc.FindValue("ec_components")) {
+#else
+		if(!doc["ec_components"]){
+#endif
             M3_INFO("No ec_components key in m3_config.yml. Proceeding without it...\n");
             continue;
         }
 	const YAML::Node& ec_components = doc["ec_components"];
+#ifndef YAMLCPP_05
         for(YAML::Iterator it = ec_components.begin(); it != ec_components.end(); ++it) {
             string dir;
-
-            it.first() >> dir;
-
+	    it.first() >> dir;
+#else
+	 for(YAML::const_iterator it = ec_components.begin(); it != ec_components.end(); ++it) {
+            string dir;  
+	    dir = it->first.as<std::string>() ;
+#endif
+            
+#ifndef YAMLCPP_05
             for(YAML::Iterator it_dir = ec_components[dir.c_str()].begin();
                     it_dir != ec_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
+		    string  name, type;
+		 it_dir.first() >> name;
                 it_dir.second() >> type;
+#else
+		    for(YAML::const_iterator it_dir = ec_components[dir.c_str()].begin();
+                    it_dir != ec_components[dir.c_str()].end(); ++it_dir) {
+			    string  name, type;
+		name=it_dir->first.as<std::string>();
+                type=it_dir->second.as<std::string>();
+#endif
+                
+                
 
                 M3ComponentEc *m = NULL;
                 m = (M3ComponentEc *) factory->CreateComponent(type);
@@ -792,24 +817,49 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
     YAML::Node doc;
     YAML::Emitter out;
     m3rt::GetYamlStream(filename, out);
+#ifndef YAMLCPP_05
+    
     std::stringstream stream(out.c_str());
     YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc) ){
+    while(parser.GetNextDocument(doc)) {
+#else
+	    std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
+	    for(std::vector<YAML::Node>::const_iterator it=all_docs.begin(); it!=all_docs.end();++it){
+		doc = *it;
+#endif
 	
+#ifndef YAMLCPP_05
         if(!doc.FindValue("rt_components")) {
+#else
+		if(!doc["rt_components"]){
+#endif
             M3_INFO("No rt_components key in m3_config.yml. Proceeding without it...\n");
             continue;
         }
 	const YAML::Node& rt_components = doc["rt_components"];
-        for(YAML::Iterator it = rt_components.begin(); it != rt_components.end(); ++it) {
+        #ifndef YAMLCPP_05
+        for(YAML::Iterator it = ec_components.begin(); it != rt_components.end(); ++it) {
             string dir;
-
-            it.first() >> dir;
+	    it.first() >> dir;
+#else
+	 for(YAML::const_iterator it = rt_components.begin(); it != rt_components.end(); ++it) {
+            string dir;  
+	    dir = it->first.as<std::string>() ;
+#endif
+            
+#ifndef YAMLCPP_05
             for(YAML::Iterator it_dir = rt_components[dir.c_str()].begin();
                     it_dir != rt_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
+		    string  name, type;
+		 it_dir.first() >> name;
                 it_dir.second() >> type;
+#else
+		    for(YAML::const_iterator it_dir = rt_components[dir.c_str()].begin();
+                    it_dir != rt_components[dir.c_str()].end(); ++it_dir) {
+			    string  name, type;
+		name=it_dir->first.as<std::string>();
+                type=it_dir->second.as<std::string>();
+#endif
                 M3Component *m = factory->CreateComponent(type);
                 if(m != NULL) {
                     m->SetFactory(factory);

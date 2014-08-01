@@ -178,7 +178,6 @@ bool GetEnvironmentVar(const char *var, string &s)
     }
     return false;
 }
-
 vector<mReal> YamlReadVectorM(string s)
 {
     size_t start = s.find_first_of("[", 0); //, size_type num );
@@ -227,7 +226,6 @@ vector<mReal> YamlReadVectorM(const YAML::Node &seq)
 
     return f;
 };
-
 // Converts a hexadecimal string to integer
 // Returns 0 if not valid
 unsigned int xtoi(const char *xs)
@@ -306,7 +304,7 @@ void GetFileConfigPath(const char *filename,vector<string>& vpath)
     parser.PrintTokens(cout);
     return docs.Clone();
 }*/
-
+#ifndef YAMLCPP_05
 void GetYamlStream(const char *filename, YAML::Emitter &out)
 {
     string path;
@@ -328,6 +326,23 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
     parser.PrintTokens(cout);
     return;
 }
+#else
+void GetYamlStream(const char *filename, YAML::Emitter &out)
+{
+    string path;
+    
+    YAML::Parser parser;
+    vector<string> vpath; 
+    GetFileConfigPath(filename,vpath);
+    for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+        YAML::Node node = YAML::Load((*it).c_str());
+        out << node;
+    }
+    assert(out.good());
+    parser.PrintTokens(cout);
+    return;
+}
+#endif
 /*void GetYamlDoc(const char *filename, YAML::Node &doc, string sub_dir){
         YAML::Emitter out;
         m3rt::GetYamlStream(filename,out);
@@ -336,6 +351,7 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
         while(parser.GetNextDocument(doc)) {}
         return;
 }*/
+#ifndef YAMLCPP_05
 bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_path, const char *find_c)
 {
     string s(filename);
@@ -400,7 +416,12 @@ bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_pat
     //M3_ERR("Error while trying to load %s\n",s.c_str());
     return false;
 }
-
+#else
+bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_path, const char *find_c)
+{
+	return false;
+}
+#endif
 /*void GetYamlDoc2(const char *filename, YAML::Node &doc)
 {
     string s(filename);

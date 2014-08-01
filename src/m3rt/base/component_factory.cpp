@@ -35,7 +35,7 @@ using namespace std;
 //global factory for making components
 map< string, create_comp_t *, less<string> >  creator_factory;	//global
 map< string, destroy_comp_t *, less<string> > destroyer_factory; //global
-
+#ifndef YAMLCPP_05
 bool M3ComponentFactory::ReadConfig(const char *filename)
 {
     YAML::Node doc;
@@ -49,13 +49,18 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
             for(unsigned i = 0; i < factory_rt_libs.size(); i++) {
                 string lib;
                 factory_rt_libs[i] >> lib;
-                AddComponentLibrary(lib);
+		AddComponentLibrary(lib);
             }
         } catch(YAML::BadDereference e) {}
     }
     return true;
 }
-
+#else
+bool M3ComponentFactory::ReadConfig(const char *filename)
+{
+	return true;
+}
+#endif
 int M3ComponentFactory::GetComponentIdx(string name)
 {
     for(int idx = 0; idx < GetNumComponents(); idx++) {
@@ -98,6 +103,12 @@ string  	M3ComponentFactory::GetComponentName(int idx)
 
 bool M3ComponentFactory::AddComponentLibrary(string lib)
 {
+// First check if already exists
+    if ((std::find(std::begin(dl_list), std::end(dl_list), &lib) != std::end(dl_list)))
+    {
+	M3_WARN("Library %s already loaded.", lib.c_str());
+	return true;	    
+	}
     void *dlib;
     dlib = dlopen(lib.c_str(), RTLD_LAZY);//RTLD_NOW);
     if(dlib == NULL) {

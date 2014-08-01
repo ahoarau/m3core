@@ -23,6 +23,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/component.h"
 #include <string>
 #include <vector>
+#include <iterator>
 
 namespace m3rt
 {
