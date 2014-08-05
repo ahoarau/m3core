@@ -58,6 +58,17 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
 #else
 bool M3ComponentFactory::ReadConfig(const char *filename)
 {
+    YAML::Emitter out;
+    m3rt::GetYamlStream(filename, out);
+	std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
+    for(std::vector<YAML::Node>::iterator doc_it=all_docs.begin() ; doc_it!= all_docs.end() ; ++doc_it){
+        try {
+			YAML::Node factory_rt_libs=(*doc_it)["factory_rt_libs"];
+            for (YAML::const_iterator it=factory_rt_libs.begin();it!=factory_rt_libs.end();++it) {
+				AddComponentLibrary(it->as<std::string>());
+            }
+        } catch(YAML::Exception &e) {cout<<e.what()<<endl;}
+    }
 	return true;
 }
 #endif
@@ -103,12 +114,26 @@ string  	M3ComponentFactory::GetComponentName(int idx)
 
 bool M3ComponentFactory::AddComponentLibrary(string lib)
 {
+#ifdef CPP11
 // First check if already exists
-    if ((std::find(std::begin(dl_list), std::end(dl_list), &lib) != std::end(dl_list)))
+    if ((std::find(std::begin(dl_list_str), std::end(dl_list_str), &lib) != std::end(dl_list_str)))
     {
 	M3_WARN("Library %s already loaded.", lib.c_str());
 	return true;	    
 	}
+	dl_list_str.push_back(lib);
+#else
+// First check if already exists
+    for(vector<string>::iterator it=dl_list_str.begin();it!=dl_list_str.end();++it)
+	{
+		if(*it == lib){
+				M3_WARN("Library %s already loaded.", lib.c_str());
+				return true;
+		}
+		
+	}
+	dl_list_str.push_back(lib);
+#endif
     void *dlib;
     dlib = dlopen(lib.c_str(), RTLD_LAZY);//RTLD_NOW);
     if(dlib == NULL) {

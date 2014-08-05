@@ -33,17 +33,18 @@ namespace m3rt
 	
 #ifdef YAMLCPP_05	
 template <typename _T >
-void operator >>(const YAML::Node& input, _T& value) {
+inline void operator >>(const YAML::Node& input, _T& value) {
 	try {
 		value = input.as<_T>();
-		//input >> value;
 	} catch (YAML::Exception &e) {
-		std::cout<<"Error converting from YAML! " << e.what()<<std::endl;
+		std::cout << "Caught exception on value : "<<value<<e.what()<<std::endl;
 	}
 }
 	
 #endif
 void operator >> (const YAML::Node& node, std::vector<mReal> & v);
+inline void operator >> (const YAML::Node& node, int& v){v = node.as<int>();};
+inline void operator >> (const YAML::Node& node, double& v){v = node.as<double>();};
 
 #define M3_PRINTF printf
 void M3_WARN(const char * format, ...);

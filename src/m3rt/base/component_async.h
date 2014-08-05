@@ -22,6 +22,10 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "m3rt/base/component.h"
 #include <google/protobuf/message.h>
+#include "m3rt/base/m3rt_def.h"
+#include "m3rt/base/component_factory.h"
+
+//#include "inttypes.h"
 
 #ifdef __RTAI__	
 #ifdef __cplusplus
@@ -77,12 +81,12 @@ class M3ComponentAsync : public M3Component
 		enum {DEFAULT, ISS};		
 		
 		
-		virtual bool ReadConfig(const char * filename);
+		/*virtual bool ReadConfig(const char * filename);
 		virtual void Startup();
 		virtual void Shutdown();
 		virtual void StepStatus();
 		virtual void StepCommand();			
-		virtual bool LinkDependentComponents();				
+		virtual bool LinkDependentComponents();		*/		
 	private:	      
 	      long rc;
 	      bool stop_thread;

@@ -323,23 +323,20 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
         fin.clear();
     }
     assert(out.good());
-    parser.PrintTokens(cout);
+    //parser.PrintTokens(cout);
     return;
 }
 #else
 void GetYamlStream(const char *filename, YAML::Emitter &out)
 {
     string path;
-    
-    YAML::Parser parser;
     vector<string> vpath; 
     GetFileConfigPath(filename,vpath);
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
-        YAML::Node node = YAML::Load((*it).c_str());
+        YAML::Node node = YAML::LoadFile((*it).c_str());
         out << node;
     }
     assert(out.good());
-    parser.PrintTokens(cout);
     return;
 }
 #endif
@@ -419,6 +416,58 @@ bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_pat
 #else
 bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_path, const char *find_c)
 {
+	string s(filename);
+    string find_str;
+    
+    find_c==NULL ? find_str=string():find_str=string(find_c);
+    
+    vector<string> vpath;
+    GetFileConfigPath(filename,vpath);
+    vector<string> vpath_root;
+    GetRobotConfigPath(vpath_root);
+    assert(vpath.size()==vpath_root.size());
+    
+    map<string, string> paths;
+    std::map<string,string>::iterator it = paths.begin();
+    for(size_t i=0;i<vpath.size();i++)
+	    paths.insert(it,pair<string,string>(vpath[i],vpath_root[i]));
+	    
+    bool verbose = paths.size()>1;
+    
+    for(std::map<string,string>::reverse_iterator it = paths.rbegin(); it != paths.rend(); ++it) {
+        //cout<<"Trying with path:"<<(*it).c_str()<<" find_str:"<<find_str<<endl;
+        //A.H: Let's start by the very last one i.e a local version.
+        //If the file exists, load it, otherwise go to previous path (down to original robot_config)
+        //If the file is loaded, then check for an optional find_str provided to checkif this is the right file to load, otherwise go to previous path
+        string path = it->first;
+	string root_path = it->second;
+		try{
+			doc = YAML::LoadFile(path);
+		}catch(YAML::Exception &e){
+			continue;
+		}
+		if(verbose)
+		 cout << "Processing component " << s << " ,loading file : " << path;
+	if(doc_root_path!=NULL){
+		*doc_root_path = root_path;
+	}
+        if(find_str.empty()) {
+            if(verbose)
+            cout << " ...OK" << endl<<endl;
+            return true;
+        } else {
+           if(!doc[find_str]){
+                   if(verbose)
+                   cout <<" but key \""<< find_str<<"\" NOT FOUND, trying with the next one." << endl;
+                   continue;
+           }else{
+                   if(verbose)
+                   cout <<" and key \""<< find_str<<"\" FOUND, returning true." << endl;
+                   return true;
+           }
+           
+        }
+    }
 	return false;
 }
 #endif

@@ -9,11 +9,10 @@ elif [[ $a == "Y" || $a == "y" ]]; then
 
 echo 'Removing libraries.'
 sudo rm -rf ${CMAKE_INSTALL_PREFIX}/lib/libm3*
-sudo rm -rf ${CMAKE_INSTALL_PREFIX}/lib/libholomni_pcv*
 echo 'Removing header files and scripts.'
-sudo rm -rf ${CMAKE_INSTALL_PREFIX}/include/holomni_pcv
 sudo rm -rf ${CMAKE_INSTALL_PREFIX}/include/m3/
 sudo rm -rf ${CMAKE_INSTALL_PREFIX}/bin/m3/
+sudo rm -rf ${CMAKE_INSTALL_PREFIX}/bin/m3*
 sudo rm -rf ${CMAKE_INSTALL_PREFIX}/include/m3rt/
 sudo rm -rf ${CMAKE_INSTALL_PREFIX}/bin/m3rt/
 sudo rm -rf ${CMAKE_INSTALL_PREFIX}/share/m3/
