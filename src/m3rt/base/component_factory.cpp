@@ -51,7 +51,7 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
                 factory_rt_libs[i] >> lib;
 		AddComponentLibrary(lib);
             }
-        } catch(YAML::BadDereference e) {}
+        } catch(YAML::BadDereference &e) {cout<<e.what()<<endl;}
     }
     return true;
 }
@@ -67,7 +67,7 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
             for (YAML::const_iterator it=factory_rt_libs.begin();it!=factory_rt_libs.end();++it) {
 				AddComponentLibrary(it->as<std::string>());
             }
-        } catch(YAML::Exception &e) {cout<<e.what()<<endl;}
+        } catch(YAML::Exception &e) {cout<<"M3ComponentFactory::ReadConfig: "<<e.what()<<endl;}
     }
 	return true;
 }

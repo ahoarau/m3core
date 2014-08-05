@@ -17,6 +17,9 @@ add_definitions(-D__RTAI__)
 find_package(RTAI REQUIRED)
 SET(LIBS ${RTAI_LIBRARY})
 include_directories(${RTAI_INCLUDE_DIR})
+else()
+message(STATUS "RTAI is OFF")
+
 endif(RTAI)
 
 if(ROS)

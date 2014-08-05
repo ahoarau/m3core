@@ -33,18 +33,36 @@ namespace m3rt
 	
 #ifdef YAMLCPP_05	
 template <typename _T >
-inline void operator >>(const YAML::Node& input, _T& value) {
-	try {
+void operator >>(const YAML::Node& input, _T& value) {
 		value = input.as<_T>();
-	} catch (YAML::Exception &e) {
-		std::cout << "Caught exception on value : "<<value<<e.what()<<std::endl;
-	}
 }
-	
-#endif
-void operator >> (const YAML::Node& node, std::vector<mReal> & v);
-inline void operator >> (const YAML::Node& node, int& v){v = node.as<int>();};
-inline void operator >> (const YAML::Node& node, double& v){v = node.as<double>();};
+template <typename _T >
+void operator >> (const YAML::Node &node, std::vector<_T> & v)
+{
+		for(unsigned i = 0; i < node.size(); i++){
+			v.push_back(node[i].as<_T>());
+		}
+}
+
+/*std::vector<mReal> YamlReadVectorM(const YAML::Node &seq)
+{
+    std::vector<mReal> f(static_cast<mReal>(0.0),seq.size());
+    for(size_t i = 0; i < seq.size(); i++) {
+        f[i] = seq[i].as<mReal>();
+    }
+    return f;
+}*/
+#else
+inline void operator >> (const YAML::Node &node, std::vector<mReal> & v)
+{
+    for(unsigned i = 0; i < node.size(); i++) {
+	v.push_back(node.
+        mReal x;
+        node[i] >> x;
+        v.push_back(x);
+    }
+}
+#endif 
 
 #define M3_PRINTF printf
 void M3_WARN(const char * format, ...);
@@ -56,7 +74,10 @@ bool GetEnvironmentVariable(const char * var, std::vector<std::string>& result);
 bool GetEnvironmentVar(const char * var, std::string &s);
 std::vector<mReal> YamlReadVectorM(std::string s);
 std::vector<std::string> YamlReadVectorString(std::string s);
+#ifndef YAMLCPP_05
 std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
+#endif
+
 unsigned int xtoi(const char* xs);
 
 void GetRobotConfigPath(std::vector< std::string >& vpath,std::string sub_dir= std::string("/robot_config/"));

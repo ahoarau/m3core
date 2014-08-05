@@ -151,8 +151,8 @@ void M3ComponentAsync::Shutdown()
 
 bool M3ComponentAsync::ReadConfig(const char * filename)
 {	
-	int val;
-	mReal mval;
+	//int val;
+	//mReal mval;
 	//YAML::Node doc;
 
 	if (!M3Component::ReadConfig(filename))

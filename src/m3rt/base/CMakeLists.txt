@@ -7,10 +7,7 @@ set(LIBNAME "m3base")
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
 if(RTAI)
-set_property(
-   DIRECTORY
-   PROPERTY COMPILE_DEFINITIONS __RTAI__
-   )
+add_definitions(-D__RTAI__)
 find_package(RTAI REQUIRED)
 SET(LIBS ${RTAI_LIBRARY})
 include_directories(${RTAI_INCLUDE_DIR})

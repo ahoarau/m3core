@@ -190,7 +190,7 @@ vector<mReal> YamlReadVectorM(string s)
         end = s.find_first_of(",]", start + 1);
     }
     return f;
-};
+}
 
 vector<string> YamlReadVectorString(string s)
 {
@@ -204,17 +204,10 @@ vector<string> YamlReadVectorString(string s)
         end = s.find_first_of(",]", start + 1);
     }
     return f;
-};
-
-void operator >> (const YAML::Node &node, vector<mReal> & v)
-{
-    for(unsigned i = 0; i < node.size(); i++) {
-        mReal x;
-        node[i] >> x;
-        v.push_back(x);
-    }
 }
 
+
+#ifndef YAMLCPP_05
 vector<mReal> YamlReadVectorM(const YAML::Node &seq)
 {
     vector<mReal> f;
@@ -225,7 +218,8 @@ vector<mReal> YamlReadVectorM(const YAML::Node &seq)
     }
 
     return f;
-};
+}
+#endif
 // Converts a hexadecimal string to integer
 // Returns 0 if not valid
 unsigned int xtoi(const char *xs)
@@ -237,7 +231,7 @@ unsigned int xtoi(const char *xs)
 
 void WriteYamlDoc(const char *filepath, YAML::Emitter &doc, string sub_dir)
 {
-	cout<<"Trying to write the file "<<filepath;
+    cout<<"Writing "<<filepath;
     std::ofstream fout(filepath);
     fout << doc.c_str();
     fout.close();

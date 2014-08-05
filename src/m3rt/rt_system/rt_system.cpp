@@ -127,11 +127,11 @@ void *rt_system_thread(void *arg)
         end = nano2count(rt_get_cpu_time_ns());
         dt = end - start;
 
-        /*if (tmp_cnt++ == 1000)
+        if (tmp_cnt++ == 1000)
         {
           M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
           tmp_cnt = 0;
-        }*/
+        }
         /*
         Check the time it takes to run components, and if it takes longer
         than our period, make us run slower. Otherwise this task locks
@@ -159,6 +159,10 @@ void *rt_system_thread(void *arg)
 #else
         end = getNanoSec();
         dt = end - start;
+		if(tmp_cnt++==1000){
+			tmp_cnt=0;
+		std::cout<<"Loop computation time : %d us"<<dt<<endl;
+		}
         usleep((RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000);
 #endif
     }
@@ -192,8 +196,8 @@ bool M3RtSystem::Startup()
     {
             usleep(1000000);
     }*/
-    if(!hst) { //A.H : Added earlier check
-        m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+    if(!(hst==0)) { //A.H : Added earlier check
+        m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%d]).\n",hst);
         return false;
     }
     for(int i = 0; i < 100; i++) {
@@ -306,19 +310,19 @@ bool M3RtSystem::StartupComponents()
         M3_ERR("Unable to find the M3LEXT semaphore (probably hasn't been cleared properly, reboot can solve this problem).\n");
         //return false;
     }
-    M3_INFO("Reading component config files ...\n");
+    M3_INFO("Reading components config files ...");
 #ifdef __RTAI__
     if(!ReadConfigEc(M3_CONFIG_FILENAME))
         return false;
 #endif
     if(!ReadConfigRt(M3_CONFIG_FILENAME))
         return false;
-    M3_INFO("Done reading component config files...\n");
+    std::cout<<"OK\n"<<std::endl;;
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;
     bool failure = true;
-
+	M3_INFO("Linking components ...");
     while(GetNumComponents() > 0 && failure) {
         bad_link.clear();
         failure = false;
@@ -349,13 +353,17 @@ bool M3RtSystem::StartupComponents()
             }
         }
     }
+    
     if(GetNumComponents() == 0) {
         M3_WARN("No M3 Components could be loaded....\n", 0);
         return false;
     }
+    std::cout<<"OK"<<std::endl;
+	M3_INFO("Startup components ...");
     for(int i = 0; i < GetNumComponents(); i++) {
         GetComponent(i)->Startup();
     }
+    std::cout<<"OK"<<std::endl;
     CheckComponentStates();
     PrettyPrintComponentNames();
     //Setup Monitor
@@ -795,7 +803,7 @@ bool M3RtSystem::ReadConfigEc(const char *filename)
                                 idx_map_ec.push_back(GetNumComponents() - 1);
                             }
                         } else factory->ReleaseComponent(m);
-                    } catch(YAML::TypedKeyNotFound<string> e) {
+					} catch(YAML::TypedKeyNotFound<string> e) {
                         M3_WARN("Missing key: %s in config file for EC component %s \n", e.key.c_str(), name.c_str());
                         factory->ReleaseComponent(m);
                     } catch(YAML::RepresentationException e) {
@@ -843,8 +851,7 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
 	    it.first() >> dir;
 #else
 	 for(YAML::const_iterator it = rt_components.begin(); it != rt_components.end(); ++it) {
-            string dir;  
-	    dir = it->first.as<std::string>() ;
+            string dir = it->first.as<std::string>() ;
 #endif
             
 #ifndef YAMLCPP_05
@@ -872,7 +879,7 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
                             factory->ReleaseComponent(m);
                             M3_ERR("Error reading config for %s\n", name.c_str());
                         }
-                    } catch(YAML::TypedKeyNotFound<string> e) {
+					} catch(YAML::TypedKeyNotFound<string> e) {
                         M3_WARN("Missing key: %s in config file for RT component %s \n", e.key.c_str(), name.c_str());
                         factory->ReleaseComponent(m);
                     } catch(YAML::RepresentationException e) {
