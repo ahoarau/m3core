@@ -26,18 +26,18 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/rt_system/rt_data_service.h"
 #include "m3rt/rt_system/rt_log_service.h"
 #include "m3rt/rt_system/rt_system.h"
-#include <pthread.h>
 
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {
 #endif 
 #include <rtai.h>
-#include "rtai_sem.h"
+#include <rtai_sem.h>
 #ifdef __cplusplus
 }  // extern "C"
 #endif 
 #else
+#include <pthread.h>
 #include <semaphore.h>
 #endif
 

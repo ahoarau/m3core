@@ -20,21 +20,21 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/rt_system/rt_system.h"
 //#include "m3rt/base/m3ec_pdo_v1_def.h"
 #include <unistd.h>
-#ifdef __RTAI__
-#ifdef __cplusplus
+#include <string>
+
+#if defined(__RTAI__) && defined(__cplusplus)
 extern "C" {
-#endif
 #include <rtai.h>
+#include <rtai_lxrt.h>
 #include <rtai_sem.h>
 #include <rtai_sched.h>
 #include <rtai_nam2num.h>
 #include <rtai_shm.h>
-#include <rtai_malloc.h>
-#ifdef __cplusplus
+#include <rtai_malloc.h>	 
 }
 #endif
-#include <string>
-#endif
+
+
 
 namespace m3rt
 {
@@ -60,7 +60,6 @@ void *rt_system_thread(void *arg)
     M3RtSystem *m3sys = (M3RtSystem *)arg;
     sys_thread_end = true; //gonna be at true is startup fails=> no wait
 
-
     M3_INFO("Starting M3RtSystem real-time thread\n");
 #ifdef __RTAI__
     RT_TASK *task;
@@ -80,18 +79,17 @@ void *rt_system_thread(void *arg)
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
     RTIME tick_period = nano2count(RT_TIMER_TICKS_NS ); //TODO : why +200000 ?
-
-#ifndef __SOFTREALTIME__
-    M3_INFO("Hard real time initialized.\n");
-    rt_make_hard_real_time();
-#else
-
-    M3_INFO("Soft real time initialized.\n");
-    rt_make_soft_real_time();
-    M3_INFO("M3Sytem running in soft real time! For debugging only!!!\n");
+#endif
+	
+#if defined( __SOFTREALTIME__) && defined(__RTAI__)
+	M3_INFO("Soft real time initialized.\n");
+	rt_make_soft_real_time();
+#elif defined(__RTAI__)
+	M3_INFO("Hard real time initialized.\n");
+	rt_make_hard_real_time();
 #endif
 
-#else
+#ifndef __RTAI__
     long long start, end, dt;
 #endif
 
@@ -159,9 +157,10 @@ void *rt_system_thread(void *arg)
 #else
         end = getNanoSec();
         dt = end - start;
-		if(tmp_cnt++==1000){
+		if(tmp_cnt++==1000)
+		{
 			tmp_cnt=0;
-		std::cout<<"Loop computation time : %d us"<<dt<<endl;
+			std::cout<<"Loop computation time : "<<dt/1000<<" us (sleeping "<<( RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000000 <<" us)"<<endl;
 		}
         usleep((RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000);
 #endif
@@ -196,7 +195,11 @@ bool M3RtSystem::Startup()
     {
             usleep(1000000);
     }*/
-    if(!(hst==0)) { //A.H : Added earlier check
+#ifdef __RTAI__
+    if(!(hst)) { //A.H : Added earlier check
+#else
+	if(!(hst==0)){
+#endif
         m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%d]).\n",hst);
         return false;
     }
@@ -310,19 +313,19 @@ bool M3RtSystem::StartupComponents()
         M3_ERR("Unable to find the M3LEXT semaphore (probably hasn't been cleared properly, reboot can solve this problem).\n");
         //return false;
     }
-    M3_INFO("Reading components config files ...");
+    M3_INFO("Reading components config files ...\n");
 #ifdef __RTAI__
     if(!ReadConfigEc(M3_CONFIG_FILENAME))
         return false;
 #endif
     if(!ReadConfigRt(M3_CONFIG_FILENAME))
         return false;
-    std::cout<<"OK\n"<<std::endl;;
+	M3_INFO("Done reading components config files.\n");
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;
     bool failure = true;
-	M3_INFO("Linking components ...");
+	M3_INFO("Linking components ...\n");
     while(GetNumComponents() > 0 && failure) {
         bad_link.clear();
         failure = false;
@@ -358,12 +361,12 @@ bool M3RtSystem::StartupComponents()
         M3_WARN("No M3 Components could be loaded....\n", 0);
         return false;
     }
-    std::cout<<"OK"<<std::endl;
-	M3_INFO("Startup components ...");
+    M3_INFO("Done linking components.\n");
+	M3_INFO("Starting up components ...\n");
     for(int i = 0; i < GetNumComponents(); i++) {
         GetComponent(i)->Startup();
     }
-    std::cout<<"OK"<<std::endl;
+    M3_INFO("Done starting up components.\n");
     CheckComponentStates();
     PrettyPrintComponentNames();
     //Setup Monitor
@@ -845,7 +848,7 @@ bool M3RtSystem::ReadConfigRt(const char *filename)
             continue;
         }
 	const YAML::Node& rt_components = doc["rt_components"];
-        #ifndef YAMLCPP_05
+#ifndef YAMLCPP_05
         for(YAML::Iterator it = ec_components.begin(); it != rt_components.end(); ++it) {
             string dir;
 	    it.first() >> dir;

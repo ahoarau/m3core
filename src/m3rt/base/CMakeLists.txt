@@ -4,16 +4,16 @@ set(SUBPROJECT_INSTALL_DIR_NAME m3rt)
 set(SUBPROJECT_INSTALL_NAME ${PROJECT_NAME})
 set(LIBNAME "m3base")
 
-OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
+#OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
 if(RTAI)
-add_definitions(-D__RTAI__)
-find_package(RTAI REQUIRED)
-SET(LIBS ${RTAI_LIBRARY})
-include_directories(${RTAI_INCLUDE_DIR})
+	add_definitions(-D__RTAI__)
+	find_package(RTAI REQUIRED)
+	SET(LIBS ${RTAI_LIBRARY})
+	include_directories(${RTAI_INCLUDE_DIR})
 endif(RTAI)
 
-find_package(Boost  REQUIRED)
+find_package(Boost REQUIRED)
 
 
 ## YAML CPP 
@@ -21,10 +21,7 @@ find_package(PkgConfig REQUIRED)
 #find_package(YamlCpp  REQUIRED)
 pkg_check_modules(YAMLCPP REQUIRED yaml-cpp)
 if(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
-set_property(
-   DIRECTORY
-   PROPERTY COMPILE_DEFINITIONS YAMLCPP_05
-   )
+add_definitions(-DYAMLCPP_05)
 endif(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
 link_directories(${YAMLCPP_LIBRARY_DIRS})
 
@@ -101,10 +98,7 @@ ${ProtoFiles}
 )
 
 add_library(${LIBNAME} SHARED ${all_srcs})
-#	add_dependencies(${LIBNAME} rt_system)
 target_link_libraries(${LIBNAME} ${LIBS})
-#set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
-
 
 install(TARGETS ${LIBNAME} DESTINATION lib COMPONENT library)
 install(FILES ${all_hdrs} DESTINATION include/${SUBPROJECT_INSTALL_DIR_NAME}/${SUBPROJECT_INSTALL_NAME})

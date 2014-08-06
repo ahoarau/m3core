@@ -27,7 +27,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/component_ec.h"
 #include "m3rt/base/component_factory.h"
 #include "m3rt/base/component_base.pb.h" 
-#include "rt_log_service.h"
+#include "m3rt/rt_system/rt_log_service.h"
 //#include "m3rt/rt_system/rt_ros_service.h"
 #include <string>
 #include <vector>

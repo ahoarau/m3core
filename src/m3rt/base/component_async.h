@@ -81,12 +81,12 @@ class M3ComponentAsync : public M3Component
 		enum {DEFAULT, ISS};		
 		
 		
-		/*virtual bool ReadConfig(const char * filename);
+		virtual bool ReadConfig(const char * filename);
 		virtual void Startup();
 		virtual void Shutdown();
 		virtual void StepStatus();
 		virtual void StepCommand();			
-		virtual bool LinkDependentComponents();		*/		
+		virtual bool LinkDependentComponents();		
 	private:	      
 	      long rc;
 	      bool stop_thread;
