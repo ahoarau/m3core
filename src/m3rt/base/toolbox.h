@@ -30,39 +30,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace m3rt
 {
-	
-#ifdef YAMLCPP_05	
-template <typename _T >
-void operator >>(const YAML::Node& input, _T& value) {
-		value = input.as<_T>();
-}
-template <typename _T >
-void operator >> (const YAML::Node &node, std::vector<_T> & v)
-{
-		for(unsigned i = 0; i < node.size(); i++){
-			v.push_back(node[i].as<_T>());
-		}
-}
-
-/*std::vector<mReal> YamlReadVectorM(const YAML::Node &seq)
-{
-    std::vector<mReal> f(static_cast<mReal>(0.0),seq.size());
-    for(size_t i = 0; i < seq.size(); i++) {
-        f[i] = seq[i].as<mReal>();
-    }
-    return f;
-}*/
-#else
-inline void operator >> (const YAML::Node &node, std::vector<mReal> & v)
-{
-    for(unsigned i = 0; i < node.size(); i++) {
-	v.push_back(node.
-        mReal x;
-        node[i] >> x;
-        v.push_back(x);
-    }
-}
-#endif 
 
 #define M3_PRINTF printf
 void M3_WARN(const char * format, ...);
@@ -77,24 +44,53 @@ std::vector<std::string> YamlReadVectorString(std::string s);
 #ifndef YAMLCPP_05
 std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 #endif
-
 unsigned int xtoi(const char* xs);
-
-void GetRobotConfigPath(std::vector< std::string >& vpath,std::string sub_dir= std::string("/robot_config/"));
+void GetRobotConfigPath(std::vector< std::string >& vpath,std::string sub_dir= std::string(M3_CONFIG_DIR));
 
 void GetFileConfigPath(const char *filename,std::vector<std::string>& vpath);
 
-void WriteYamlDoc(const char *filename, YAML::Emitter &doc, std::string sub_dir= std::string("/robot_config/"));
+void WriteYamlDoc(const char *filename, YAML::Emitter &doc, std::string sub_dir= std::string(M3_CONFIG_DIR));
 
-bool GetYamlDoc(const char *filename, YAML::Node &doc,std::string * doc_path=NULL, const char *find_c=NULL);
-
-//void GetYamlDoc2(const char * filename, YAML::Node & doc);
+std::string GetYamlDoc(const char* filename, YAML::Node& doc, void*);
+bool GetYamlDoc(const char* filename, YAML::Node& doc);
 
 void GetYamlStream(const char *filename, YAML::Emitter& out);
+#ifdef YAMLCPP_05	
+template <typename _T >
+void operator >>(const YAML::Node& input, _T& value) {
+	value = input.as<_T>();
+}
+template <typename _T >
+void operator >> (const YAML::Node &node, std::vector<_T> & v)
+{
+	for(unsigned i = 0; i < node.size(); i++){
+		v.push_back(node[i].as<_T>());
+	}
+}
+#else
+inline void operator >> (const YAML::Node &node, std::vector<mReal> & v)
+{
+	for(unsigned i = 0; i < node.size(); i++) {
+		v.push_back(node.
+		mReal x;
+		node[i] >> x;
+		v.push_back(x);
+	}
+}
+#endif 
 
-//void GetYamlParser(const char *filename, YAML::Parser &parser);
+inline bool ContainsString(const std::vector<std::string>& v_in, const std::string& s_in)
+{
+	assert(false == s_in.empty());
+	for(std::vector<std::string>::const_iterator i=v_in.begin(); i!=v_in.end(); ++i)
+	{
+		if(*i== s_in)
+			return true;
+	}
+	return false;
+}
 
-//std::auto_ptr< YAML::Node > GetYamlDocs(const char *filename );
+void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs );
 
 }
 

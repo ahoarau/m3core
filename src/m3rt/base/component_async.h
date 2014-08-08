@@ -32,7 +32,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif 
 #include <rtai.h>
-#include "rtai_sem.h"
+#include <rtai_sem.h>
 #ifdef __cplusplus
 }  // extern "C"
 #endif 

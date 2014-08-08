@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #M3 -- Meka Robotics Robot Components
 #Copyright (c) 2010 Meka Robotics
 #Author: edsinger@mekabot.com (Aaron Edsinger)

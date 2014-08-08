@@ -114,26 +114,9 @@ string  	M3ComponentFactory::GetComponentName(int idx)
 
 bool M3ComponentFactory::AddComponentLibrary(string lib)
 {
-#ifdef CPP11
-// First check if already exists
-    if ((std::find(std::begin(dl_list_str), std::end(dl_list_str), &lib) != std::end(dl_list_str)))
-    {
-	M3_WARN("Library %s already loaded.", lib.c_str());
-	return true;	    
-	}
+	if(ContainsString(dl_list_str,lib))
+		return true;
 	dl_list_str.push_back(lib);
-#else
-// First check if already exists
-    for(vector<string>::iterator it=dl_list_str.begin();it!=dl_list_str.end();++it)
-	{
-		if(*it == lib){
-				M3_WARN("Library %s already loaded.", lib.c_str());
-				return true;
-		}
-		
-	}
-	dl_list_str.push_back(lib);
-#endif
     void *dlib;
     dlib = dlopen(lib.c_str(), RTLD_LAZY);//RTLD_NOW);
     if(dlib == NULL) {
@@ -212,7 +195,7 @@ M3Component *M3ComponentFactory::CreateComponent(string type)
         if((*si).compare(type) == 0) {
             m = creator_factory[type]();
             if(m != NULL) {
-                //M3_INFO("Create of: %s \n",type.c_str());
+                //M3_INFO("Creating: %s\n",type.c_str());
                 m3_list.push_back(m);
                 // If type ends in '_virtual', we want want to store it as it's base type
                 int pos = type.find("virtual");

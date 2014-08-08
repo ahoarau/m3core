@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #M3 -- Meka Robotics Robot Components
 #Copyright (c) 2010 Meka Robotics
 #Author: edsinger@mekabot.com (Aaron Edsinger)
@@ -19,7 +20,6 @@ import yaml
 import os 
 import m3.toolbox_core as m3t
 import m3.component_base_pb2 as mbs
-from pprint import pprint
 
 class M3Component:
     """Base class for all Python M3 components.
@@ -28,7 +28,7 @@ class M3Component:
     This convention is used by the M3RtProxy to negotiate data transfer 
     and to locate the component config file.
     """
-    def __init__(self,name,type):
+    def __init__(self,name,type=None):
         self.name=name
         self.config_name=m3t.get_component_config_filename(name)
         self.config=None

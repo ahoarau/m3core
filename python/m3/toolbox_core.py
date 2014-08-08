@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #M3 -- Meka Robotics Robot Components
 #Copyright (c) 2010 Meka Robotics
 #Author: edsinger@mekabot.com (Aaron Edsinger)
@@ -31,10 +32,43 @@ from datetime import timedelta
 from m3.unit_conversion import *
 from threading import Thread
 import m3.component_base_pb2 as mbs
-
-m3_config_filename = 'm3_config.yml'
-m3_robot_vatr = 'M3_ROBOT'
 # ###########################################
+# Const variables
+ROBOT_CONFIG_DIR = '/robot_config/'
+ROBOT_LOG_DIR = '/robot_log/'
+ROBOT_CONFIG_FILENAME = 'm3_config.yml'
+ROBOT_ENV_VAR = 'M3_ROBOT'
+
+# ###########################################
+
+def get_m3_robot_path():
+    vpath=os.environ[ROBOT_ENV_VAR]
+    return vpath.split(':')
+
+def get_m3_config_path():
+        try:
+                vpath = get_m3_robot_path()
+                path = [p+ROBOT_CONFIG_DIR for p in vpath]
+                path.reverse() 
+                return path
+        except KeyError:
+                print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
+        return ''
+
+def get_m3_config():
+        vpath=get_m3_config_path()
+        filename= [p+ROBOT_CONFIG_FILENAME for p in vpath]
+        fstream = ''
+        for fname,path in zip(filename,vpath):
+            try:
+                f = open(fname,'r')
+                if fstream is not '':
+                    fstream =fstream +'\n---\n' + f.read() + '\nconfig_path: ' + path
+                else:
+                    fstream = f.read() + '\nconfig_path: ' + path
+            except (IOError, EOFError):
+                print 'Config file not present:',fname,' Please check your',ROBOT_ENV_VAR,'variable'
+        return list(yaml.safe_load_all(fstream))
 
 class M3Exception(exceptions.Exception):
         def __init__(self, value):
@@ -143,9 +177,7 @@ def get_int(default=None):
                                 return default
                         print 'Invalid value, try again'
         return x
-def get_m3_robot_path():
-    vpath=os.environ['M3_ROBOT']
-    return vpath.split(':')
+
 
 def get_m3_ros_config_path():
         try:
@@ -157,20 +189,12 @@ def get_m3_ros_config_path():
         return ''
 
 
-def get_m3_config_path():
-        try:
-                vpath = get_m3_robot_path()
-                path = [p+'/robot_config/' for p in vpath]
-                path.reverse() 
-                return path
-        except KeyError:
-                print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
-        return ''
+
 
 def get_m3_log_path():
         try:
                 vpath = get_m3_robot_path()
-                path = [p+'/robot_log/' for p in vpath]
+                path = [p+ROBOT_LOG_DIR for p in vpath]
                 return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
@@ -179,32 +203,29 @@ def get_m3_log_path():
     
 
 def get_config_hostname():
-        config= get_m3_config()
-        h=None
-        for c in config:
-            try:
-                    h = c['hostname']
-                    return h
-            except KeyError:
-                    pass
-        return h
+    m3_config= get_m3_config()
+    for c in m3_config:
+        try:
+            hostname = c['hostname']
+            return hostname 
+        except KeyError:
+            pass
+    return None
 
 def set_config_hostname(hostname):
-        path=get_m3_config_path()
-        filename= path[-1]+'m3_config.yml'
-        f = open(filename, 'r')
-        config= yaml.safe_load(f)
-        old_hostname = config['hostname']
-        f.close()
+    m3_config= get_m3_config()
+    for config in m3_config:
         try:
-                 f = open(filename, 'w')
-                 config['hostname']=hostname
-                 yaml.safe_dump(config,f,default_flow_style=False)
-                 f.close()
-        except KeyError:
-                return False
-        print "Config hostname changed (",old_hostname,"->",hostname,")"
-        return True
+            old_hostname = c['hostname']
+            config['hostname']=hostname
+            if get_yes_no('no'):
+                with open(config['config_path'], 'w') as f:
+                    yaml.safe_dump(config,f,default_flow_style=False)
+                print "Config hostname changed (",old_hostname,"->",hostname,")"
+            return True
+        except exception,e:
+                pass
+    return False
 
 def configure_virtual_meka():
     local_hostname = get_local_hostname()
@@ -216,89 +237,70 @@ def get_local_hostname():
 	s = stdout_handle.read()
 	return s[:-1]
 
-
 def get_component_config(name):
-        config= None	
         try:
                 config_filename = get_component_config_filename(name)
-                print 'Config filename for',name,':',config_filename
-                f=open(config_filename,'r')
-                config= yaml.safe_load(f.read())
+                with open(str(config_filename),'r') as f:
+                    #print 'Config file for',name,':',config_filename
+                    return yaml.safe_load(f.read())
         except (IOError, EOFError):
                 print 'Config file not present for component ',name
-        return config
-
-def get_m3_config():
-        vpath=get_m3_config_path()
-        filename= [p+m3_config_filename for p in vpath]
-        fstream = ''
-        for fname,path in zip(filename,vpath):
-            try:
-                f = open(fname,'r')
-                if fstream is not '':
-                    fstream =fstream +'\n---\n' + f.read() + '\nconfig_path: ' + path
-                else:
-                    fstream = f.read() + '\nconfig_path: ' + path
-            except (IOError, EOFError):
-                print 'Config file not present:',fname,' Please check your M3_ROBOT variable'
-        config=yaml.safe_load_all(fstream)
-        return config
-
+        return None
 
 def get_ec_component_names():
-        config= get_m3_config()
-        x=[]
-        for c in config:
-            if c.has_key('ec_components'):
-                    for k in c['ec_components'].keys():
-                            x.extend(c['ec_components'][k].keys())
-            return x
+    m3_config= get_m3_config()
+    all_comp = []
+    for comp_type in ['ec_components']:
+        try:
+            for config in m3_config:
+                for comp_dir in config[comp_type]:
+                    all_comp.extend(comp_dir)
+        except Exception,e:
+            pass
+    return all_comp
 
-def get_component_config_type(name):
-        config= get_m3_config()
-        for conf in config:
-            try:
-                    for cdir in conf['ec_components'].keys():
-                            for c in conf['ec_components'][cdir].keys():
-                                if (c==name):
-                                        return conf['ec_components'][cdir][c]
-            except KeyError:
-                pass
-                #print "No ec_components for",name,"trying with rt_components"
-            try:
-                    for cdir in conf['rt_components'].keys():
-                            for c in conf['rt_components'][cdir].keys():
-                                    if (c==name):
-                                        return conf['rt_components'][cdir][c]
-            except KeyError:
-                pass
-                    #print "No rt_components for",name," trying with the next config file"
-        print "No config type found for component ",name
-        return ''
+def get_rt_component_names():
+    m3_config= get_m3_config()
+    all_comp = []
+    for comp_type in ['rt_components']:
+        try:
+            for config in m3_config:
+                for comp_dir in config[comp_type]:
+                    all_comp.extend(comp_dir)
+        except Exception,e:
+            pass
+    return all_comp
 
+def get_component_config_type(component_name):
+    m3_config= get_m3_config()
+    for comp_type in ['ec_components','rt_components']:
+        try:
+            for config in m3_config:
+                for component in config[comp_type]: # ma17,mh28..
+                    for comp_dir in component:           # ma17
+                        for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
+                            for name in comp:               #actuator1
+                                if component_name in name:             
+                                    return comp[name]
+        except Exception,e:
+            pass
+    return None
 
-def get_component_config_filename(name):
-        config= get_m3_config()
-        for conf in config:
-            try:
-                    for cdir in conf['ec_components'].keys():
-                            for c in conf['ec_components'][cdir].keys():
-                                    if (c==name):
-                                            fileout = conf['config_path']+cdir+'/'+name+'.yml'
-                                            return fileout
-            except KeyError:
-                pass
-                    #print "No ec_components for",name,"trying with rt_components"
-            try:
-                    for cdir in conf['rt_components'].keys():
-                            for c in conf['rt_components'][cdir].keys():
-                                    if (c==name):
-                                        fileout = conf['config_path']+cdir+'/'+name+'.yml'
-                                        return fileout
-            except KeyError:
-                    print "No rt_components for",name," trying with the next config file"
-        print "No config file found for component ",name
-        return ''
+def get_component_config_filename(component_name):
+    m3_config= get_m3_config()
+    for comp_type in ['ec_components','rt_components']:
+        try:
+            for config in m3_config:
+                for component in config[comp_type]: # ma17,mh28..
+                    for comp_dir in component:           # ma17
+                        for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
+                            for name in comp:               #actuator1,type1
+                                if component_name in name:             
+                                    return config['config_path']+comp_dir+'/'+component_name+'.yml'
+        except KeyError:
+            pass
+    print "Config file not found for component ",component_name
+    return ''
 
 """
 #DEPRECATED
@@ -306,17 +308,17 @@ def get_component_config_path(name):
         path=get_m3_config_path()
         filename= path+'m3_config.yml'
         f=file(filename,'r')
-        config= yaml.safe_load(f.read())
+        m3_config= yaml.safe_load(f.read())
         try:
-                for cdir in config['ec_components'].keys():
-                        for c in config['ec_components'][cdir].keys():
+                for cdir in m3_config['ec_components'].keys():
+                        for c in m3_config['ec_components'][cdir].keys():
                                 if (c==name):
                                         return path+cdir+'/'
         except KeyError:
                 pass
         try:
-                for cdir in config['rt_components'].keys():
-                        for c in config['rt_components'][cdir].keys():
+                for cdir in m3_config['rt_components'].keys():
+                        for c in m3_config['rt_components'][cdir].keys():
                                 if (c==name):
                                         return path+cdir+'/'
         except KeyError:
@@ -1002,25 +1004,27 @@ def make_log_dir(logdir):
                 print 'Unable to make log directory: ',logdir
                 return False
             
-            
-"""
-import pprint
+'''
 print 'Getting config : '
+from pprint import pprint
+m3_config= get_m3_config()
+for config in m3_config: # all the config files (M3_ROBOT way contain multiple paths)
+    pprint(config)
 
-config = get_m3_config()
-pprint.pprint(config)
+print 'Config hostname: ',get_config_hostname()
 
-print get_config_hostname()
+print 'RT comp: ',get_rt_component_names()
+print 'EC comp: ',get_ec_component_names()
 
-print get_component_config('m3actuator_ms4_j7') 
+print 'get_component_config(\'m3actuator_ms4_j7\') :',get_component_config('m3actuator_ms4_j7') 
 
-print get_component_config('my_class_v1')
-print get_component_config_filename('m3actuator_ec_ma17_j0')
-print get_component_config_type('m3actuator_ec_ma17_j0') 
-print get_component_config_type('m3actuator_ms4_j7')  
+print 'get_component_config(\'my_class_v1\'):',get_component_config('my_class_v1')
+print 'get_component_config_filename(\'m3actuator_ec_ma17_j0\'):',get_component_config_filename('m3actuator_ec_ma17_j0')
+print 'get_component_config_type(\'m3actuator_ec_ma17_j0\'):',get_component_config_type('m3actuator_ec_ma17_j0') 
+print 'get_component_config_type(\'m3actuator_ms4_j7\'):',get_component_config_type('m3actuator_ms4_j7')  
 
+'''
 
-"""
 """
 p = M3ScopeN(xwidth=200)
 for i in xrange(100):

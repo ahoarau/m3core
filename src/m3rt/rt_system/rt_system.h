@@ -46,7 +46,7 @@ extern "C" {
 #include <pthread.h>
 #include <sys/time.h>
 #endif
- 
+
 
 namespace m3rt
 {
@@ -54,76 +54,76 @@ namespace m3rt
 class M3RtSystem
 {
 public:
-	M3RtSystem(M3ComponentFactory * f):log_service(NULL),
-			   shm_ec(0),shm_sem(0),ext_sem(NULL),sync_sem(0),factory(f),logging(false),
-			   safeop_required(false){GOOGLE_PROTOBUF_VERIFY_VERSION;}
-	friend class M3RtDataService;
-	~M3RtSystem();
-	bool Startup();
-	bool StartupComponents();
-	bool Shutdown();
-	bool Step(bool safeop_only);
-	void PrettyPrint();
-	void PrettyPrintComponents();
-	void PrettyPrintComponent(int idx);
-	void PrettyPrintComponentNames();
-	M3Component * 	GetComponent(std::string name){return factory->GetComponent(name);}
-	M3Component *  	GetComponent(int idx){return factory->GetComponent(idx);}
-	std::string  	GetComponentName(int idx){return factory->GetComponentName(idx);}
-	std::string  	GetComponentType(int idx){return factory->GetComponentType(idx);}
-	int 		GetNumComponents(){return factory->GetNumComponents();}	
-	int 		GetComponentIdx(std::string name){return factory->GetComponentIdx(name);}
-	int			GetComponentState(int idx);	
-	bool SetComponentStateOp(int idx);
-	bool SetComponentStateSafeOp(int idx);
-	bool IsOperational(){return !safeop_required;}
+    M3RtSystem(M3ComponentFactory * f):log_service(NULL),
+        shm_ec(0),shm_sem(0),ext_sem(NULL),sync_sem(0),factory(f),logging(false),
+        safeop_required(false){GOOGLE_PROTOBUF_VERIFY_VERSION;}
+    friend class M3RtDataService;
+    ~M3RtSystem();
+    bool Startup();
+    bool StartupComponents();
+    bool Shutdown();
+    bool Step(bool safeop_only);
+    void PrettyPrint();
+    void PrettyPrintComponents();
+    void PrettyPrintComponent(int idx);
+    void PrettyPrintComponentNames();
+    M3Component * 	GetComponent(std::string name){return factory->GetComponent(name);}
+    M3Component *  	GetComponent(int idx){return factory->GetComponent(idx);}
+    std::string  	GetComponentName(int idx){return factory->GetComponentName(idx);}
+    std::string  	GetComponentType(int idx){return factory->GetComponentType(idx);}
+    int 		GetNumComponents(){return factory->GetNumComponents();}
+    int 		GetComponentIdx(std::string name){return factory->GetComponentIdx(name);}
+    int			GetComponentState(int idx);
+    bool SetComponentStateOp(int idx);
+    bool SetComponentStateSafeOp(int idx);
+    bool IsOperational(){return !safeop_required;}
 #ifdef __RTAI__
-	int GetEcCounter(){return shm_ec->counter;}
+    int GetEcCounter(){return shm_ec->counter;}
 #else
-	int GetEcCounter(){return 0;}
+    int GetEcCounter(){return 0;}
 #endif
-	void SetFactory(M3ComponentFactory * f){factory=f;}
-	void AttachLogService(M3RtLogService * l){log_service=l;}
-	
-	void RemoveLogService(){log_service=NULL;M3_DEBUG("Log service stopped at %d\n",log_service);}
-	bool ParseCommandFromExt(M3CommandAll & msg);  //Must be thread safe
-	bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
-	bool logging;
-	int over_step_cnt;
+    void SetFactory(M3ComponentFactory * f){factory=f;}
+    void AttachLogService(M3RtLogService * l){log_service=l;}
+
+    void RemoveLogService(){log_service=NULL;M3_DEBUG("Log service stopped at %d\n",log_service);}
+    bool ParseCommandFromExt(M3CommandAll & msg);  //Must be thread safe
+    bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
+    bool logging;
+    int over_step_cnt;
 protected:
 #ifdef __RTAI__
-	SEM * GetExtSem(){return ext_sem;}
+    SEM * GetExtSem(){return ext_sem;}
 #else
-	sem_t * GetExtSem(){return ext_sem;}
+    sem_t * GetExtSem(){return ext_sem;}
 #endif
-	bool ReadConfigEc(const char * filename);
-	bool ReadConfigRt(const char * filename);
+    bool ReadConfigEc(const char * filename);
+    bool ReadConfigRt(const char * filename);
 private:
-	
-	void CheckComponentStates();
-	M3ComponentFactory * factory;
-	M3EcSystemShm *  shm_ec;
-	bool safeop_required;
-	std::vector<M3ComponentEc *>	m3ec_list;
-	std::vector<M3Component *>	m3rt_list;
+
+    void CheckComponentStates();
+    M3ComponentFactory * factory;
+    M3EcSystemShm *  shm_ec;
+    bool safeop_required;
+    std::vector<M3ComponentEc *>	m3ec_list;
+    std::vector<M3Component *>	m3rt_list;
 #ifdef __RTAI__
-	SEM * shm_sem;
-	SEM * sync_sem;
-	SEM * ext_sem;	
-	RTIME last_cycle_time;
+    SEM * shm_sem;
+    SEM * sync_sem;
+    SEM * ext_sem;
+    RTIME last_cycle_time;
 #else
-	sem_t * shm_sem;
-	sem_t * sync_sem;
-	sem_t * ext_sem;
-	long long last_cycle_time;
+    sem_t * shm_sem;
+    sem_t * sync_sem;
+    sem_t * ext_sem;
+    long long last_cycle_time;
 #endif
-	M3RtLogService * log_service;
-	
-	std::vector<int> idx_map_ec;
-	std::vector<int> idx_map_rt;
-	long hst;
-	double test;
-	
+    M3RtLogService * log_service;
+
+    std::vector<int> idx_map_ec;
+    std::vector<int> idx_map_rt;
+    long hst;
+    double test;
+
 };
 
 

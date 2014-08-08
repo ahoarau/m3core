@@ -59,6 +59,7 @@ typedef double mReal;
 
 /*-------------------- ENVIRONMENT AND CONFIG ----------------------------*/
 #define M3_ROBOT_ENV_VAR "M3_ROBOT"
+#define M3_CONFIG_DIR "/robot_config/"
 #define M3_CONFIG_FILENAME    "m3_config.yml"
 //#define M3_COMP_LIB_FILENAME    "m3_component_libs.yml"
 #define M3_COMP_LIB_FILENAME  "m3_config.yml"
