@@ -284,6 +284,21 @@ bool M3RtSystem::Shutdown()
 
 bool M3RtSystem::StartupComponents()
 {
+	M3_INFO("Reading components config files ...\n");
+
+    //if(!ReadConfigEc(M3_CONFIG_FILENAME))
+    //    return false;
+		//if(!ReadConfigRt(M3_CONFIG_FILENAME))
+    //    return false;
+	
+	
+	
+	if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
+		return false;
+	if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
+		return false;
+
+    M3_INFO("Done reading components config files.\n");
 #ifdef __RTAI__
     M3_INFO("Getting Kernel EC components.\n");
     shm_ec = (M3EcSystemShm *) rtai_malloc(nam2num(SHMNAM_M3MKMD), 1);
@@ -313,21 +328,7 @@ bool M3RtSystem::StartupComponents()
         M3_ERR("Unable to find the M3LEXT semaphore (probably hasn't been cleared properly, reboot can solve this problem).\n");
         //return false;
     }
-    M3_INFO("Reading components config files ...\n");
 
-    //if(!ReadConfigEc(M3_CONFIG_FILENAME))
-    //    return false;
-		//if(!ReadConfigRt(M3_CONFIG_FILENAME))
-    //    return false;
-	
-	
-	
-	if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
-		return false;
-	if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
-		return false;
-
-    M3_INFO("Done reading components config files.\n");
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;

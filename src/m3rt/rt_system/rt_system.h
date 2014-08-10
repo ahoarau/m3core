@@ -126,35 +126,34 @@ protected:
 	template <class T>
 	bool ReadConfig(const char* filename, const char* component_type, std::vector<T*>& comp_list, std::vector< int >& idx_map)
 	{
-		
-		if(this->ReadConfigUnordered(filename,component_type,comp_list,idx_map) && comp_list.size()>0){
-		M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
-		return true;
-		}
+		std::vector<std::string> vpath;
+		GetFileConfigPath(filename,vpath);
+		bool ret=false;
+		for(std::vector<std::string>::iterator it=vpath.begin();it!=vpath.end();++it){
+			if(ret=this->ReadConfigUnordered(*it,component_type,comp_list,idx_map) && comp_list.size()>0){
+			M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
+			continue;
+			}
 
-		try{
-			return this->ReadConfigOrdered(filename,component_type,comp_list,idx_map);
-		}catch(std::exception &e){
-			M3_ERR("Error while reading %s config: %s\n",component_type,e.what());
+			try{
+				ret = this->ReadConfigOrdered(*it,component_type,comp_list,idx_map);
+			}catch(std::exception &e){
+				M3_ERR("Error while reading %s config: %s\n",component_type,e.what());
+			}
 		}
-		return false;
+		return ret;
 	}
 	template <class T>
-	bool ReadConfigUnordered(const char * filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
+	bool ReadConfigUnordered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
 	{
 		try{
 		YAML::Node doc;
 	#ifndef YAMLCPP_05
-		YAML::Emitter out;
-		m3rt::GetYamlStream(filename, out);
-		std::stringstream stream(out.c_str());
-		YAML::Parser parser(stream);
+		std::ifstream fin(filename);
+		YAML::Parser parser(fin);
 		while(parser.GetNextDocument(doc)) {
 	#else
-		std::vector<YAML::Node> all_docs;
-		GetAllYamlDocs(filename,all_docs);
-		for(unsigned int i=0;i<all_docs.size();i++){
-			doc = all_docs[i];
+		doc = YAML::LoadFile(filename);
 	#endif
 
 	#ifndef YAMLCPP_05
@@ -163,7 +162,7 @@ protected:
 			if(!doc[component_type]){
 	#endif
 				M3_INFO("No %s key in %s. Proceeding without it...\n",component_type,M3_CONFIG_FILENAME);
-				continue;
+				return true;
 			}
 			YAML::Node components = doc[component_type];
 	#ifndef YAMLCPP_05
@@ -210,7 +209,6 @@ protected:
 					}
 				}
 			}
-		}
 		return true;
 		}catch(std::exception &e){
 			M3_ERR("Error while reading %s config (old config): %s\n",component_type,e.what());
@@ -219,17 +217,15 @@ protected:
 	}
 
 	template <class T>
-	bool ReadConfigOrdered(const char *filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
+	bool ReadConfigOrdered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
 	{
 		// New version with -ma17: -actuator1:type1 etc
-		YAML::Node doc;
-		std::vector<YAML::Node> all_docs;
-		GetAllYamlDocs(filename,all_docs);
-		for(std::vector<YAML::Node>::const_iterator it_doc=all_docs.begin(); it_doc!=all_docs.end();++it_doc){
-			doc = *it_doc;
+		YAML::Node doc = YAML::LoadFile(filename);
+		//for(std::vector<YAML::Node>::const_iterator it_doc=all_docs.begin(); it_doc!=all_docs.end();++it_doc){
+			//doc = *it_doc;
 			if(!doc[component_type]){
 				M3_INFO("No %s keys in m3_config.yml. Proceeding without it...\n",component_type);
-				continue;
+				return true;
 			}
 			const YAML::Node& components = doc[component_type];
 			for(YAML::const_iterator it_rt = components.begin();it_rt != components.end(); ++it_rt) {
@@ -261,7 +257,6 @@ protected:
 				}
 				//std::cout <<"------------------------------------------"<<std::endl;
 			}
-		}
 		return true;
 	}
 

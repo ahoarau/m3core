@@ -366,6 +366,22 @@ void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
 		}
 	}
 }
+void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs )
+{
+	//assert(filename!=0);
+	//vector<string> vpath;
+	//GetFileConfigPath(filename,vpath);
+	for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+		try{
+			const YAML::Node& node = YAML::LoadFile(*it);
+			//cout<<endl<<endl<<YAML::Dump(node)<<endl<<endl;
+			//cout<<"Adding "<<*it<<endl;
+			docs.push_back(node);
+		}catch(...){
+			continue;
+		}
+	}
+}
 #endif
 
 std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )

@@ -91,6 +91,7 @@ inline bool ContainsString(const std::vector<std::string>& v_in, const std::stri
 }
 
 void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs );
+void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs );
 
 }
 
