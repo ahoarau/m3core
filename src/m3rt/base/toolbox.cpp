@@ -355,10 +355,11 @@ void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
 	assert(filename!=0);
 	vector<string> vpath;
 	GetFileConfigPath(filename,vpath);
-	for(std::vector<std::string>::reverse_iterator it = vpath.rbegin(); it != vpath.rend(); ++it) {
+	for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
 		try{
 			const YAML::Node& node = YAML::LoadFile(*it);
 			//cout<<endl<<endl<<YAML::Dump(node)<<endl<<endl;
+			//cout<<"Adding "<<*it<<endl;
 			docs.push_back(node);
 		}catch(...){
 			continue;
@@ -385,8 +386,8 @@ std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
     bool verbose = paths.size()>1;
 	string root_path = std::string();
 	string path = std::string();
-    for(std::map<string,string>::reverse_iterator it = paths.rbegin(); it != paths.rend(); ++it) {
-        //cout<<"Trying with path:"<<(*it).c_str()<<" find_str:"<<find_str<<endl;
+    for(std::map<string,string>::iterator it = paths.begin(); it != paths.end(); ++it) {
+        cout<<"Trying with path:"<<it->second<<endl;
         //A.H: Let's start by the very last one i.e a local version.
         //If the file exists, load it, otherwise go to previous path (down to original robot_config)
         //If the file is loaded, then check for an optional find_str provided to checkif this is the right file to load, otherwise go to previous path
@@ -416,36 +417,5 @@ std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
     }
 	return root_path;
 }
-
-/*void GetYamlDoc2(const char *filename, YAML::Node &doc)
-{
-    string s(filename);
-    string path;
-    vector<string> vpath; 
-    GetFileConfigPath(filename,vpath);
-    YAML::Parser parser;
-    YAML::Node node;
-    YAML::Emitter out;
-    for(size_t i = 0; i < vpath.size(); i++) {
-        path = vpath[i];
-        //cout << "Loading file : " << path << endl;
-        ifstream fin(path.c_str());
-        if(fin.fail()) {
-            //M3_ERR("Could not read %s \n", path.c_str());
-            continue;
-        }
-        parser.Load(fin);
-        while(parser.GetNextDocument(node)) {
-            out << node;
-        }
-        
-        fin.close();
-    }
-    assert(out.good());
-    std::stringstream stream(out.c_str());
-    parser.Load(stream);
-    parser.GetNextDocument(doc);
-    return;
-}*/
 
 }

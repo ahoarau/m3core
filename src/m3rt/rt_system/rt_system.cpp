@@ -238,10 +238,10 @@ bool M3RtSystem::Shutdown()
     sys_thread_end = true;
 #ifdef __RTAI__
     //RTIME timeout = nano2count(rt_get_cpu_time_ns());
-    int timeout_us = 2e6; //1s
+    int timeout_us = 2e6; //2s
     RTIME start_time = rt_get_time_ns();
     ///rt_thread_join(hst);
-    while(sys_thread_active && (rt_get_time_ns()-start_time < nano2count(timeout_us*1000)))
+    while(sys_thread_active && (rt_get_time_ns()-start_time < timeout_us*1000))
     {
         M3_INFO("Waiting for Real-Time thread to shutdown...\n");
         usleep(500000);
@@ -314,12 +314,19 @@ bool M3RtSystem::StartupComponents()
         //return false;
     }
     M3_INFO("Reading components config files ...\n");
-#ifdef __RTAI__
-    if(!ReadConfigEc(M3_CONFIG_FILENAME))
-        return false;
-#endif
-    if(!ReadConfigRt(M3_CONFIG_FILENAME))
-        return false;
+
+    //if(!ReadConfigEc(M3_CONFIG_FILENAME))
+    //    return false;
+		//if(!ReadConfigRt(M3_CONFIG_FILENAME))
+    //    return false;
+	
+	
+	
+	if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
+		return false;
+	if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
+		return false;
+
     M3_INFO("Done reading components config files.\n");
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
@@ -740,7 +747,7 @@ bool M3RtSystem::Step(bool safeop_only)
 #endif
     return true;
 }
-
+/*
 bool M3RtSystem::ReadConfigEc(const char *filename)
 {
     YAML::Node doc;
@@ -822,171 +829,8 @@ bool M3RtSystem::ReadConfigEc(const char *filename)
     }
     return true;
 }
+*/
 
-#if defined(OLD_CONFIG)
-bool M3RtSystem::ReadConfigRt(const char *filename)
-{
-    YAML::Node doc;
-#ifndef YAMLCPP_05
-    YAML::Emitter out;
-    m3rt::GetYamlStream(filename, out);
-    std::stringstream stream(out.c_str());
-    YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc)) {
-#else
-    std::vector<YAML::Node> all_docs;
-    GetAllYamlDocs(filename,all_docs);
-    for(unsigned int i=0;i<all_docs.size();i++){
-        doc = all_docs[i];
-#endif
-
-#ifndef YAMLCPP_05
-        if(!doc.FindValue("rt_components")) {
-#else
-        if(!doc["rt_components"]){
-#endif
-            M3_INFO("No rt_components key in m3_config.yml. Proceeding without it...\n");
-            continue;
-        }
-        YAML::Node rt_components = doc["rt_components"];
-#ifndef YAMLCPP_05
-        for(YAML::Iterator it = ec_components.begin(); it != rt_components.end(); ++it) {
-            string dir;
-            it.first() >> dir;
-#else
-		;
-        for(YAML::const_iterator it_rt = rt_components.begin();it_rt != rt_components.end(); ++it_rt) {
-            string dir;
-            it_rt->first >> dir;
-#endif
-            
-#ifndef YAMLCPP_05
-            for(YAML::Iterator it_dir = rt_components[dir.c_str()].begin();
-                it_dir != rt_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
-                it_dir.second() >> type;
-#else
-            YAML::Node dir_comp = rt_components[dir.c_str()];
-            for(YAML::const_iterator it_dir = dir_comp.begin();it_dir != dir_comp.end(); ++it_dir) {
-                string name=it_dir->first.as<string>();
-                string type=it_dir->second.as<string>();
-#endif
-                M3Component *m = factory->CreateComponent(type);
-                if(m != NULL) {
-                    m->SetFactory(factory);
-                    string f = dir + "/" + name + ".yml";
-                    try {
-                        cout <<"------------------------------------------"<<endl;
-                        cout <<"Component " << name<<endl;
-                        if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
-                            m3rt_list.push_back(m);
-                            idx_map_rt.push_back(GetNumComponents() - 1);
-                        } else {
-                            factory->ReleaseComponent(m);
-                            M3_ERR("Error reading config for %s\n", name.c_str());
-                        }
-                    } catch(YAML::TypedKeyNotFound<string> e) {
-                        M3_WARN("Missing key: %s in config file for RT component %s \n", e.key.c_str(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(YAML::RepresentationException e) {
-                        M3_WARN("%s while parsing config files for RT component %s \n", e.what(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(...) {
-                        M3_WARN("Error while parsing config files for RT component %s \n", name.c_str());
-                        factory->ReleaseComponent(m);
-                    }
-
-                }
-            }
-            cout <<"------------------------------------------"<<endl;
-        }
-    }
-    return true;
-}
-#else
-
-
-bool M3RtSystem::ReadConfigRt(const char *filename)
-{
-    YAML::Node doc;
-#ifndef YAMLCPP_05
-    YAML::Emitter out;
-    m3rt::GetYamlStream(filename, out);
-    std::stringstream stream(out.c_str());
-    YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc)) {
-#else
-    std::vector<YAML::Node> all_docs;
-    GetAllYamlDocs(filename,all_docs);
-    for(std::vector<YAML::Node>::const_iterator it_doc=all_docs.begin(); it_doc!=all_docs.end();++it_doc){
-        doc = *it_doc;
-#endif
-
-#ifndef YAMLCPP_05
-        if(!doc.FindValue("rt_components")) {
-#else
-        if(!doc["rt_components"]){
-#endif
-            M3_INFO("No rt_components key in m3_config.yml. Proceeding without it...\n");
-            continue;
-        }
-        const YAML::Node& rt_components = doc["rt_components"];
-#ifndef YAMLCPP_05
-        for(YAML::Iterator it = ec_components.begin(); it != rt_components.end(); ++it) {
-            string dir;
-            it.first() >> dir;
-#else
-        for(YAML::const_iterator it_rt = rt_components.begin();it_rt != rt_components.end(); ++it_rt) {
-            const string dir =it_rt->begin()->first.as<std::string>();
-#endif
-            
-#ifndef YAMLCPP_05
-            for(YAML::Iterator it_dir = rt_components[dir.c_str()].begin();
-                it_dir != rt_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
-                it_dir.second() >> type;
-#else
-            const YAML::Node& dir_comp = it_rt->begin()->second;
-            for(YAML::const_iterator it_dir = dir_comp.begin();it_dir != dir_comp.end(); ++it_dir) {
-                string name=it_dir->begin()->first.as<std::string>();
-                string type=it_dir->begin()->second.as<std::string>();
-#endif
-                M3Component *m = factory->CreateComponent(type);
-                if(m != NULL) {
-                    m->SetFactory(factory);
-                    string f = dir + "/" + name + ".yml";
-                    try {
-                        cout <<"------------------------------------------"<<endl;
-                        cout <<"Component " << name<<endl;
-                        if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
-                            m3rt_list.push_back(m);
-                            idx_map_rt.push_back(GetNumComponents() - 1);
-                        } else {
-                            factory->ReleaseComponent(m);
-                            M3_ERR("Error reading config for %s\n", name.c_str());
-                        }
-                    } catch(YAML::TypedKeyNotFound<string> e) {
-                        M3_WARN("Missing key: %s in config file for RT component %s \n", e.key.c_str(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(YAML::RepresentationException e) {
-                        M3_WARN("%s while parsing config files for RT component %s \n", e.what(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(...) {
-                        M3_WARN("Error while parsing config files for RT component %s \n", name.c_str());
-                        factory->ReleaseComponent(m);
-                    }
-
-                }
-            }
-            //cout <<"------------------------------------------"<<endl;
-        }
-    }
-    return true;
-}
-
-#endif
 
 }
 

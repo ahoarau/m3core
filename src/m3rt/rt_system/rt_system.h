@@ -50,7 +50,6 @@ extern "C" {
 
 namespace m3rt
 {
-
 class M3RtSystem
 {
 public:
@@ -90,14 +89,6 @@ public:
     bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
     bool logging;
     int over_step_cnt;
-protected:
-#ifdef __RTAI__
-    SEM * GetExtSem(){return ext_sem;}
-#else
-    sem_t * GetExtSem(){return ext_sem;}
-#endif
-    bool ReadConfigEc(const char * filename);
-    bool ReadConfigRt(const char * filename);
 private:
 
     void CheckComponentStates();
@@ -123,6 +114,156 @@ private:
     std::vector<int> idx_map_rt;
     long hst;
     double test;
+	
+protected:
+#ifdef __RTAI__
+    SEM * GetExtSem(){return ext_sem;}
+#else
+    sem_t * GetExtSem(){return ext_sem;}
+#endif
+    //bool ReadConfigEc(const char * filename);
+    //bool ReadConfigRt(const char * filename);
+	template <class T>
+	bool ReadConfig(const char* filename, const char* component_type, std::vector<T*>& comp_list, std::vector< int >& idx_map)
+	{
+		
+		if(this->ReadConfigUnordered(filename,component_type,comp_list,idx_map) && comp_list.size()>0){
+		M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
+		return true;
+		}
+
+		try{
+			return this->ReadConfigOrdered(filename,component_type,comp_list,idx_map);
+		}catch(std::exception &e){
+			M3_ERR("Error while reading %s config: %s\n",component_type,e.what());
+		}
+		return false;
+	}
+	template <class T>
+	bool ReadConfigUnordered(const char * filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
+	{
+		try{
+		YAML::Node doc;
+	#ifndef YAMLCPP_05
+		YAML::Emitter out;
+		m3rt::GetYamlStream(filename, out);
+		std::stringstream stream(out.c_str());
+		YAML::Parser parser(stream);
+		while(parser.GetNextDocument(doc)) {
+	#else
+		std::vector<YAML::Node> all_docs;
+		GetAllYamlDocs(filename,all_docs);
+		for(unsigned int i=0;i<all_docs.size();i++){
+			doc = all_docs[i];
+	#endif
+
+	#ifndef YAMLCPP_05
+			if(!doc.FindValue(component_type)) {
+	#else
+			if(!doc[component_type]){
+	#endif
+				M3_INFO("No %s key in %s. Proceeding without it...\n",component_type,M3_CONFIG_FILENAME);
+				continue;
+			}
+			YAML::Node components = doc[component_type];
+	#ifndef YAMLCPP_05
+			for(YAML::Iterator it = components.begin(); it != components.end(); ++it) {
+				std::string dir;
+				it.first() >> dir;
+	#else
+			;
+			for(YAML::const_iterator it_rt = components.begin();it_rt != components.end(); ++it_rt) {
+				std::string dir = it_rt->first.as<std::string>();
+	#endif
+				
+	#ifndef YAMLCPP_05
+				for(YAML::Iterator it_dir = components[dir.c_str()].begin();
+					it_dir != components[dir.c_str()].end(); ++it_dir) {
+					string  name, type;
+					it_dir.first() >> name;
+					it_dir.second() >> type;
+	#else
+				YAML::Node dir_comp = components[dir.c_str()];
+				for(YAML::const_iterator it_dir = dir_comp.begin();it_dir != dir_comp.end(); ++it_dir) {
+					std::string name=it_dir->first.as<std::string>();
+					std::string type=it_dir->second.as<std::string>();
+	#endif
+					T m = reinterpret_cast<T>(factory->CreateComponent(type));
+					if(m != NULL) {
+						m->SetFactory(factory);
+						std::string f = dir + "/" + name + ".yml";
+						try {
+							std::cout <<"------------------------------------------"<<std::endl;
+							std::cout <<"Component " << name<<std::endl;
+							if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
+								m3rt_list.push_back(m);
+								idx_map_rt.push_back(GetNumComponents() - 1);
+							} else {
+								factory->ReleaseComponent(m);
+								M3_ERR("Error reading config for %s\n", name.c_str());
+							}
+						} catch(...) {
+							M3_WARN("Error while parsing config files for %s %s \n",component_type, name.c_str());
+							factory->ReleaseComponent(m);
+						}
+
+					}
+				}
+			}
+		}
+		return true;
+		}catch(std::exception &e){
+			M3_ERR("Error while reading %s config (old config): %s\n",component_type,e.what());
+			return false;
+		}
+	}
+
+	template <class T>
+	bool ReadConfigOrdered(const char *filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
+	{
+		// New version with -ma17: -actuator1:type1 etc
+		YAML::Node doc;
+		std::vector<YAML::Node> all_docs;
+		GetAllYamlDocs(filename,all_docs);
+		for(std::vector<YAML::Node>::const_iterator it_doc=all_docs.begin(); it_doc!=all_docs.end();++it_doc){
+			doc = *it_doc;
+			if(!doc[component_type]){
+				M3_INFO("No %s keys in m3_config.yml. Proceeding without it...\n",component_type);
+				continue;
+			}
+			const YAML::Node& components = doc[component_type];
+			for(YAML::const_iterator it_rt = components.begin();it_rt != components.end(); ++it_rt) {
+				const std::string dir =it_rt->begin()->first.as<std::string>();
+				const YAML::Node& dir_comp = it_rt->begin()->second;
+				for(YAML::const_iterator it_dir = dir_comp.begin();it_dir != dir_comp.end(); ++it_dir) {
+					std::string name=it_dir->begin()->first.as<std::string>();
+					std::string type=it_dir->begin()->second.as<std::string>();
+					T m = reinterpret_cast<T>(factory->CreateComponent(type));
+					if(m != NULL) {
+						m->SetFactory(factory);
+						std::string f = dir + "/" + name + ".yml";
+						try {
+							std::cout <<"------------------------------------------"<<std::endl;
+							std::cout <<"Component " << name<<std::endl;
+							if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
+								comp_list.push_back(m);
+								idx_map.push_back(GetNumComponents() - 1);
+							} else {
+								factory->ReleaseComponent(m);
+								M3_ERR("Error reading config for %s\n", name.c_str());
+							}
+						} catch(...) {
+							M3_WARN("Error while parsing config files for %s %s \n",component_type, name.c_str());
+							factory->ReleaseComponent(m);
+						}
+
+					}
+				}
+				//std::cout <<"------------------------------------------"<<std::endl;
+			}
+		}
+		return true;
+	}
 
 };
 
