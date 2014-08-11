@@ -76,7 +76,6 @@ class M3Exception(exceptions.Exception):
         def __str__(self):
                 return repr(self.value)
 
-
 # ###########################################
 class M3KeyStrokeThread(Thread):
         def __init__ (self,menu,req_enter=False):
@@ -247,29 +246,38 @@ def get_component_config(name):
                 print 'Config file not present for component ',name
         return None
 
-def get_ec_component_names():
+def get_components_names(component_type=None):
+    ## Get all the components in the different m3_config.yml
+    ## component_type can be ['rt_components','ec_components'] or just 'rt_component' etc.
     m3_config= get_m3_config()
     all_comp = []
-    for comp_type in ['ec_components']:
+    t = []
+    if not component_type:
+        t = ['rt_components','ec_components']
+    else:
+        if isinstance(component_type,list):
+            t = component_type
+        else:
+            t = [component_type]
+    for comp_type in t:
         try:
             for config in m3_config:
                 for comp_dir in config[comp_type]:
-                    all_comp.extend(comp_dir)
+                    try: # New config
+                        for sub_dir in comp_dir:
+                            for clist in comp_dir[sub_dir]:
+                                all_comp.extend(clist)
+                    except TypeError:
+                        all_comp.extend(config[comp_type][comp_dir].keys())
         except Exception,e:
-            pass
+            print e
     return all_comp
 
-def get_rt_component_names():
-    m3_config= get_m3_config()
-    all_comp = []
-    for comp_type in ['rt_components']:
-        try:
-            for config in m3_config:
-                for comp_dir in config[comp_type]:
-                    all_comp.extend(comp_dir)
-        except Exception,e:
-            pass
-    return all_comp
+def get_rt_components_names():
+    return get_components_names('rt_components')
+
+def get_ec_components_names():
+    return get_components_names('ec_components')
 
 def get_component_config_type(component_name):
     m3_config= get_m3_config()
@@ -277,11 +285,16 @@ def get_component_config_type(component_name):
         try:
             for config in m3_config:
                 for component in config[comp_type]: # ma17,mh28..
-                    for comp_dir in component:           # ma17
-                        for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
-                            for name in comp:               #actuator1
-                                if component_name in name:             
-                                    return comp[name]
+                    try:
+                        for comp_dir in component:           # ma17
+                            for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
+                                for name in comp:               #actuator1
+                                    if component_name in name:             
+                                        return comp[name]
+                    except TypeError:
+                        if component_name in config[comp_type][component]:
+                            #print('M3_WARNING : Old config file detected.')
+                            return config[comp_type][component][component_name]
         except Exception,e:
             pass
     return None
@@ -292,39 +305,21 @@ def get_component_config_filename(component_name):
         try:
             for config in m3_config:
                 for component in config[comp_type]: # ma17,mh28..
-                    for comp_dir in component:           # ma17
-                        for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
-                            for name in comp:               #actuator1,type1
-                                if component_name in name:             
-                                    return config['config_path']+comp_dir+'/'+component_name+'.yml'
+                    try:
+                        for comp_dir in component:           # ma17
+                            for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
+                                for name in comp:               #actuator1,type1
+                                    if component_name in name:             
+                                        return config['config_path']+comp_dir+'/'+component_name+'.yml'
+                    except TypeError:
+                        if component_name in config[comp_type][component]:
+                            #print('M3_WARNING : Old config file detected.')
+                            return config['config_path']+component+'/'+component_name+'.yml'
         except KeyError:
             pass
     print "Config file not found for component ",component_name
     return ''
 
-"""
-#DEPRECATED
-def get_component_config_path(name):
-        path=get_m3_config_path()
-        filename= path+'m3_config.yml'
-        f=file(filename,'r')
-        m3_config= yaml.safe_load(f.read())
-        try:
-                for cdir in m3_config['ec_components'].keys():
-                        for c in m3_config['ec_components'][cdir].keys():
-                                if (c==name):
-                                        return path+cdir+'/'
-        except KeyError:
-                pass
-        try:
-                for cdir in m3_config['rt_components'].keys():
-                        for c in m3_config['rt_components'][cdir].keys():
-                                if (c==name):
-                                        return path+cdir+'/'
-        except KeyError:
-                pass
-        return ''
-"""
 def time_string():
         time_stamp = time.localtime()
         output="_".join([('0'*(2-len(str(i)))+str(i)) for i in time_stamp[:6]])
@@ -1004,17 +999,17 @@ def make_log_dir(logdir):
                 print 'Unable to make log directory: ',logdir
                 return False
             
-'''
-print 'Getting config : '
-from pprint import pprint
-m3_config= get_m3_config()
-for config in m3_config: # all the config files (M3_ROBOT way contain multiple paths)
-    pprint(config)
 
+#print 'Getting config : '
+#from pprint import pprint
+#m3_config= get_m3_config()
+#for config in m3_config: # all the config files (M3_ROBOT way contain multiple paths)
+#    pprint(config)
+'''
 print 'Config hostname: ',get_config_hostname()
 
-print 'RT comp: ',get_rt_component_names()
-print 'EC comp: ',get_ec_component_names()
+print 'RT comp: ',get_rt_components_names()
+print 'EC comp: ',get_ec_components_names()
 
 print 'get_component_config(\'m3actuator_ms4_j7\') :',get_component_config('m3actuator_ms4_j7') 
 
