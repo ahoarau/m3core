@@ -134,12 +134,14 @@ protected:
 			M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
 			continue;
 			}
+#if defined(YAMLCPP_05)
 
 			try{
 				ret = this->ReadConfigOrdered(*it,component_type,comp_list,idx_map);
 			}catch(std::exception &e){
 				M3_ERR("Error while reading %s config: %s\n",component_type,e.what());
 			}
+#endif
 		}
 		return ret;
 	}
@@ -148,45 +150,45 @@ protected:
 	{
 		try{
 		YAML::Node doc;
-	#ifndef YAMLCPP_05
+#ifndef YAMLCPP_05
 		std::ifstream fin(filename);
 		YAML::Parser parser(fin);
 		while(parser.GetNextDocument(doc)) {
-	#else
+#else
 		doc = YAML::LoadFile(filename);
-	#endif
+#endif
 
-	#ifndef YAMLCPP_05
+#ifndef YAMLCPP_05
 			if(!doc.FindValue(component_type)) {
-	#else
+#else
 			if(!doc[component_type]){
-	#endif
+#endif
 				M3_INFO("No %s key in %s. Proceeding without it...\n",component_type,M3_CONFIG_FILENAME);
 				return true;
 			}
 			YAML::Node components = doc[component_type];
-	#ifndef YAMLCPP_05
+#ifndef YAMLCPP_05
 			for(YAML::Iterator it = components.begin(); it != components.end(); ++it) {
 				std::string dir;
 				it.first() >> dir;
-	#else
+#else
 			;
 			for(YAML::const_iterator it_rt = components.begin();it_rt != components.end(); ++it_rt) {
 				std::string dir = it_rt->first.as<std::string>();
-	#endif
+#endif
 				
-	#ifndef YAMLCPP_05
+#ifndef YAMLCPP_05
 				for(YAML::Iterator it_dir = components[dir.c_str()].begin();
 					it_dir != components[dir.c_str()].end(); ++it_dir) {
 					string  name, type;
 					it_dir.first() >> name;
 					it_dir.second() >> type;
-	#else
+#else
 				YAML::Node dir_comp = components[dir.c_str()];
 				for(YAML::const_iterator it_dir = dir_comp.begin();it_dir != dir_comp.end(); ++it_dir) {
 					std::string name=it_dir->first.as<std::string>();
 					std::string type=it_dir->second.as<std::string>();
-	#endif
+#endif
 					T m = reinterpret_cast<T>(factory->CreateComponent(type));
 					if(m != NULL) {
 						m->SetFactory(factory);
@@ -215,7 +217,7 @@ protected:
 			return false;
 		}
 	}
-
+#if defined(YAMLCPP_05)
 	template <class T>
 	bool ReadConfigOrdered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
 	{
@@ -259,7 +261,7 @@ protected:
 			}
 		return true;
 	}
-
+#endif
 };
 
 
