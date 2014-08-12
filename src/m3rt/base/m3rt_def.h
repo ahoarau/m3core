@@ -42,7 +42,7 @@ typedef double mReal;
 
 #define LOG_FILE "/robot_log/m3rt_server.log"
 // RTAI task characteristics
-#define RT_TASK_FREQUENCY 100		//Frequency of rt-task (HZ) (1000)
+#define RT_TASK_FREQUENCY 1000		//Frequency of rt-task (HZ) (1000)
 
 #define RT_INHIBIT_TIME 20
 #define RT_TIMER_TICKS_NS (1000000000 / RT_TASK_FREQUENCY)		//Period of rt-timer (ns) (=500us)	
@@ -56,6 +56,7 @@ typedef double mReal;
 #define SEMNAM_M3LEXT  "M3EX"
 #define SEMNAM_M3LSHM  "M3SH"
 #define SEMNAM_M3SYNC  "M3SN"
+#define SEMNAM_M3READY  "M3READY"
 
 /*-------------------- ENVIRONMENT AND CONFIG ----------------------------*/
 #define M3_ROBOT_ENV_VAR "M3_ROBOT"

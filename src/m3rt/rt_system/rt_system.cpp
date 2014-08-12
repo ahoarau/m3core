@@ -60,11 +60,16 @@ void *rt_system_thread(void *arg)
     M3RtSystem *m3sys = (M3RtSystem *)arg;
     sys_thread_end = true; //gonna be at true is startup fails=> no wait
 
-    M3_INFO("Starting M3RtSystem real-time thread\n");
+    M3_INFO("Starting M3RtSystem real-time thread.\n");
 #ifdef __RTAI__
-    RT_TASK *task;
+    RT_TASK *task=NULL;
     RTIME start, end, dt;
+	bool safeop_only = false;
+    int tmp_cnt = 0;
+	bool ready_sent=false;
     M3_INFO("Beginning RTAI Initialization.\n");
+	//start_rt_timer();
+	rt_allow_nonroot_hrt();
     task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0xFF);
     if(task == NULL) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
@@ -72,45 +77,39 @@ void *rt_system_thread(void *arg)
         return 0;
     }
     M3_INFO("RT Task Scheduled.\n");
-    rt_allow_nonroot_hrt();
     M3_INFO("Nonroot hrt initialized.\n");
     rt_task_use_fpu(task, 1);
     M3_INFO("Use fpu initialized.\n");
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
-    RTIME tick_period = nano2count(RT_TIMER_TICKS_NS ); //TODO : why +200000 ?
-#endif
-
-#if defined( __SOFTREALTIME__) && defined(__RTAI__)
-    M3_INFO("Soft real time initialized.\n");
-    rt_make_soft_real_time();
-#elif defined(__RTAI__)
-    M3_INFO("Hard real time initialized.\n");
-    rt_make_hard_real_time();
-#endif
-
-#ifndef __RTAI__
+    RTIME tick_period = start_rt_timer(nano2count(RT_TIMER_TICKS_NS )); //TODO : why +200000 ?
+	RTIME tick_period_orig = tick_period;
+	if(!m3sys->IsHardRealTime()){
+		M3_INFO("Soft real time initialized.\n");
+		rt_make_soft_real_time();
+	}else{
+		M3_INFO("Hard real time initialized.\n");
+		rt_make_hard_real_time();
+	}
+#else
     long long start, end, dt;
 #endif
 
     //Give other threads a chance to load before starting
 #ifdef __RTAI__
+	rt_sleep(nano2count(1e9));
     RTIME now = rt_get_time();
-    rt_sleep(nano2count(1000000000));
-    if(rt_task_make_periodic(task, now + tick_period, tick_period)) {
+    if(rt_task_make_periodic(task, rt_get_time() + 10*tick_period, tick_period)) {
         M3_ERR("Couldn't make rt_system task periodic.\n");
         return 0;
     }
 #else
-    usleep(50000);
+    usleep(1e6);
     M3_INFO("Using pthreads\n");
 #endif
     M3_INFO("Periodic task initialized.\n");
-    bool safeop_only = false;
-
-    int tmp_cnt = 0;
     m3sys->over_step_cnt = 0;
-    sys_thread_active = true;
+    
     sys_thread_end = false;
     while(!sys_thread_end) {
 #ifdef __RTAI__
@@ -122,13 +121,15 @@ void *rt_system_thread(void *arg)
         if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
             break;
 #ifdef __RTAI__
+		if(!sys_thread_active)
+			sys_thread_active = true;
         end = nano2count(rt_get_cpu_time_ns());
         dt = end - start;
 
-        if (tmp_cnt++ == 1000)
+        if (tmp_cnt++ == static_cast<int>((count2nano(tick_period) / 1000)))
         {
-            M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
-            tmp_cnt = 0;
+            rt_printk("Loop computation time : %d us / des period: %d us\n",static_cast<int>((count2nano(dt)/1000)),static_cast<int>((count2nano(tick_period) / 1000)));
+				tmp_cnt = 0;
         }
         /*
         Check the time it takes to run components, and if it takes longer
@@ -139,22 +140,38 @@ void *rt_system_thread(void *arg)
             int dt_us = static_cast<int>((count2nano(dt) / 1000));
             int tick_period_us = static_cast<int>((count2nano(tick_period) / 1000));
             int overrun_us = dt_us - tick_period_us;
-            m3rt::M3_WARN("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
+            rt_printk("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
             if(m3sys->over_step_cnt > 10) {
-                m3rt::M3_WARN("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n", step_cnt);
-                m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period), (double)count2nano(dt));
+                rt_printk("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n", step_cnt);
+                rt_printk("Previous period: %f. New period: %f\n", (double)count2nano(tick_period), (double)count2nano(dt));
                 tick_period = dt;
-                //rt_task_make_periodic(task, end + tick_period, tick_period);
+				//rt_set_period(task,tick_period);
                 safeop_only = true;
                 m3sys->over_step_cnt = 0;
-            }
+            }else{
+			/*if(tick_period>tick_period_orig)
+			{
+				tick_period--;
+				rt_set_period(task,tick_period);
+			}*/
+			}
         } else {
-            if(m3sys->over_step_cnt > 0)
+            if(m3sys->over_step_cnt > 0){
                 m3sys->over_step_cnt--;
+			}
+			/*if(tick_period>tick_period_orig)
+			{
+				tick_period--;
+				rt_set_period(task,tick_period);
+			}*/
         }
 
         rt_task_wait_period(); //No longer need as using sync semaphore of m3ec.ko
 #else
+		if(!ready_sent){
+			sem_post(m3sys->ready_sem);
+			ready_sent=true;
+		}
         end = getNanoSec();
         dt = end - start;
         if(tmp_cnt++==1000)
@@ -166,7 +183,7 @@ void *rt_system_thread(void *arg)
 #endif
     }
 #ifdef __RTAI__
-    rt_make_soft_real_time();
+    //rt_make_soft_real_time();
     rt_task_delete(task);
 #endif
     sys_thread_active = false;
@@ -187,24 +204,25 @@ bool M3RtSystem::Startup()
         return false;
     }
 #ifdef __RTAI__
-    hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
+   // hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
+	
+	//rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
 #else
-    long hst = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
+	struct timespec ts;
+	ts.tv_sec = 3;
+    long ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
+	sem_timedwait(ready_sem, &ts);
 #endif
-    /*for (int i=0;i<10;i++)
-    {
-            usleep(1000000);
-    }*/
-#ifdef __RTAI__
-    if(!(hst)) { //A.H : Added earlier check
-#else
-    if(!(hst==0)){
-#endif
-        m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%d]).\n",hst);
+	struct timespec ts;
+	ts.tv_sec = 3;
+	long ret =  pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
+    /*if(!(hst==0)){
+		m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%f]).\n",static_cast<double>(hst));
         return false;
-    }
-    for(int i = 0; i < 100; i++) {
-        usleep(1000000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
+    }*/
+    for(int i = 0; i < 10; i++) {
+		M3_INFO("Waiting for the Ready Signal.\n");
+        usleep(5e5); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
         if(sys_thread_active)
             break;
     }
@@ -272,6 +290,14 @@ bool M3RtSystem::Shutdown()
 #endif
         ext_sem = NULL;
     }
+        if(ready_sem != NULL) {
+#ifdef __RTAI__
+        rt_sem_delete(ready_sem);
+#else
+        delete ready_sem;
+#endif
+        ready_sem = NULL;
+    }
     shm_ec = NULL;
     shm_sem = NULL;
     sync_sem = NULL;
@@ -329,6 +355,16 @@ bool M3RtSystem::StartupComponents()
         //return false;
     }
 
+#ifdef __RTAI__
+    ready_sem = rt_typed_sem_init(nam2num(SEMNAM_M3READY), 1, BIN_SEM);
+#else
+    ready_sem = new sem_t();
+    sem_init(ready_sem, 1, 1);
+#endif
+    if(!ready_sem) {
+        M3_ERR("Unable to find the M3READY semaphore.\n");
+        //return false;
+    }
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;

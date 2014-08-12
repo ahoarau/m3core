@@ -41,11 +41,11 @@ extern "C" {
 #ifdef __cplusplus
 }  // extern "C"
 #endif 
-#else
+#endif
 #include <semaphore.h>
 #include <pthread.h>
 #include <sys/time.h>
-#endif
+
 
 
 namespace m3rt
@@ -54,7 +54,7 @@ class M3RtSystem
 {
 public:
     M3RtSystem(M3ComponentFactory * f):log_service(NULL),
-        shm_ec(0),shm_sem(0),ext_sem(NULL),sync_sem(0),factory(f),logging(false),
+        shm_ec(0),shm_sem(0),ext_sem(NULL),sync_sem(0),factory(f),logging(false),hard_realtime(true),ready_sem(NULL),
         safeop_required(false){GOOGLE_PROTOBUF_VERIFY_VERSION;}
     friend class M3RtDataService;
     ~M3RtSystem();
@@ -76,8 +76,10 @@ public:
     bool SetComponentStateOp(int idx);
     bool SetComponentStateSafeOp(int idx);
     bool IsOperational(){return !safeop_required;}
+    bool IsHardRealTime(){return hard_realtime;}
 #ifdef __RTAI__
     int GetEcCounter(){return shm_ec->counter;}
+    SEM * ready_sem;
 #else
     int GetEcCounter(){return 0;}
 #endif
@@ -90,11 +92,11 @@ public:
     bool logging;
     int over_step_cnt;
 private:
-
     void CheckComponentStates();
     M3ComponentFactory * factory;
     M3EcSystemShm *  shm_ec;
     bool safeop_required;
+	bool hard_realtime;
     std::vector<M3ComponentEc *>	m3ec_list;
     std::vector<M3Component *>	m3rt_list;
 #ifdef __RTAI__
@@ -103,6 +105,7 @@ private:
     SEM * ext_sem;
     RTIME last_cycle_time;
 #else
+	sem_t * ready_sem;
     sem_t * shm_sem;
     sem_t * sync_sem;
     sem_t * ext_sem;
