@@ -46,7 +46,7 @@ def create_component(name):
     to types. This is used to figure out the type and instantiate
     a new component class"""
     ttype=m3t.get_component_config_type(name)
-    if ttype=='':
+    if not ttype:
         print 'Component Factory type not found for component',name
         return None
     if not component_map.has_key(ttype):
