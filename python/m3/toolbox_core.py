@@ -237,6 +237,8 @@ def get_local_hostname():
 	return s[:-1]
 
 def get_component_config(name):
+        if not name:
+           return None
         try:
                 config_filename = get_component_config_filename(name)
                 with open(str(config_filename),'r') as f:
@@ -280,6 +282,8 @@ def get_ec_components_names():
     return get_components_names('ec_components')
 
 def get_component_config_type(component_name):
+    if not component_name:
+        return None
     m3_config= get_m3_config()
     for comp_type in ['ec_components','rt_components']:
         try:

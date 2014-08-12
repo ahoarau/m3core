@@ -52,4 +52,4 @@ def create_component(name):
     if not component_map.has_key(ttype):
         print 'Component Factory type ',ttype, 'not found in component_map for',name
         return None
-    return component_map[ttype](name)
+    return component_map.get(ttype,None)(name)
