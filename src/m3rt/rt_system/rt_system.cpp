@@ -82,6 +82,7 @@ void *rt_system_thread(void *arg)
     M3_INFO("Use fpu initialized.\n");
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
+	rt_set_periodic_mode();
     RTIME tick_period = start_rt_timer(nano2count(RT_TIMER_TICKS_NS )); //TODO : why +200000 ?
 	RTIME tick_period_orig = tick_period;
 	if(!m3sys->IsHardRealTime()){
@@ -142,9 +143,10 @@ void *rt_system_thread(void *arg)
             int overrun_us = dt_us - tick_period_us;
             rt_printk("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
             if(m3sys->over_step_cnt > 10) {
-                rt_printk("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n", step_cnt);
+                rt_printk("Step %d: Computation time of components is too long. Forcing all components to state SafeOp - switching to SAFE REALTIME.\n", step_cnt);
                 rt_printk("Previous period: %f. New period: %f\n", (double)count2nano(tick_period), (double)count2nano(dt));
                 tick_period = dt;
+				rt_make_soft_real_time();
 				//rt_set_period(task,tick_period);
                 safeop_only = true;
                 m3sys->over_step_cnt = 0;
