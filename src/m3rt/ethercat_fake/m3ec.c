@@ -133,12 +133,15 @@ void run(long shm)
 	RTIME ts4;
 	RTIME ts5;
 	RTIME ts6;
-	
+	RTIME print_dt=1e9;
+	RTIME print_start;
+	RTIME dt;
+	int tmp_cnt=0;
 	M3_INFO("EtherCAT kernel loop starting...\n");
 	sys.shm->counter=0;
 	tstart=rt_get_time_ns();
+	print_start = rt_get_time_ns();
 	while (1) {
-	    
 		t_last_cycle = get_cycles();
 	//Process Domain
 		ts0=rt_get_time_ns();
@@ -211,6 +214,15 @@ void run(long shm)
 				goto run_cleanup; 
 		}
 		rt_task_wait_period();
+		dt =rt_get_time_ns() -ts0;
+		if (rt_get_time_ns() -print_start >= print_dt)
+        {
+            rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us)\n",tmp_cnt,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000));
+			tmp_cnt = 0;
+			print_start = rt_get_time_ns();
+			
+        }
+        tmp_cnt++;
 	}
 run_cleanup:
 	M3_INFO("Entering Run Cleanup...\n");
