@@ -54,6 +54,8 @@ public:
 	bool IsRtSystemOperational(){if (rt_system==NULL) return false; return rt_system->IsOperational();}
 	bool SetComponentStateSafeOp(char * name);
 	bool SetComponentStateOp(char * name);
+	void SetComponentStateOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
+	void SetComponentStateSafeOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
 	int AttachDataService();
 	bool AttachRosService();
 	bool RemoveRosService();

@@ -86,7 +86,7 @@ void *rt_system_thread(void *arg)
     M3_INFO("Beginning RTAI Initialization.\n");
 	rt_allow_nonroot_hrt();
     ;
-    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0xFF))) {
+    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0x3))) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
         sys_thread_active = false;
         return 0;
@@ -98,25 +98,22 @@ void *rt_system_thread(void *arg)
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
 	RTIME tick_period_orig = tick_period;
-	if(!m3sys->IsHardRealTime()){
-		M3_INFO("Soft real time initialized.\n");
-		rt_make_soft_real_time();
-	}else{
-		M3_INFO("Hard real time initialized.\n");
-		rt_make_hard_real_time();
-	}
-#endif
 
+#endif
+#ifdef __RTAI__
+	RTIME print_start=rt_get_cpu_time_ns();
+	RTIME diff=0;
+	int dt_us,tick_period_us,overrun_us;
+#endif
 #if defined(__RTAI__)
 	#ifndef ONESHOT_MODE
-		rt_sleep(nano2count(5e8));
 		RTIME now = rt_get_time();
-		if(rt_task_make_periodic(task, now + tick_period, tick_period)) {
+		//rt_sleep(nano2count((long long)1e9));
+		if(rt_task_make_periodic(task, rt_get_time() + tick_period, tick_period)) {
 			M3_ERR("Couldn't make rt_system task periodic.\n");
 			return 0;
 		}
 		M3_INFO("Periodic task initialized.\n");
-		//rt_sleep(nano2count(1e9));
 	#endif
 #endif
 		
@@ -124,33 +121,41 @@ void *rt_system_thread(void *arg)
     usleep(1e6);
     M3_INFO("Using pthreads\n");
 #endif
-	
 
+#if defined(__RTAI__)
+	if(!m3sys->IsHardRealTime()){
+		M3_INFO("Soft real time initialized.\n");
+		rt_make_soft_real_time();
+	}else{
+		M3_INFO("Hard real time initialized.\n");
+		rt_make_hard_real_time();
+	}
+	/*
+	M3_INFO("Syncing with kernel module...\n");
+	while(rt_get_time_ns()- count2nano(now) <=  5*print_dt){
+			if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
+            return 0;
+			rt_task_wait_period();
+	}
+*/
+	M3_INFO("Entering realtime loop.\n");
+#endif
 
 #ifndef __RTAI__
     long long start, end, dt;
 #endif
 
     m3sys->over_step_cnt = 0;
-    
- #ifdef __RTAI__  
-	RTIME print_start=rt_get_cpu_time_ns();
-	RTIME diff=0;
-	int dt_us,tick_period_us,overrun_us;
-	//rt_sleep(nano2count((long long)1e8));
-	
-#endif
 	sys_thread_end = false;
 	sys_thread_active = true;
+	
     while(!sys_thread_end) {
-		tmp_cnt++;
-
 #ifdef __RTAI__
 		start = rt_get_cpu_time_ns();
 #else
 		start = getNanoSec();
 #endif
-
+		rt_sem_wait_timed(m3sys->sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
         if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
             break;
 #ifdef __RTAI__
@@ -162,17 +167,17 @@ void *rt_system_thread(void *arg)
         up the CPU.*/
         if(dt > count2nano(tick_period) && step_cnt > 10) {
             m3sys->over_step_cnt++;
-            int dt_us = static_cast<int>(((dt) / 1000));
-            int tick_period_us = static_cast<int>(((count2nano(tick_period)) / 1000));
-            int overrun_us = dt_us - tick_period_us;
-            //rt_printk("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
-            if(m3sys->over_step_cnt > 10) {
-                rt_printk("Step %d: Computation time of components is too long (dt:%d). Forcing all components to state SafeOp - switching to SAFE REALTIME.\n", step_cnt,(int)(dt/1000.0));
-                rt_printk("Previous period: %d. New period: %d\n", (int)(count2nano(tick_period)/1000), (int)(dt/1000));
+            dt_us = static_cast<int>(((dt) / 1000));
+            tick_period_us = static_cast<int>(((count2nano(tick_period)) / 1000));
+            overrun_us = dt_us - tick_period_us;
+            rt_printk("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
+            if(m3sys->over_step_cnt > 5000) {
+                M3_INFO("Step %d: Computation time of components is too long (dt:%d). Forcing all components to state SafeOp - switching to SAFE REALTIME.\n", step_cnt,(int)(dt/1000.0));
+                M3_INFO("Previous period: %d. New period: %d\n", (int)(count2nano(tick_period)/1000), (int)(dt/1000));
                 tick_period = nano2count(dt);
 				rt_make_soft_real_time();
 				rt_set_period(task,tick_period);
-                safeop_only = true;
+                //safeop_only = true;
                 m3sys->over_step_cnt = 0;
             }else{
 			/*if(tick_period>tick_period_orig)
@@ -200,7 +205,9 @@ void *rt_system_thread(void *arg)
 #endif
 	if (rt_get_time_ns() -print_start > print_dt)
         {
-            rt_printk("M3RtSystem Freq : %d (dt: %d us)\n",tmp_cnt,(int)(dt/1000.0));
+            rt_printk("M3System freq : %d (dt: %d us / des period: %d us)\n",tmp_cnt,(int)(dt/1000.0),(int)(count2nano(tick_period)/1000));
+			if(!(rt_is_hard_real_time(task)))
+			rt_printk("WARNING: M3System is running in SOFT real-time mode !\n");
 			tmp_cnt = 0;
 			print_start = rt_get_time_ns();
 			
@@ -219,6 +226,7 @@ void *rt_system_thread(void *arg)
         }
         usleep((RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000);
 #endif
+		tmp_cnt++;
     }
 #ifdef __RTAI__
     rt_make_soft_real_time();
@@ -241,17 +249,19 @@ bool M3RtSystem::Startup()
         sys_thread_active = false;
         return false;
     }
-//#ifdef __RTAI__
-///    hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
-	
+    long ret=0;//return for the thread
+#ifdef __RTAI__
+    hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
+	ret = (hst!=0 ? 0:-1);
 	//rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
-//#else
+#else
 	//struct timespec ts;
 	//ts.tv_sec = 3;
     long ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
 	//sem_timedwait(ready_sem, &ts);
-//#endif
-    if(!(ret==0)){
+#endif
+
+	if(!(ret==0)){
 		m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%ld]).\n",ret);
         return false;
     }
@@ -265,22 +275,6 @@ bool M3RtSystem::Startup()
     if(!sys_thread_active) {
         m3rt::M3_INFO("Startup of M3RtSystem thread failed, thread still not active.\n");
         return false;
-    }
-    //Debugging
-    if(0) {
-        /*M3_INFO("PDO Size M3ActPdoV1Cmd %d\n",(int)sizeof(M3ActPdoV1Cmd));
-        M3_INFO("PDO Size M3ActPdoV1Status %d\n\n",(int)sizeof(M3ActPdoV1Status));
-
-        M3_INFO("PDO Size M3ActX1PdoV1Cmd %d\n",(int)sizeof(M3ActX1PdoV1Cmd));
-        M3_INFO("PDO Size M3ActX2PdoV1Cmd %d\n",(int)sizeof(M3ActX2PdoV1Cmd));
-        M3_INFO("PDO Size M3ActX3PdoV1Cmd %d\n",(int)sizeof(M3ActX3PdoV1Cmd));
-        M3_INFO("PDO Size M3ActX4PdoV1Cmd %d\n\n",(int)sizeof(M3ActX4PdoV1Cmd));
-
-        M3_INFO("PDO Size M3ActX1PdoV1Status %d\n",(int)sizeof(M3ActX1PdoV1Status));
-        M3_INFO("PDO Size M3ActX2PdoV1Status %d\n",(int)sizeof(M3ActX2PdoV1Status));
-        M3_INFO("PDO Size M3ActX3PdoV1Status %d\n",(int)sizeof(M3ActX3PdoV1Status));
-        M3_INFO("PDO Size M3ActX4PdoV1Status %d\n",(int)sizeof(M3ActX4PdoV1Status));*/
-
     }
     return true;
 }
@@ -542,6 +536,24 @@ bool M3RtSystem::SetComponentStateOp(int idx)
         }
     return false;
 }
+void M3RtSystem::SetComponentStateOpAll(void)
+{
+	std::vector<M3Component* >::iterator it_rt;
+	std::vector<M3ComponentEc* >::iterator it_ec;
+	for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
+		(*it_ec)->SetStateOp();
+	for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
+		(*it_rt)->SetStateOp();
+}
+void M3RtSystem::SetComponentStateSafeOpAll(void)
+{
+	std::vector<M3Component* >::iterator it_rt;
+	std::vector<M3ComponentEc* >::iterator it_ec;
+	for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
+		(*it_ec)->SetStateSafeOp();
+	for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
+		(*it_rt)->SetStateSafeOp();
+}
 
 bool M3RtSystem::SetComponentStateSafeOp(int idx)
 {
@@ -642,7 +654,6 @@ bool M3RtSystem::Step(bool safeop_only)
     */
 #ifdef __RTAI__
     rt_sem_wait(ext_sem);
-    rt_sem_wait(sync_sem);
     rt_sem_wait(shm_sem);
     start = rt_get_cpu_time_ns();
 #else

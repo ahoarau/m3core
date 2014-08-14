@@ -75,6 +75,8 @@ public:
     int			GetComponentState(int idx);
     bool SetComponentStateOp(int idx);
     bool SetComponentStateSafeOp(int idx);
+	void SetComponentStateSafeOpAll(void);
+	void SetComponentStateOpAll(void);
     bool IsOperational(){return !safeop_required;}
     bool IsHardRealTime(){return hard_realtime;}
 #ifdef __RTAI__
