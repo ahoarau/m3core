@@ -82,6 +82,9 @@ public:
 #ifdef __RTAI__
     int GetEcCounter(){return shm_ec->counter;}
     SEM * ready_sem;
+	SEM * sync_sem;
+	SEM * shm_sem;
+    SEM * ext_sem;
 #else
     int GetEcCounter(){return 0;}
 #endif
@@ -102,9 +105,7 @@ private:
     std::vector<M3ComponentEc *>	m3ec_list;
     std::vector<M3Component *>	m3rt_list;
 #ifdef __RTAI__
-    SEM * shm_sem;
-    SEM * sync_sem;
-    SEM * ext_sem;
+
     RTIME last_cycle_time;
 #else
 	sem_t * ready_sem;

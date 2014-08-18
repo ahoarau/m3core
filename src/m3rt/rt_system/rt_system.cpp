@@ -62,11 +62,12 @@ void *rt_system_thread(void *arg)
 	bool safeop_only = false;
     int tmp_cnt = 0;
 	bool ready_sent=false;
+	int sem_cnt=0;
     M3_INFO("Starting M3RtSystem real-time thread.\n");
 #ifdef __RTAI__
 	RTIME print_dt=1e9;
     RT_TASK *task=NULL;
-    RTIME start, end, dt,tick_period;
+    RTIME start, end, dt,tick_period,dt_wait;
 			#ifdef ONESHOT_MODE
 				M3_INFO("Oneshot mode activated.\n");
 				rt_set_oneshot_mode();
@@ -152,11 +153,17 @@ void *rt_system_thread(void *arg)
     while(!sys_thread_end) {
 #ifdef __RTAI__
 		start = rt_get_cpu_time_ns();
+		rt_sem_wait(m3sys->ext_sem);
+		#ifdef __KERNEL_SYNC__
+		//rt_sem_wait_timed(m3sys->sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
+		rt_sem_wait(m3sys->sync_sem); // AH: this guy is causing ALL the overrruns
+		#endif
+		rt_sem_wait(m3sys->shm_sem);
 #else
 		start = getNanoSec();
 #endif
-		rt_sem_wait_timed(m3sys->sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
-        if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
+		
+		if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
             break;
 #ifdef __RTAI__
         end = rt_get_cpu_time_ns();
@@ -653,8 +660,7 @@ bool M3RtSystem::Step(bool safeop_only)
         Therefore if we want to directly communicate with B.x from the outside world, we must not publish to component A.
     */
 #ifdef __RTAI__
-    rt_sem_wait(ext_sem);
-    rt_sem_wait(shm_sem);
+
     start = rt_get_cpu_time_ns();
 #else
     sem_wait(ext_sem);
@@ -824,8 +830,8 @@ bool M3RtSystem::Step(bool safeop_only)
     s->set_cycle_frequency_hz((mReal)(rate * 1000000000.0));
     last_cycle_time = end;
 #ifdef __RTAI__
-    rt_sem_signal(shm_sem);
-    rt_sem_signal(ext_sem);
+	rt_sem_signal(shm_sem);
+	rt_sem_signal(ext_sem);
 #else
     sem_post(ext_sem);
 #endif
