@@ -22,8 +22,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include <linux/module.h>
 
-#include "../base/m3rt_def.h"
-#include "../base/m3ec_def.h"
+#include "m3rt/base/m3rt_def.h"
+#include "m3rt/base/m3ec_def.h"
 
 // Linux
 
@@ -46,9 +46,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 //Convenience printf-like macros for printing M3-specific information.
-#define M3_INFO(fmt, args...) printk(KERN_INFO "M3 INFO: " fmt, ##args)
-#define M3_ERR(fmt, args...) printk(KERN_ERR "M3 ERROR: " fmt, ##args)
-#define M3_WARN(fmt, args...) printk(KERN_WARNING "M3 WARNING: " fmt, ##args)
+#define M3_INFO(fmt, args...) rt_printk(KERN_INFO "M3 INFO: " fmt, ##args)
+#define M3_ERR(fmt, args...) rt_printk(KERN_ERR "M3 ERROR: " fmt, ##args)
+#define M3_WARN(fmt, args...) rt_printk(KERN_WARNING "M3 WARNING: " fmt, ##args)
 
 //#define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
 
@@ -214,14 +214,28 @@ void run(long shm)
 	RTIME ts5;
 	RTIME ts6;
 	
-	M3_INFO("EtherCAT kernel loop starting...\n");
+	
 #ifdef USE_DISTRIBUTED_CLOCKS
 	struct timeval tv;
-	unsigned int _ref_counter = 0;	
+	unsigned int sync_ref_counter = 0;	
 	count2timeval(nano2count(rt_get_real_time_ns()), &tv);
 #endif
 	sys.shm->counter=0;
 	tstart=rt_get_time_ns();
+	M3_INFO("Activating master...\n");
+	if (ecrt_master_activate(sys.master)) {
+		M3_ERR("Failed to activate master!\n");
+		M3_ERR("Releasing master...\n");
+		ecrt_release_master(sys.master);
+		return;
+	}
+	for (i=0;i<sys.num_domain;i++)
+	{
+		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
+		ps=ecrt_domain_size (sys.domain[i]);   	
+		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
+	}
+	M3_INFO("EtherCAT kernel loop starting...\n");
 	while (1) {
 	    
 		t_last_cycle = get_cycles();
@@ -446,14 +460,14 @@ int m3sys_startup(void)
 				else
 				{
 					//This is ugly hack into master, hopefully newer rev will allow graceful failure on adding slaves
-					////////////M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,pcode);
+					//M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,pcode);
 					list_del(&(sys.slave_config[sidx]->list));
 					/////////////::::ec_slave_config_clear(sys.slave_config[sidx]);
 				}
 			}
 		}
 		if (!found)
-			M3_WARN("Slave %d was not matched to an M3 EtherCAT product\n", sidx);
+			M3_WARN("Slave %d was not matched to an M3 EtherCAT product (probably an Ec-Hub)\n", sidx);
 	}
 	//Assign the PDOs for the M3 Slaves
 	for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
@@ -490,18 +504,6 @@ int m3sys_startup(void)
 	}
 
 	M3_INFO("Successful Setup of all slaves\n");
-
-	M3_INFO("Activating master...\n");
-	if (ecrt_master_activate(sys.master)) {
-		M3_ERR("Failed to activate master!\n");
-		goto out_release_master;
-	}
-	for (i=0;i<sys.num_domain;i++)
-	{
-		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
-		ps=ecrt_domain_size (sys.domain[i]);   	
-		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
-	}
 	return 1;
 	
 out_release_master:
