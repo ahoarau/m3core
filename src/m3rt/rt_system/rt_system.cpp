@@ -74,11 +74,7 @@ void *rt_system_thread(void *arg)
 			#endif
 	if ( !(rt_is_hard_timer_running() ))
 	{
-		M3_INFO("Starting the real-time timer\n");
-				#ifndef ONESHOT_MODE
-				M3_INFO("Periodic mode activated.\n");
-				rt_set_periodic_mode();
-				#endif
+		M3_INFO("Starting the real-time timer.\n");
 		tick_period = start_rt_timer(nano2count(RT_TIMER_TICKS_NS) );
 	}else{
 		M3_INFO("Real-time timer running.\n");
@@ -186,22 +182,11 @@ void *rt_system_thread(void *arg)
 				rt_set_period(task,tick_period);
                 //safeop_only = true;
                 m3sys->over_step_cnt = 0;
-            }else{
-			/*if(tick_period>tick_period_orig)
-			{
-				tick_period--;
-				rt_set_period(task,tick_period);
-			}*/
-			}
+            }
         } else {
             if(m3sys->over_step_cnt > 0){
                 m3sys->over_step_cnt--;
 			}
-			/*if(tick_period>tick_period_orig)
-			{
-				tick_period--;
-				rt_set_period(task,tick_period);
-			}*/
         }
 #ifndef ONESHOT_MODE
         rt_task_wait_period(); //No longer need as using sync semaphore of m3ec.ko // A.H : oneshot mode is too demanding => periodic mode is necessary !
@@ -837,99 +822,5 @@ bool M3RtSystem::Step(bool safeop_only)
 #endif
     return true;
 }
-/*
-bool M3RtSystem::ReadConfigEc(const char *filename)
-{
-    YAML::Node doc;
-    YAML::Emitter out;
-    m3rt::GetYamlStream(filename, out);
-#ifndef YAMLCPP_05
-    
-    std::stringstream stream(out.c_str());
-    YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc)) {
-#else
-    std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
-    for(std::vector<YAML::Node>::const_iterator it=all_docs.begin(); it!=all_docs.end();++it){
-        doc = *it;
-#endif
-        //Make sure an ec_component section
-#ifndef YAMLCPP_05
-        if(!doc.FindValue("ec_components")) {
-#else
-        if(!doc["ec_components"]){
-#endif
-            M3_INFO("No ec_components key in m3_config.yml. Proceeding without it...\n");
-            continue;
-        }
-        const YAML::Node& ec_components = doc["ec_components"];
-#ifndef YAMLCPP_05
-        for(YAML::Iterator it = ec_components.begin(); it != ec_components.end(); ++it) {
-            string dir;
-            it.first() >> dir;
-#else
-        for(YAML::const_iterator it = ec_components.begin(); it != ec_components.end(); ++it) {
-            string dir;
-            dir = it->first.as<std::string>() ;
-#endif
-            
-#ifndef YAMLCPP_05
-            for(YAML::Iterator it_dir = ec_components[dir.c_str()].begin();
-                it_dir != ec_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
-                it_dir.second() >> type;
-#else
-            for(YAML::const_iterator it_dir = ec_components[dir.c_str()].begin();
-                it_dir != ec_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                name=it_dir->first.as<std::string>();
-                type=it_dir->second.as<std::string>();
-#endif
-                
-                
-
-                M3ComponentEc *m = NULL;
-                m = (M3ComponentEc *) factory->CreateComponent(type);
-                if(m != NULL) {
-                    m->SetFactory(factory);
-                    string f = dir + "/" + name + ".yml";
-                    try {
-                        if(m->ReadConfig(f.c_str())) {
-                            if(!m->SetSlaveEcShm(shm_ec->slave, shm_ec->slaves_responding))
-                                factory->ReleaseComponent(m);
-                            else {
-                                m3ec_list.push_back(m);
-                                idx_map_ec.push_back(GetNumComponents() - 1);
-                            }
-                        } else factory->ReleaseComponent(m);
-                    } catch(YAML::TypedKeyNotFound<string> e) {
-                        M3_WARN("Missing key: %s in config file for EC component %s \n", e.key.c_str(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(YAML::RepresentationException e) {
-                        M3_WARN("%s while parsing config files for EC component %s \n", e.what(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(...) {
-                        M3_WARN("Error while parsing config files for EC component %s \n", name.c_str());
-                        factory->ReleaseComponent(m);
-                    }
-                }
-            }
-        }
-    }
-    return true;
-}
-*/
-
 
 }
-
-
-
-
-
-
-
-
-
-

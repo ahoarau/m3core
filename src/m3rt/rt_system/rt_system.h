@@ -136,8 +136,8 @@ protected:
 		GetFileConfigPath(filename,vpath);
 		bool ret=false;
 		for(std::vector<std::string>::iterator it=vpath.begin();it!=vpath.end();++it){
-			if(ret=this->ReadConfigUnordered(*it,component_type,comp_list,idx_map) && comp_list.size()>0){
-			M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
+			if( ret=this->ReadConfigUnordered(*it,component_type,comp_list,idx_map) && comp_list.size()>0){
+			  M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
 			continue;
 			}
 #if defined(YAMLCPP_05)
@@ -145,7 +145,7 @@ protected:
 			try{
 				ret = this->ReadConfigOrdered(*it,component_type,comp_list,idx_map);
 			}catch(std::exception &e){
-				M3_ERR("Error while reading %s config: %s\n",component_type,e.what());
+				M3_ERR("(Ordered) Error while reading %s config: %s\n",component_type,e.what());
 			}
 #endif
 		}
@@ -203,8 +203,8 @@ protected:
 							std::cout <<"------------------------------------------"<<std::endl;
 							std::cout <<"Component " << name<<std::endl;
 							if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
-								m3rt_list.push_back(m);
-								idx_map_rt.push_back(GetNumComponents() - 1);
+								comp_list.push_back(m);
+								idx_map.push_back(GetNumComponents() - 1);
 							} else {
 								factory->ReleaseComponent(m);
 								M3_ERR("Error reading config for %s\n", name.c_str());
@@ -219,7 +219,7 @@ protected:
 			}
 		return true;
 		}catch(std::exception &e){
-			M3_ERR("Error while reading %s config (old config): %s\n",component_type,e.what());
+			M3_ERR("(Unordered) Error while reading %s config (old config): %s\n",component_type,e.what());
 			return false;
 		}
 	}
