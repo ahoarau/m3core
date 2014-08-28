@@ -333,19 +333,11 @@ bool M3RtSystem::Shutdown()
 bool M3RtSystem::StartupComponents()
 {
 	M3_INFO("Reading components config files ...\n");
-
-    //if(!ReadConfigEc(M3_CONFIG_FILENAME))
-    //    return false;
-		//if(!ReadConfigRt(M3_CONFIG_FILENAME))
-    //    return false;
-	
-	
-	
 	if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
 		return false;
 	if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
 		return false;
-
+	
     M3_INFO("Done reading components config files.\n");
 #ifdef __RTAI__
     M3_INFO("Getting Kernel EC components.\n");
@@ -387,6 +379,23 @@ bool M3RtSystem::StartupComponents()
         M3_ERR("Unable to find the M3READY semaphore.\n");
         //return false;
     }
+    M3_INFO("Matching Kernel EC components with config file...\n");
+    int rm_cnt=0; 
+    for(vector<M3ComponentEc *>::iterator it_ec=m3ec_list.begin();it_ec!=m3ec_list.end();/*++it_ec*/){
+        if((*it_ec)->SetSlaveEcShm(shm_ec->slave, shm_ec->slaves_responding) == false){
+	    factory->ReleaseComponent((*it_ec));
+	    m3ec_list.erase(it_ec);
+	    rm_cnt++; 
+	}else{
+	  it_ec++;
+	}
+    }
+    for(int i=0;i<rm_cnt;i++){
+      idx_map_ec.pop_back();
+    }
+    // Hack to put back the indexes
+    for(int i=0;i<idx_map_rt.size();i++)
+      idx_map_rt[i]-=rm_cnt;
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;

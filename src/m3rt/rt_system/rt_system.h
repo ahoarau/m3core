@@ -222,6 +222,7 @@ protected:
 			M3_ERR("(Unordered) Error while reading %s config (old config): %s\n",component_type,e.what());
 			return false;
 		}
+		std::cout<<std::endl;
 	}
 #if defined(YAMLCPP_05)
 	template <class T>
@@ -265,6 +266,7 @@ protected:
 				}
 				//std::cout <<"------------------------------------------"<<std::endl;
 			}
+		std::cout<<std::endl;
 		return true;
 	}
 #endif

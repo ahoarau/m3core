@@ -168,7 +168,7 @@ bool M3ComponentFactory::ReleaseComponent(M3Component *c)
     int idx = 0;
     for(ci = m3_list.begin(); ci != m3_list.end(); ++ci) {
         if((*ci) == c) {
-            //M3_INFO("Release of %s %s\n",c->GetName().c_str(),m3_types[idx].c_str());
+            //M3_INFO("Releasing %s %s\n",c->GetName().c_str(),m3_types[idx].c_str());
             destroyer_factory[m3_types[idx]](c);
             m3_list.erase(ci);
             si = m3_types.begin() + idx;

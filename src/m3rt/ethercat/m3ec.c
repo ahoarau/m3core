@@ -220,22 +220,9 @@ void run(long shm)
 	unsigned int sync_ref_counter = 0;	
 	count2timeval(nano2count(rt_get_real_time_ns()), &tv);
 #endif
-	sys.shm->counter=0;
-	tstart=rt_get_time_ns();
-	M3_INFO("Activating master...\n");
-	if (ecrt_master_activate(sys.master)) {
-		M3_ERR("Failed to activate master!\n");
-		M3_ERR("Releasing master...\n");
-		ecrt_release_master(sys.master);
-		return;
-	}
-	for (i=0;i<sys.num_domain;i++)
-	{
-		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
-		ps=ecrt_domain_size (sys.domain[i]);   	
-		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
-	}
+	sys.shm->counter=0;	
 	M3_INFO("EtherCAT kernel loop starting...\n");
+	tstart=rt_get_time_ns();
 	while (1) {
 	    
 		t_last_cycle = get_cycles();
@@ -504,6 +491,17 @@ int m3sys_startup(void)
 	}
 
 	M3_INFO("Successful Setup of all slaves\n");
+	M3_INFO("Activating master...\n");
+	if (ecrt_master_activate(sys.master)) {
+		M3_ERR("Failed to activate master!\n");
+		goto out_release_master;
+	}
+	for (i=0;i<sys.num_domain;i++)
+	{
+		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
+		ps=ecrt_domain_size (sys.domain[i]);   	
+		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
+	}
 	return 1;
 	
 out_release_master:
