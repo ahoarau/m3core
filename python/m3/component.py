@@ -29,6 +29,7 @@ class M3Component:
     and to locate the component config file.
     """
     def __init__(self,name,type=None):
+        assert(name)
         self.name=name
         self.config_name=m3t.get_component_config_filename(name)
         self.config=None
@@ -42,23 +43,23 @@ class M3Component:
         """Assumes that the config file is shared between the 
     server and proxy (NFS, etc)"""
         self.config= m3t.get_component_config(self.name)
-        if self.config.has_key('param'):
+        if self.config and self.config.has_key('param'):
             self.load_attr_from_config(self.config['param'],self.param)
 
     def write_config(self):
         """Assumes that the config file is shared between the 
     server and proxy (NFS, etc)"""
-        if self.config.has_key('param'):
+        if self.config and self.config.has_key('param'):
             self.load_config_from_attr(self.config['param'],self.param)
-        try:
-            with open(self.config_name,'w') as f:
-                print 'Saving...',self.config_name
-                pprint(self.config)
-                f.write(yaml.safe_dump(self.config, default_flow_style=False))
-            #f.close()
-        except (IOError, EOFError):
-            print 'Config file not present:',self.config_name
-            return
+            try:
+                with open(self.config_name,'w') as f:
+                    print 'Saving...',self.config_name
+                    from pprint import pprint
+                    pprint(self.config)
+                    f.write(yaml.safe_dump(self.config, default_flow_style=False))
+            except (IOError, EOFError):
+                print 'Config file not present:',self.config_name
+                return
 
     def load_attr_from_config(self,config, obj):
         """Load message fields from config dictionary"""
