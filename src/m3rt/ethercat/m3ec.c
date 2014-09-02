@@ -213,8 +213,11 @@ void run(long shm)
 	RTIME ts4;
 	RTIME ts5;
 	RTIME ts6;
-	
-	
+	unsigned int print_sec=5;
+	RTIME print_dt=print_sec*1e9;
+	RTIME print_start=rt_get_time_ns();
+	RTIME dt=0;
+	unsigned int tmp_cnt=0;
 #ifdef USE_DISTRIBUTED_CLOCKS
 	struct timeval tv;
 	unsigned int sync_ref_counter = 0;	
@@ -320,6 +323,15 @@ void run(long shm)
 				goto run_cleanup; 
 		}
 		rt_task_wait_period();
+		dt =rt_get_time_ns() -ts0;
+		if (rt_get_time_ns() -print_start >= print_dt)
+		{
+			rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us)\n",tmp_cnt/print_sec,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000));
+			tmp_cnt = 0;
+			print_start = rt_get_time_ns();
+			
+		}
+		tmp_cnt++;
 	}
 run_cleanup:
 	M3_INFO("Entering Run Cleanup...\n");
@@ -530,7 +542,7 @@ int __init init_mod(void)
 	M3_INFO("Starting cyclic sample thread...\n");
 	requested_ticks = nano2count(RT_KMOD_TIMER_TICKS_NS); //
 	tick_period = start_rt_timer(requested_ticks);
-	M3_INFO("Rt timer started with %i/%i ticks.\n", (int) tick_period, (int) requested_ticks);
+	M3_INFO("Rt timer started with %lld/%lld ticks.\n", tick_period, requested_ticks);
 	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
 		M3_ERR("Failed to init RtAI task!\n");
 		goto out_free_timer;
