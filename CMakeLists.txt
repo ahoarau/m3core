@@ -20,9 +20,6 @@ OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 OPTION(ETHERCAT "Enable/Disable EtherCAT (sim or not)" OFF)
 
 OPTION(VIRTUAL_MEKA "To be used on simulation or not" ON)
-if(NOT VIRTUAL_MEKA)
-add_definitions("-D__KERNEL_SYNC__")
-endif()
 
 # Tmp solution for the FindXXX.cmake 
 set(CMAKE_MODULE_PATH 

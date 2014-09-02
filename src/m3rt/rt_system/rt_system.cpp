@@ -105,7 +105,7 @@ void *rt_system_thread(void *arg)
 #if defined(__RTAI__)
 	#ifndef ONESHOT_MODE
 		RTIME now = rt_get_time();
-		//rt_sleep(nano2count((long long)1e9));
+		rt_sleep(nano2count((long long)1e9));
 		if(rt_task_make_periodic(task, rt_get_time() + tick_period, tick_period)) {
 			M3_ERR("Couldn't make rt_system task periodic.\n");
 			return 0;
@@ -150,7 +150,7 @@ void *rt_system_thread(void *arg)
 #ifdef __RTAI__
 		start = rt_get_cpu_time_ns();
 		rt_sem_wait(m3sys->ext_sem);
-		#ifdef __KERNEL_SYNC__
+		#ifndef __NO_KERNEL_SYNC__
 		//rt_sem_wait_timed(m3sys->sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
 		rt_sem_wait(m3sys->sync_sem); // AH: this guy is causing ALL the overrruns
 		#endif

@@ -9,10 +9,14 @@ include_directories(${M3RT_SRC} ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 if(ROS)
+message(WARNING "ROS option is deprecated!")
 add_definitions(-D_ROS_)
 endif(ROS)
 
-
+if(NOT VIRTUAL_MEKA)
+message(STATUS "Disabled kernel sync (Virtual installation only)")
+add_definitions("-D__NO_KERNEL_SYNC__")
+endif()
 
 find_package(Threads)
 

@@ -219,7 +219,7 @@ protected:
 			}
 		return true;
 		}catch(std::exception &e){
-			M3_ERR("(Unordered) Error while reading %s config (old config): %s\n",component_type,e.what());
+			//M3_ERR("(Unordered) Error while reading %s config (old config): %s\n",component_type,e.what());
 			return false;
 		}
 		std::cout<<std::endl;
