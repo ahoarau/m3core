@@ -24,6 +24,8 @@ import m3.toolbox_core as m3t
 import m3.monitor
 import sys
 PYTHONPATH = sys.path
+if not isinstance(PYTHONPATH,list):
+    PYTHONPATH=list(PYTHONPATH)
 
 component_map={
     'm3monitor': m3.monitor.M3Monitor
@@ -38,27 +40,27 @@ m3_eeprom_cfgs={}
 config_all = m3t.get_m3_config()
 for config in config_all:
     if 'factory_py_libs' in config:
-                success=False
-		for k in config['factory_py_libs']:
-                    if k[0]=='/': # Full path
-		        try:
-                                execfile(k)
-                                print 'M3 INFO: Loading m3 python factory lib at :',k
-                                success=True
-                                break
+        success = False
+        for k in config['factory_py_libs']:
+            if k[0] == '/':  # Full path
+                try:
+                    execfile(k)
+                    print 'M3 INFO: Loading m3 python factory lib at :', k
+                    success = True
+                    break
+                except:
+                    pass
+            else:  # Look in pythonpath
+                for p in PYTHONPATH:
+                    if p and not p[-1] == '/':
+                        p = p + '/'
+                        try:
+                            execfile(p + k)
+                            print 'M3 INFO: Loading m3 python factory lib at :', p + k
+                            success = True
+                            break
                         except:
-                                pass
-                    else: # Look in pythonpath
-		            for p in PYTHONPATH:
-		                if not p[-1]=='/':
-		                    p=p+'/'
-		                try:
-		                    execfile(p+k)
-		                    print 'M3 INFO: Loading m3 python factory lib at :',p+k
-                                    success=True
-		                    break
-		                except:
-		                    pass
+                            pass
 ## Generate an error message if could not load the python lib
 if not success:
        print("M3 WARNING: Could not load any python factory lib at:")
