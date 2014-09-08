@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define M3_ERR(fmt, args...) rt_printk(KERN_ERR "M3 ERROR: " fmt, ##args)
 #define M3_WARN(fmt, args...) rt_printk(KERN_WARNING "M3 WARNING: " fmt, ##args)
 
-//#define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
+#define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
 
 #define NUM_EC_CYCLES_PER_RT 1
 #define RT_KMOD_FREQUENCY (RT_TASK_FREQUENCY*NUM_EC_CYCLES_PER_RT*NUM_EC_DOMAIN)	//Frequency of rt kernel module (HZ) (3000)
