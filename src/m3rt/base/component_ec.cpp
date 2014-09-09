@@ -123,7 +123,7 @@ void  M3ComponentEc::StepStatus()
 		SetStateSafeOp();
 		return;
 	}
-	if (!IsStateError())
+	//if (!IsStateError())
 		SetStatusFromPdo(shm->status);
 	
 	status->set_online(shm->online);
@@ -133,6 +133,8 @@ void  M3ComponentEc::StepStatus()
 	//Do this last 
 	if (IsEcError())
 		SetStateError();
+        else
+            SetStateOp();
     }
 }
 

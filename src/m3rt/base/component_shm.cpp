@@ -44,7 +44,7 @@ void  M3CompShm::StepStatus()
 		SetStateSafeOp();
 		return;
 	}
-	if (!IsStateError())
+	//if (!IsStateError()) // 
 		SetSdsFromStatus(shm->status);
 }
 

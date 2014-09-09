@@ -97,7 +97,7 @@ class client_thread(Thread):
             self.proxy.make_operational_all()
             self.proxy.make_operational_all_shm()
         if self.make_all_op_shm:  
-            print("M3 INFO: M3 is now running (with option -make operational shm only)")          
+            print("M3 INFO: M3 is now running (with option -make operational shm only)")
             self.proxy.make_operational_all_shm()        
         if self.make_all_op_no_shm:
             print("M3 INFO: M3 is now running (with option -make operational all (no shm))")

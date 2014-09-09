@@ -128,13 +128,13 @@ void *rt_system_thread(void *arg)
 		rt_make_hard_real_time();
 	}
 	
-	M3_INFO("Syncing with kernel module...\n");
+/*	M3_INFO("Syncing with kernel module...\n");
 	while(rt_get_time_ns()- count2nano(now) <=  5*print_dt){
 			if(!m3sys->Step(false))  //This waits on m3ec.ko semaphore for timing
             return 0;
 			rt_task_wait_period();
 	}
-
+*/
 	M3_INFO("Entering realtime loop.\n");
 #endif
 

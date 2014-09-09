@@ -48,7 +48,7 @@ typedef double mReal;
 #define RT_TIMER_TICKS_NS (1000000000 / RT_TASK_FREQUENCY)		//Period of rt-timer (ns) (=500us)	
 #define RT_KMOD_TIMER_TICKS_NS (1000000000 / RT_KMOD_FREQUENCY)		//Period of kernel module rt-timer (ns) (=500us)				
 #define RT_STACK_SIZE 100000
-#define RT_STATUS_FREQUENCY 0 //RT_TASK_FREQUENCY/10
+#define RT_STATUS_FREQUENCY 10 //RT_TASK_FREQUENCY/10
 #define RT_TASK_PRIORITY 5
 
 // RTAI names. Must be <=6 chars

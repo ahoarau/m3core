@@ -95,7 +95,7 @@ void M3RtService::Shutdown()
         //if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
     }
     //m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
-    //RemoveRtSystem();
+    RemoveRtSystem();
     m3rt::M3_INFO("Shutdown of M3RtService complete.\n");
 }
 
@@ -145,8 +145,8 @@ int M3RtService::RemoveRtSystem()
         rt_system=NULL;
         if (!success)
         {
-            m3rt::M3_INFO("Failure in RTSystem shutdown. Exiting now. Restart server\n");
-            exit(0);
+            m3rt::M3_INFO("Failure in RtSystem shutdown.\n");
+            return -1;
         }
 
     }
