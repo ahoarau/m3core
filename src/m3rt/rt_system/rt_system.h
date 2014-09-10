@@ -156,7 +156,7 @@ protected:
 		try{
 		YAML::Node doc;
 #ifndef YAMLCPP_05
-		std::ifstream fin(filename);
+		std::ifstream fin(filename.c_str());
 		YAML::Parser parser(fin);
 		while(parser.GetNextDocument(doc)) {
 #else
