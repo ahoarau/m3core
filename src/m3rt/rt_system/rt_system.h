@@ -82,10 +82,14 @@ public:
 #ifdef __RTAI__
     int GetEcCounter(){return shm_ec->counter;}
     SEM * ready_sem;
-	SEM * sync_sem;
-	SEM * shm_sem;
+    SEM * sync_sem;
+    SEM * shm_sem;
     SEM * ext_sem;
 #else
+    sem_t * shm_sem;
+    sem_t * sync_sem;
+    sem_t * ext_sem;
+    sem_t * ready_sem;
     int GetEcCounter(){return 0;}
 #endif
     void SetFactory(M3ComponentFactory * f){factory=f;}
@@ -105,13 +109,8 @@ private:
     std::vector<M3ComponentEc *>	m3ec_list;
     std::vector<M3Component *>	m3rt_list;
 #ifdef __RTAI__
-
     RTIME last_cycle_time;
 #else
-	sem_t * ready_sem;
-    sem_t * shm_sem;
-    sem_t * sync_sem;
-    sem_t * ext_sem;
     long long last_cycle_time;
 #endif
     M3RtLogService * log_service;
