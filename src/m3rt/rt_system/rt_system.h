@@ -186,7 +186,8 @@ protected:
 #ifndef YAMLCPP_05
 				for(YAML::Iterator it_dir = components[dir.c_str()].begin();
 					it_dir != components[dir.c_str()].end(); ++it_dir) {
-					string  name, type;
+					std::string  name;
+					std::string  type;
 					it_dir.first() >> name;
 					it_dir.second() >> type;
 #else
