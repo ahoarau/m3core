@@ -185,7 +185,7 @@ bool M3ComponentEc::IsEcError()
 		}
 		return true;
 	}
-	if (!status->al_state()==8)
+	if (!(status->al_state()==8))
 	{
 		if (!IsStateError())
 		{
