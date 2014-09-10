@@ -249,7 +249,7 @@ bool M3RtSystem::Startup()
 #else
 	//struct timespec ts;
 	//ts.tv_sec = 3;
-    long ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
+    ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
 	//sem_timedwait(ready_sem, &ts);
 #endif
 
