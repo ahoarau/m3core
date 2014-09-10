@@ -171,13 +171,14 @@ protected:
 				M3_INFO("No %s key in %s. Proceeding without it...\n",component_type,M3_CONFIG_FILENAME);
 				return true;
 			}
-			YAML::Node components = doc[component_type];
+			
 #ifndef YAMLCPP_05
+			const YAML::Node& components = doc[component_type];
 			for(YAML::Iterator it = components.begin(); it != components.end(); ++it) {
 				std::string dir;
 				it.first() >> dir;
 #else
-			;
+			YAML::Node components = doc[component_type];
 			for(YAML::const_iterator it_rt = components.begin();it_rt != components.end(); ++it_rt) {
 				std::string dir = it_rt->first.as<std::string>();
 #endif
