@@ -77,7 +77,7 @@ bool M3ComponentEc::ReadConfig(const char * filename)
 	  {
 		  doc["virtual_mode"] >> val;
 		  virtual_mode = (bool) val;
-	  } catch(YAML::TypedKeyNotFound<string> e) 
+	  } catch(...) 
 	  {
 		  virtual_mode = (bool) 0;
 	  } 
@@ -133,6 +133,8 @@ void  M3ComponentEc::StepStatus()
 	//Do this last 
 	if (IsEcError())
 		SetStateError();
+        else
+            SetStateOp();
     }
 }
 

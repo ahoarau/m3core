@@ -18,10 +18,6 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "m3rt/base/component_async.h"
-#include "m3rt/base/m3rt_def.h"
-#include "m3rt/base/component_factory.h"
-
-#include "inttypes.h"
 
 namespace m3rt{
 	
@@ -155,8 +151,8 @@ void M3ComponentAsync::Shutdown()
 
 bool M3ComponentAsync::ReadConfig(const char * filename)
 {	
-	int val;
-	mReal mval;
+	//int val;
+	//mReal mval;
 	//YAML::Node doc;
 
 	if (!M3Component::ReadConfig(filename))

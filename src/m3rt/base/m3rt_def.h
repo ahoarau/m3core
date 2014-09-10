@@ -48,7 +48,7 @@ typedef double mReal;
 #define RT_TIMER_TICKS_NS (1000000000 / RT_TASK_FREQUENCY)		//Period of rt-timer (ns) (=500us)	
 #define RT_KMOD_TIMER_TICKS_NS (1000000000 / RT_KMOD_FREQUENCY)		//Period of kernel module rt-timer (ns) (=500us)				
 #define RT_STACK_SIZE 100000
-#define RT_STATUS_FREQUENCY 0 //RT_TASK_FREQUENCY/10
+#define RT_STATUS_FREQUENCY 10 //RT_TASK_FREQUENCY/10
 #define RT_TASK_PRIORITY 5
 
 // RTAI names. Must be <=6 chars
@@ -56,9 +56,11 @@ typedef double mReal;
 #define SEMNAM_M3LEXT  "M3EX"
 #define SEMNAM_M3LSHM  "M3SH"
 #define SEMNAM_M3SYNC  "M3SN"
+#define SEMNAM_M3READY  "M3READY"
 
 /*-------------------- ENVIRONMENT AND CONFIG ----------------------------*/
 #define M3_ROBOT_ENV_VAR "M3_ROBOT"
+#define M3_CONFIG_DIR "/robot_config/"
 #define M3_CONFIG_FILENAME    "m3_config.yml"
 //#define M3_COMP_LIB_FILENAME    "m3_component_libs.yml"
 #define M3_COMP_LIB_FILENAME  "m3_config.yml"

@@ -5,8 +5,10 @@ SET(MINOR_VERSION "9")
 SET(PATCH_VERSION "3")
 set(M3CORE_VERSION
   ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
-  
-OPTION(KERNEL_NAME "The rtai patched kernel to use (default is uname -a)")
+
+set(KERNEL_NAME "" CACHE STRING "The rtai patched kernel to use. Ex:-DKERNEL_NAME=\"3.8.13-rtmeka4.0\" (default is uname -a) ")
+#OPTION(KERNEL_NAME)
+
 if(KERNEL_NAME)
 set(CMAKE_SYSTEM_VERSION ${KERNEL_NAME})
 message("-- Custom kernel : ${KERNEL_NAME}")
@@ -15,6 +17,9 @@ endif()
 
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
+OPTION(ETHERCAT "Enable/Disable EtherCAT (sim or not)" OFF)
+
+OPTION(VIRTUAL_MEKA "To be used on simulation or not" ON)
 
 # Tmp solution for the FindXXX.cmake 
 set(CMAKE_MODULE_PATH 

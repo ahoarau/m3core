@@ -22,8 +22,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include <linux/module.h>
 
-#include "../base/m3rt_def.h"
-#include "../base/m3ec_def.h"
+#include "m3rt/base/m3rt_def.h"
+#include "m3rt/base/m3ec_def.h"
 
 // Linux
 
@@ -46,11 +46,11 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 //Convenience printf-like macros for printing M3-specific information.
-#define M3_INFO(fmt, args...) printk(KERN_INFO "M3 INFO: " fmt, ##args)
-#define M3_ERR(fmt, args...) printk(KERN_ERR "M3 ERROR: " fmt, ##args)
-#define M3_WARN(fmt, args...) printk(KERN_WARNING "M3 WARNING: " fmt, ##args)
+#define M3_INFO(fmt, args...) rt_printk(KERN_INFO "M3 INFO: " fmt, ##args)
+#define M3_ERR(fmt, args...) rt_printk(KERN_ERR "M3 ERROR: " fmt, ##args)
+#define M3_WARN(fmt, args...) rt_printk(KERN_WARNING "M3 WARNING: " fmt, ##args)
 
-//#define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
+// #define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
 
 #define NUM_EC_CYCLES_PER_RT 1
 #define RT_KMOD_FREQUENCY (RT_TASK_FREQUENCY*NUM_EC_CYCLES_PER_RT*NUM_EC_DOMAIN)	//Frequency of rt kernel module (HZ) (3000)
@@ -195,7 +195,7 @@ void check_slave_state(void)
 /*****************************************************************************/
 void run(long shm)
 {
-	static unsigned counter=0;
+	static unsigned counter=RT_STATUS_FREQUENCY;
 	int sidx,i;
 	int rt_downsample = 0; // only signal rt server every 3 cycles
 	M3EcSlaveShm * s;
@@ -213,14 +213,19 @@ void run(long shm)
 	RTIME ts4;
 	RTIME ts5;
 	RTIME ts6;
-	
-	M3_INFO("EtherCAT kernel loop starting...\n");
+	unsigned int print_sec=5;
+	RTIME print_dt=print_sec*1e9;
+	RTIME print_start=rt_get_time_ns();
+	RTIME dt=0;
+        int ps=0;
+	unsigned int tmp_cnt=0;
 #ifdef USE_DISTRIBUTED_CLOCKS
 	struct timeval tv;
-	unsigned int _ref_counter = 0;	
+	unsigned int sync_ref_counter = 0;	
 	count2timeval(nano2count(rt_get_real_time_ns()), &tv);
 #endif
 	sys.shm->counter=0;
+	M3_INFO("EtherCAT kernel loop starting...\n");
 	tstart=rt_get_time_ns();
 	while (1) {
 	    
@@ -319,6 +324,15 @@ void run(long shm)
 				goto run_cleanup; 
 		}
 		rt_task_wait_period();
+		dt =rt_get_time_ns() -ts0;
+		if (rt_get_time_ns() -print_start >= print_dt)
+		{
+			rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us)\n",tmp_cnt/print_sec,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000));
+			tmp_cnt = 0;
+			print_start = rt_get_time_ns();
+			
+		}
+		tmp_cnt++;
 	}
 run_cleanup:
 	M3_INFO("Entering Run Cleanup...\n");
@@ -370,6 +384,7 @@ int m3sys_startup(void)
 	int found=0,ps=0;
 	ec_pdo_t *pdo, *next_pdo;
 	ec_pdo_entry_t * pe, *npe;
+        unsigned int size;
 	if (!(sys.master = ecrt_request_master(0))) {
 		M3_ERR("Requesting master 0 failed!\n");
 		return 0;
@@ -446,14 +461,14 @@ int m3sys_startup(void)
 				else
 				{
 					//This is ugly hack into master, hopefully newer rev will allow graceful failure on adding slaves
-					////////////M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,pcode);
+					//M3_INFO("Failed to attach Slave %d to Product Id %d\n",sidx,pcode);
 					list_del(&(sys.slave_config[sidx]->list));
 					/////////////::::ec_slave_config_clear(sys.slave_config[sidx]);
 				}
 			}
 		}
 		if (!found)
-			M3_WARN("Slave %d was not matched to an M3 EtherCAT product\n", sidx);
+			M3_WARN("Slave %d was not matched to an M3 EtherCAT product (probably an Ec-Hub)\n", sidx);
 	}
 	//Assign the PDOs for the M3 Slaves
 	for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
@@ -488,24 +503,33 @@ int m3sys_startup(void)
 #endif
 		}
 	}
-
-	M3_INFO("Successful Setup of all slaves\n");
-
-	M3_INFO("Activating master...\n");
-	if (ecrt_master_activate(sys.master)) {
-		M3_ERR("Failed to activate master!\n");
-		goto out_release_master;
-	}
 	for (i=0;i<sys.num_domain;i++)
-	{
-		sys.domain_pd[i] = ecrt_domain_data(sys.domain[i]);
-		ps=ecrt_domain_size (sys.domain[i]);   	
-		M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
-	}
+            sys.domain_pd[i]=NULL;
+	for (i=0;i<sys.num_domain;i++){
+            if ((size = ecrt_domain_size(sys.domain[i]))) {
+                    if (!(sys.domain_pd[i] = (uint8_t *) kmalloc(size, GFP_KERNEL))) {
+                        M3_ERR( "Failed to allocate %u bytes of process data"
+                                " memory!\n", size);
+                        goto out_release_master;
+                    }
+                    ecrt_domain_external_memory(sys.domain[i], sys.domain_pd[i]);
+                }
+        }
+        for (i=0;i<sys.num_domain;i++)
+        {
+                ps=ecrt_domain_size (sys.domain[i]);    
+                M3_INFO("Allocated Process Data of size %d for domain %d\n",ps,i);
+        }
+        M3_INFO("Activating master...\n");
+        if (ecrt_master_activate(sys.master)) {
+                M3_ERR("Failed to activate master!\n");
+                goto out_release_master;
+        }
+	M3_INFO("Successful Setup of all slaves\n");
 	return 1;
 	
 out_release_master:
-		M3_ERR("Releasing master...\n");
+	M3_ERR("Releasing master...\n");
 	ecrt_release_master(sys.master);
 	return 0;
 	
@@ -530,7 +554,7 @@ int __init init_mod(void)
 	M3_INFO("Starting cyclic sample thread...\n");
 	requested_ticks = nano2count(RT_KMOD_TIMER_TICKS_NS); //
 	tick_period = start_rt_timer(requested_ticks);
-	M3_INFO("Rt timer started with %i/%i ticks.\n", (int) tick_period, (int) requested_ticks);
+	M3_INFO("Rt timer started with %lld/%lld ticks (t_critical=%lld).\n", tick_period, requested_ticks,t_critical);
 	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
 		M3_ERR("Failed to init RtAI task!\n");
 		goto out_free_timer;
@@ -562,6 +586,11 @@ int __init init_mod(void)
 
 void __exit cleanup_mod(void)
 {
+        int i=0;
+        for (i=0;i<sys.num_domain;i++){
+            if(sys.domain_pd[i]!=NULL)
+                kfree(sys.domain_pd[i]);
+        }
 	M3_INFO("Stopping...\n");
 	rt_task_delete(&task);
 	stop_rt_timer();

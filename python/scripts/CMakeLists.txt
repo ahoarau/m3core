@@ -9,6 +9,7 @@ file(GLOB ${PROJECT_NAME}_scripts
 )
 
 configure_file(m3rt/m3rt_check_server.py.in ${CMAKE_CURRENT_BINARY_DIR}/m3rt/m3rt_check_server.py)
+list(APPEND ${PROJECT_NAME}_scripts ${CMAKE_CURRENT_BINARY_DIR}/m3rt/m3rt_check_server.py)
 
 install (
 	FILES ${${PROJECT_NAME}_scripts} 

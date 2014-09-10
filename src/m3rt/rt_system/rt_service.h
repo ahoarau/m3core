@@ -26,18 +26,18 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/rt_system/rt_data_service.h"
 #include "m3rt/rt_system/rt_log_service.h"
 #include "m3rt/rt_system/rt_system.h"
-#include <pthread.h>
 
 #ifdef __RTAI__
 #ifdef __cplusplus
 extern "C" {
 #endif 
 #include <rtai.h>
-#include "rtai_sem.h"
+#include <rtai_sem.h>
 #ifdef __cplusplus
 }  // extern "C"
 #endif 
 #else
+#include <pthread.h>
 #include <semaphore.h>
 #endif
 
@@ -54,6 +54,8 @@ public:
 	bool IsRtSystemOperational(){if (rt_system==NULL) return false; return rt_system->IsOperational();}
 	bool SetComponentStateSafeOp(char * name);
 	bool SetComponentStateOp(char * name);
+	void SetComponentStateOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
+	void SetComponentStateSafeOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
 	int AttachDataService();
 	bool AttachRosService();
 	bool RemoveRosService();

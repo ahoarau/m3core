@@ -17,8 +17,8 @@ then
   sync
   $SUDO $rmmod rtai_smi
 fi
-sync
-$SUDO $rmmod rtai_lxrt
+#sync
+#$SUDO $rmmod rtai_lxrt
 #$rmmod rtai_smp
 sync
 $SUDO $rmmod rtai_sched

@@ -2,6 +2,8 @@
 build
 # tmp files
 *~
+.deps/
+.tmp_versions/
 
 # Kdevelop stuff
 *kdev4*
@@ -13,3 +15,4 @@ build
 
 # CMake tmp
 *.txt.user
+

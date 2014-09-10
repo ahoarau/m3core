@@ -35,7 +35,7 @@ using namespace std;
 //global factory for making components
 map< string, create_comp_t *, less<string> >  creator_factory;	//global
 map< string, destroy_comp_t *, less<string> > destroyer_factory; //global
-
+#ifndef YAMLCPP_05
 bool M3ComponentFactory::ReadConfig(const char *filename)
 {
     YAML::Node doc;
@@ -49,13 +49,29 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
             for(unsigned i = 0; i < factory_rt_libs.size(); i++) {
                 string lib;
                 factory_rt_libs[i] >> lib;
-                AddComponentLibrary(lib);
+		AddComponentLibrary(lib);
             }
-        } catch(YAML::BadDereference e) {}
+        } catch(YAML::BadDereference &e) {cout<<e.what()<<endl;}
     }
     return true;
 }
-
+#else
+bool M3ComponentFactory::ReadConfig(const char *filename)
+{
+    YAML::Emitter out;
+    m3rt::GetYamlStream(filename, out);
+	std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
+    for(std::vector<YAML::Node>::iterator doc_it=all_docs.begin() ; doc_it!= all_docs.end() ; ++doc_it){
+        try {
+			YAML::Node factory_rt_libs=(*doc_it)["factory_rt_libs"];
+            for (YAML::const_iterator it=factory_rt_libs.begin();it!=factory_rt_libs.end();++it) {
+				AddComponentLibrary(it->as<std::string>());
+            }
+        } catch(YAML::Exception &e) {cout<<"M3ComponentFactory::ReadConfig: "<<e.what()<<endl;}
+    }
+	return true;
+}
+#endif
 int M3ComponentFactory::GetComponentIdx(string name)
 {
     for(int idx = 0; idx < GetNumComponents(); idx++) {
@@ -98,6 +114,9 @@ string  	M3ComponentFactory::GetComponentName(int idx)
 
 bool M3ComponentFactory::AddComponentLibrary(string lib)
 {
+	if(ContainsString(dl_list_str,lib))
+		return true;
+	dl_list_str.push_back(lib);
     void *dlib;
     dlib = dlopen(lib.c_str(), RTLD_LAZY);//RTLD_NOW);
     if(dlib == NULL) {
@@ -149,7 +168,7 @@ bool M3ComponentFactory::ReleaseComponent(M3Component *c)
     int idx = 0;
     for(ci = m3_list.begin(); ci != m3_list.end(); ++ci) {
         if((*ci) == c) {
-            //M3_INFO("Release of %s %s\n",c->GetName().c_str(),m3_types[idx].c_str());
+            //M3_INFO("Releasing %s %s\n",c->GetName().c_str(),m3_types[idx].c_str());
             destroyer_factory[m3_types[idx]](c);
             m3_list.erase(ci);
             si = m3_types.begin() + idx;
@@ -176,7 +195,7 @@ M3Component *M3ComponentFactory::CreateComponent(string type)
         if((*si).compare(type) == 0) {
             m = creator_factory[type]();
             if(m != NULL) {
-                //M3_INFO("Create of: %s \n",type.c_str());
+                //M3_INFO("Creating: %s\n",type.c_str());
                 m3_list.push_back(m);
                 // If type ends in '_virtual', we want want to store it as it's base type
                 int pos = type.find("virtual");

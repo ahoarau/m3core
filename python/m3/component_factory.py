@@ -22,6 +22,10 @@ import yaml
 import os 
 import m3.toolbox_core as m3t
 import m3.monitor
+import sys
+PYTHONPATH = sys.path
+if not isinstance(PYTHONPATH,list):
+    PYTHONPATH=list(PYTHONPATH)
 
 component_map={
     'm3monitor': m3.monitor.M3Monitor
@@ -36,9 +40,41 @@ m3_eeprom_cfgs={}
 config_all = m3t.get_m3_config()
 for config in config_all:
     if 'factory_py_libs' in config:
+        success = False
         for k in config['factory_py_libs']:
-            print 'Executing factory_py_libs:',k
-            execfile(k)
+            if k[0] == '/':  # Full path
+                try:
+                    execfile(k)
+                    print 'M3 INFO: Loading m3 python factory lib at :', k
+                    success = True
+                    break
+                except:
+                    pass
+            else:  # Look in pythonpath
+                for p in PYTHONPATH:
+                    if p and not p[-1] == '/':
+                        p = p + '/'
+                        try:
+                            execfile(p + k)
+                            print 'M3 INFO: Loading m3 python factory lib at :', p + k
+                            success = True
+                            break
+                        except:
+                            pass
+## Generate an error message if could not load the python lib
+if not success:
+       print("M3 WARNING: Could not load any python factory lib at:")
+       for config in config_all:
+                if 'factory_py_libs' in config:
+		        for k in config['factory_py_libs']:
+                                if k[0]=='/':
+                                        print k
+                                else:
+                                        for p in PYTHONPATH:
+		                                if not p[-1]=='/':
+		                                        p=p+'/'
+                                                print p+k
+
 
 def create_component(name):
     """This is a useful utility for creating components based
@@ -46,10 +82,11 @@ def create_component(name):
     to types. This is used to figure out the type and instantiate
     a new component class"""
     ttype=m3t.get_component_config_type(name)
-    if ttype=='':
+    if not ttype:
         print 'Component Factory type not found for component',name
         return None
     if not component_map.has_key(ttype):
         print 'Component Factory type ',ttype, 'not found in component_map for',name
         return None
-    return component_map[ttype](name)
+    
+    return component_map.get(ttype,None)(name)

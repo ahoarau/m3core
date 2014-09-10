@@ -2,38 +2,33 @@ cmake_minimum_required(VERSION 2.8)
 project(rt_system)
 set(LIBNAME "rt_system")
 
-OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
-OPTION(ROS "Enable/Disable ROS" OFF)
+#OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
+#OPTION(ROS "Enable/Disable ROS" OFF)
 
-INCLUDE_DIRECTORIES(${M3RT_SOURCE_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}../base)
+include_directories(${M3RT_SRC} ${CMAKE_CURRENT_SOURCE_DIR})
 
-#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-if(RTAI)
-add_definitions(-D__RTAI__)
-find_package(RTAI REQUIRED)
-SET(LIBS ${RTAI_LIBRARY})
-include_directories(${RTAI_INCLUDE_DIR})
-endif(RTAI)
 
 if(ROS)
+message(WARNING "ROS option is deprecated!")
 add_definitions(-D_ROS_)
 endif(ROS)
 
-
+if(NOT VIRTUAL_MEKA)
+message(STATUS "Disabled kernel sync (Virtual installation only)")
+add_definitions("-D__NO_KERNEL_SYNC__")
+endif()
 
 find_package(Threads)
 
 
-#### YAML-CPP <=0.5
 find_package(PkgConfig REQUIRED)
-#find_package(YamlCpp  REQUIRED)
-pkg_check_modules(YAMLCPP REQUIRED yaml-cpp<=0.5)
+pkg_check_modules(YAMLCPP REQUIRED yaml-cpp)
 if(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
-add_definitions(-DHAVE_NEW_YAMLCPP)
+find_package(YamlCpp  REQUIRED)
+set_property(
+   DIRECTORY
+   PROPERTY COMPILE_DEFINITIONS YAMLCPP_05
+   )
 endif(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
 link_directories(${YAMLCPP_LIBRARY_DIRS})
 
@@ -66,6 +61,17 @@ list(APPEND ALL_HDRS rt_ros_service.h)
 endif(ROS)
 
 
+if(RTAI)
+set_property(
+	   SOURCE ${ALL_SRCS}
+	   PROPERTY COMPILE_DEFINITIONS __RTAI__
+	)
+	find_package(RTAI REQUIRED)
+	SET(LIBS ${LIBS} ${RTAI_LIBRARY})
+	include_directories(${RTAI_INCLUDE_DIR})
+endif(RTAI)
+
+message(STATUS "RTAI is ${RTAI}")
 
 # Swig
 FIND_PACKAGE(SWIG REQUIRED)
@@ -78,20 +84,18 @@ SET(CMAKE_SWIG_FLAGS "")
 
 set(M3_SWIG_MODULE_NAME "m3rt_system")
 
-
 SET_SOURCE_FILES_PROPERTIES(${M3_SWIG_MODULE_NAME}.i PROPERTIES CPLUSPLUS ON)
 
 SWIG_ADD_MODULE(${M3_SWIG_MODULE_NAME} python ${M3_SWIG_MODULE_NAME}.i ${ALL_SRCS})
 
 SWIG_LINK_LIBRARIES(${M3_SWIG_MODULE_NAME} ${PYTHON_LIBRARIES} ${LIBS} )
 set_target_properties(${SWIG_MODULE_${M3_SWIG_MODULE_NAME}_REAL_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-add_custom_target(${M3_SWIG_MODULE_NAME} ALL DEPENDS ${ALL_SRCS})
+add_custom_target(${M3_SWIG_MODULE_NAME} ALL DEPENDS ${SWIG_MODULE_${M3_SWIG_MODULE_NAME}_REAL_NAME} ${ALL_SRCS})
 
 add_custom_target(${LIBNAME} ALL DEPENDS ${M3_SWIG_MODULE_NAME})
 # End swig
 
 
-#SET_TARGET_PROPERTIES( ${LIBNAME} PROPERTIES COMPILE_FLAGS -fPIC)
 execute_process ( 
    COMMAND ${PYTHON_EXECUTABLE} -c 
    	"import site, sys; sys.stdout.write(site.PREFIXES[-1])" 

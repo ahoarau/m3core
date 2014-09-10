@@ -84,7 +84,7 @@ def get_log_info(logname,logpath=None):
 
 
 class client_thread(Thread):
-    def __init__ (self, make_all_op = True, make_all_op_shm = False, make_all_op_no_shm = False,data_svc=True):
+    def __init__ (self, make_all_op = False, make_all_op_shm = False, make_all_op_no_shm = True,data_svc=False):
         Thread.__init__(self)
         self.make_all_op = make_all_op
         self.make_all_op_shm = make_all_op_shm
@@ -97,7 +97,7 @@ class client_thread(Thread):
             self.proxy.make_operational_all()
             self.proxy.make_operational_all_shm()
         if self.make_all_op_shm:  
-            print("M3 INFO: M3 is now running (with option -make operational shm only)")          
+            print("M3 INFO: M3 is now running (with option -make operational shm only)")
             self.proxy.make_operational_all_shm()        
         if self.make_all_op_no_shm:
             print("M3 INFO: M3 is now running (with option -make operational all (no shm))")
@@ -107,7 +107,6 @@ class client_thread(Thread):
             self.stop_event.wait(timeout=None)
         finally:
             print "M3 INFO: Closing Client Thread."
-            self.proxy.make_safe_operational_all()
             self.proxy.stop()    
 
 class M3Server(Thread):
@@ -192,8 +191,8 @@ try:
     #print "M3 INFO: Starting client thread."
     try:
         m3client_thread = client_thread(make_op_all , make_op_all_shm , make_op_all_no_shm,start_data_svc)
-        for i in xrange(400):
-            time.sleep(0.01)
+        #for i in xrange(400):
+         #   time.sleep(0.01)
     except Exception,e:
         print "M3 ERROR: Error creating the client thread:",e
         raise M3Exception("Client Thread failed to start")
@@ -203,7 +202,7 @@ try:
     # Handling ctrl+c when ros is launched
     while svc.IsRtSystemOperational() and not stop_signal.is_set():
         try:
-            m3server.join(0.5) # A.H : Setting a timeout setting to catch ctrl+c (otherwise it's a blocking mechanism)
+			time.sleep(0.250)
         except KeyboardInterrupt:
             print 'M3 INFO: Shutdown signal caught.'
     print "M3 INFO: Shutdown initiated."

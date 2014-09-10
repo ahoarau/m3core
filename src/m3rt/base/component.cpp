@@ -93,13 +93,12 @@ void M3Component::PrettyPrint()
 
 bool M3Component::ReadConfig(const char *filename)
 {
-    std::string name;
-    std::string version;
-
-    //YAML::Node doc;
     if(!m3rt::GetYamlDoc(filename, doc)) {
         return false;
     }
+#ifndef YAMLCPP_05
+	std::string name;
+	std::string version;
     try {
         doc["name"] >> name;
     } catch(YAML::BadDereference e) {
@@ -109,11 +108,19 @@ bool M3Component::ReadConfig(const char *filename)
     try {
         doc["version"] >> version;
         GetBaseStatus()->set_version(version);
-    } catch(YAML::TypedKeyNotFound<string> e) {
+    } catch(...) {
         //M3_WARN("Missing version key in config file for component %s. Defaulting to default\n", name.c_str());
         GetBaseStatus()->set_version("default");
     }
-
+#else
+	try {
+		GetBaseStatus()->set_name( doc["name"].as<std::string>() );
+	} catch(YAML::Exception &e) {
+		M3_ERR("Missing key \"name\" in config file for component %s\n",filename);
+        return false;
+    }
+    GetBaseStatus()->set_version(doc["version"].as<std::string>("default"));
+#endif
     //Ugly solution...
     //Search to find the registered id to the given name
     int found = 0;

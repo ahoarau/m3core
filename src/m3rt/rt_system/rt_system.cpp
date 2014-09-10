@@ -20,21 +20,21 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/rt_system/rt_system.h"
 //#include "m3rt/base/m3ec_pdo_v1_def.h"
 #include <unistd.h>
-#ifdef __RTAI__
-#ifdef __cplusplus
+#include <string>
+
+#if defined(__RTAI__) && defined(__cplusplus)
 extern "C" {
-#endif
 #include <rtai.h>
+#include <rtai_lxrt.h>
 #include <rtai_sem.h>
 #include <rtai_sched.h>
 #include <rtai_nam2num.h>
 #include <rtai_shm.h>
-#include <rtai_malloc.h>
-#ifdef __cplusplus
+#include <rtai_malloc.h>	 
 }
 #endif
-#include <string>
-#endif
+
+
 
 namespace m3rt
 {
@@ -52,115 +52,173 @@ unsigned long long getNanoSec(void)
 
     (void) gettimeofday(&tp, &tzp); //
     return 1000000000LL * (long long) tp.tv_sec +
-           1000LL * (long long) tp.tv_usec;
+            1000LL * (long long) tp.tv_usec;
 }
 
 void *rt_system_thread(void *arg)
 {
     M3RtSystem *m3sys = (M3RtSystem *)arg;
     sys_thread_end = true; //gonna be at true is startup fails=> no wait
-
-
-    M3_INFO("Starting M3RtSystem real-time thread\n");
+	bool safeop_only = false;
+    int tmp_cnt = 0;
+	bool ready_sent=false;
+	int sem_cnt=0;
+    M3_INFO("Starting M3RtSystem real-time thread.\n");
 #ifdef __RTAI__
-    RT_TASK *task;
-    RTIME start, end, dt;
+	RTIME print_dt=1e9;
+    RT_TASK *task=NULL;
+    RTIME start, end, dt,tick_period,dt_wait;
+			#ifdef ONESHOT_MODE
+				M3_INFO("Oneshot mode activated.\n");
+				rt_set_oneshot_mode();
+			#endif
+	if ( !(rt_is_hard_timer_running() ))
+	{
+		M3_INFO("Starting the real-time timer.\n");
+		tick_period = start_rt_timer(nano2count(RT_TIMER_TICKS_NS) );
+	}else{
+		M3_INFO("Real-time timer running.\n");
+		tick_period = nano2count(RT_TIMER_TICKS_NS);
+	}
     M3_INFO("Beginning RTAI Initialization.\n");
-    task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0xFF);
-    if(task == NULL) {
+	rt_allow_nonroot_hrt();
+    ;
+    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0x3))) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
         sys_thread_active = false;
         return 0;
     }
     M3_INFO("RT Task Scheduled.\n");
-    rt_allow_nonroot_hrt();
     M3_INFO("Nonroot hrt initialized.\n");
     rt_task_use_fpu(task, 1);
     M3_INFO("Use fpu initialized.\n");
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
-    RTIME tick_period = nano2count(RT_TIMER_TICKS_NS ); //TODO : why +200000 ?
+	RTIME tick_period_orig = tick_period;
 
-#ifndef __SOFTREALTIME__
-    M3_INFO("Hard real time initialized.\n");
-    rt_make_hard_real_time();
-#else
-
-    M3_INFO("Soft real time initialized.\n");
-    rt_make_soft_real_time();
-    M3_INFO("M3Sytem running in soft real time! For debugging only!!!\n");
+#endif
+#ifdef __RTAI__
+	RTIME print_start=rt_get_cpu_time_ns();
+	RTIME diff=0;
+	int dt_us,tick_period_us,overrun_us;
+#endif
+#if defined(__RTAI__)
+	#ifndef ONESHOT_MODE
+		RTIME now = rt_get_time();
+		rt_sleep(nano2count((long long)1e9));
+		if(rt_task_make_periodic(task, rt_get_time() + tick_period, tick_period)) {
+			M3_ERR("Couldn't make rt_system task periodic.\n");
+			return 0;
+		}
+		M3_INFO("Periodic task initialized.\n");
+	#endif
+#endif
+		
+#ifndef __RTAI__
+    usleep(1e6);
+    M3_INFO("Using pthreads\n");
 #endif
 
-#else
+#if defined(__RTAI__)
+	if(!m3sys->IsHardRealTime()){
+		M3_INFO("Soft real time initialized.\n");
+		rt_make_soft_real_time();
+	}else{
+		M3_INFO("Hard real time initialized.\n");
+		rt_make_hard_real_time();
+	}
+	
+/*	M3_INFO("Syncing with kernel module...\n");
+	while(rt_get_time_ns()- count2nano(now) <=  5*print_dt){
+			if(!m3sys->Step(false))  //This waits on m3ec.ko semaphore for timing
+            return 0;
+			rt_task_wait_period();
+	}
+*/
+	M3_INFO("Entering realtime loop.\n");
+#endif
+
+#ifndef __RTAI__
     long long start, end, dt;
 #endif
 
-    //Give other threads a chance to load before starting
-#ifdef __RTAI__
-    RTIME now = rt_get_time();
-    rt_sleep(nano2count(1000000000));
-    if(rt_task_make_periodic(task, now + tick_period, tick_period)) {
-        M3_ERR("Couldn't make rt_system task periodic.\n");
-        return 0;
-    }
-#else
-    usleep(50000);
-    M3_INFO("Using pthreads\n");
-#endif
-    M3_INFO("Periodic task initialized.\n");
-    bool safeop_only = false;
-
-    int tmp_cnt = 0;
     m3sys->over_step_cnt = 0;
-    sys_thread_active = true;
-    sys_thread_end = false;
+	sys_thread_end = false;
+	sys_thread_active = true;
+	
     while(!sys_thread_end) {
 #ifdef __RTAI__
-        start = nano2count(rt_get_cpu_time_ns());
+		start = rt_get_cpu_time_ns();
+		rt_sem_wait(m3sys->ext_sem);
+		#ifndef __NO_KERNEL_SYNC__
+		//rt_sem_wait_timed(m3sys->sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
+		rt_sem_wait(m3sys->sync_sem); // AH: this guy is causing ALL the overrruns
+		#endif
+		rt_sem_wait(m3sys->shm_sem);
 #else
-        start = getNanoSec();
+		start = getNanoSec();
 #endif
-
-        if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
+		
+		if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
             break;
 #ifdef __RTAI__
-        end = nano2count(rt_get_cpu_time_ns());
+        end = rt_get_cpu_time_ns();
         dt = end - start;
-
-        /*if (tmp_cnt++ == 1000)
-        {
-          M3_INFO("Loop computation time : %d us\n",static_cast<int>((count2nano(dt)/1000)));
-          tmp_cnt = 0;
-        }*/
         /*
         Check the time it takes to run components, and if it takes longer
         than our period, make us run slower. Otherwise this task locks
         up the CPU.*/
-        if(dt > tick_period && step_cnt > 10) {
+        if(dt > count2nano(tick_period) && step_cnt > 10) {
             m3sys->over_step_cnt++;
-            int dt_us = static_cast<int>((count2nano(dt) / 1000));
-            int tick_period_us = static_cast<int>((count2nano(tick_period) / 1000));
-            int overrun_us = dt_us - tick_period_us;
-            m3rt::M3_WARN("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
-            if(m3sys->over_step_cnt > 10) {
-                m3rt::M3_WARN("Step %d: Computation time of components is too long. Forcing all components to state SafeOp.\n", step_cnt);
-                m3rt::M3_WARN("Previous period: %f. New period: %f\n", (double)count2nano(tick_period), (double)count2nano(dt));
-                tick_period = dt;
-                //rt_task_make_periodic(task, end + tick_period, tick_period);
-                safeop_only = true;
+            dt_us = static_cast<int>(((dt) / 1000));
+            tick_period_us = static_cast<int>(((count2nano(tick_period)) / 1000));
+            overrun_us = dt_us - tick_period_us;
+            rt_printk("Previous period: %d us overrun (dt: %d us, des_period: %d us)\n", overrun_us, dt_us, tick_period_us);
+            if(m3sys->over_step_cnt > 5000) {
+                M3_INFO("Step %d: Computation time of components is too long (dt:%d). Forcing all components to state SafeOp - switching to SAFE REALTIME.\n", step_cnt,(int)(dt/1000.0));
+                M3_INFO("Previous period: %d. New period: %d\n", (int)(count2nano(tick_period)/1000), (int)(dt/1000));
+                tick_period = nano2count(dt);
+				rt_make_soft_real_time();
+				rt_set_period(task,tick_period);
+                //safeop_only = true;
                 m3sys->over_step_cnt = 0;
             }
         } else {
-            if(m3sys->over_step_cnt > 0)
+            if(m3sys->over_step_cnt > 0){
                 m3sys->over_step_cnt--;
+			}
         }
-
-        rt_task_wait_period(); //No longer need as using sync semaphore of m3ec.ko
+#ifndef ONESHOT_MODE
+        rt_task_wait_period(); //No longer need as using sync semaphore of m3ec.ko // A.H : oneshot mode is too demanding => periodic mode is necessary !
+		
 #else
+		diff = count2nano(tick_period)-(rt_get_cpu_time_ns()-start);
+		rt_sleep(min((RTIME)0,nano2count(diff)));
+#endif
+	if (rt_get_time_ns() -print_start > print_dt)
+        {
+            rt_printk("M3System freq : %d (dt: %d us / des period: %d us)\n",tmp_cnt,(int)(dt/1000.0),(int)(count2nano(tick_period)/1000));
+			if(!(rt_is_hard_real_time(task)))
+			rt_printk("WARNING: M3System is running in SOFT real-time mode !\n");
+			tmp_cnt = 0;
+			print_start = rt_get_time_ns();
+			
+        }
+#else
+		if(!ready_sent){
+			sem_post(m3sys->ready_sem);
+			ready_sent=true;
+		}
         end = getNanoSec();
         dt = end - start;
+        if(tmp_cnt++==1000)
+        {
+            tmp_cnt=0;
+            std::cout<<"Loop computation time : "<<dt/1000<<" us (sleeping "<<( RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000000 <<" us)"<<endl;
+        }
         usleep((RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000);
 #endif
+		tmp_cnt++;
     }
 #ifdef __RTAI__
     rt_make_soft_real_time();
@@ -183,43 +241,32 @@ bool M3RtSystem::Startup()
         sys_thread_active = false;
         return false;
     }
+    long ret=0;//return for the thread
 #ifdef __RTAI__
     hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
+	ret = (hst!=0 ? 0:-1);
+	//rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
 #else
-    long hst = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
+	//struct timespec ts;
+	//ts.tv_sec = 3;
+    long ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
+	//sem_timedwait(ready_sem, &ts);
 #endif
-    /*for (int i=0;i<10;i++)
-    {
-            usleep(1000000);
-    }*/
-    if(!hst) { //A.H : Added earlier check
-        m3rt::M3_INFO("Startup of M3RtSystem thread failed.\n");
+
+	if(!(ret==0)){
+		m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%ld]).\n",ret);
         return false;
     }
-    for(int i = 0; i < 100; i++) {
-        usleep(1000000); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
-        if(sys_thread_active)
+    for(int i = 0; i < 20; i++) {
+		if(sys_thread_active)
             break;
+		M3_INFO("Waiting for the Ready Signal.\n");
+        usleep(1e6); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
+        
     }
     if(!sys_thread_active) {
         m3rt::M3_INFO("Startup of M3RtSystem thread failed, thread still not active.\n");
         return false;
-    }
-    //Debugging
-    if(0) {
-        /*M3_INFO("PDO Size M3ActPdoV1Cmd %d\n",(int)sizeof(M3ActPdoV1Cmd));
-        M3_INFO("PDO Size M3ActPdoV1Status %d\n\n",(int)sizeof(M3ActPdoV1Status));
-
-        M3_INFO("PDO Size M3ActX1PdoV1Cmd %d\n",(int)sizeof(M3ActX1PdoV1Cmd));
-        M3_INFO("PDO Size M3ActX2PdoV1Cmd %d\n",(int)sizeof(M3ActX2PdoV1Cmd));
-        M3_INFO("PDO Size M3ActX3PdoV1Cmd %d\n",(int)sizeof(M3ActX3PdoV1Cmd));
-        M3_INFO("PDO Size M3ActX4PdoV1Cmd %d\n\n",(int)sizeof(M3ActX4PdoV1Cmd));
-
-        M3_INFO("PDO Size M3ActX1PdoV1Status %d\n",(int)sizeof(M3ActX1PdoV1Status));
-        M3_INFO("PDO Size M3ActX2PdoV1Status %d\n",(int)sizeof(M3ActX2PdoV1Status));
-        M3_INFO("PDO Size M3ActX3PdoV1Status %d\n",(int)sizeof(M3ActX3PdoV1Status));
-        M3_INFO("PDO Size M3ActX4PdoV1Status %d\n",(int)sizeof(M3ActX4PdoV1Status));*/
-
     }
     return true;
 }
@@ -231,13 +278,13 @@ bool M3RtSystem::Shutdown()
     sys_thread_end = true;
 #ifdef __RTAI__
     //RTIME timeout = nano2count(rt_get_cpu_time_ns());
-    int timeout_us = 1000;
-    RTIME start_time = rt_get_time();
-///rt_thread_join(hst);
-    while(sys_thread_active && (rt_get_time_ns()-start_time < nano2count(timeout_us*1000)))
+    int timeout_us = 2e6; //2s
+    RTIME start_time = rt_get_time_ns();
+    ///rt_thread_join(hst);
+    while(sys_thread_active && (rt_get_time_ns()-start_time < timeout_us*1000))
     {
-	    M3_INFO("Waiting for Real-Time thread to shutdown...\n");
-	    usleep(1000000);
+        M3_INFO("Waiting for Real-Time thread to shutdown...\n");
+        usleep(500000);
     }
 #else
     pthread_join((pthread_t)hst, NULL);
@@ -265,6 +312,14 @@ bool M3RtSystem::Shutdown()
 #endif
         ext_sem = NULL;
     }
+        if(ready_sem != NULL) {
+#ifdef __RTAI__
+        rt_sem_delete(ready_sem);
+#else
+        delete ready_sem;
+#endif
+        ready_sem = NULL;
+    }
     shm_ec = NULL;
     shm_sem = NULL;
     sync_sem = NULL;
@@ -277,6 +332,13 @@ bool M3RtSystem::Shutdown()
 
 bool M3RtSystem::StartupComponents()
 {
+	M3_INFO("Reading components config files ...\n");
+	if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
+		return false;
+	if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
+		return false;
+	
+    M3_INFO("Done reading components config files.\n");
 #ifdef __RTAI__
     M3_INFO("Getting Kernel EC components.\n");
     shm_ec = (M3EcSystemShm *) rtai_malloc(nam2num(SHMNAM_M3MKMD), 1);
@@ -306,19 +368,39 @@ bool M3RtSystem::StartupComponents()
         M3_ERR("Unable to find the M3LEXT semaphore (probably hasn't been cleared properly, reboot can solve this problem).\n");
         //return false;
     }
-    M3_INFO("Reading component config files ...\n");
+
 #ifdef __RTAI__
-    if(!ReadConfigEc(M3_CONFIG_FILENAME))
-        return false;
+    ready_sem = rt_typed_sem_init(nam2num(SEMNAM_M3READY), 1, BIN_SEM);
+#else
+    ready_sem = new sem_t();
+    sem_init(ready_sem, 1, 1);
 #endif
-    if(!ReadConfigRt(M3_CONFIG_FILENAME))
-        return false;
-    M3_INFO("Done reading component config files...\n");
+    if(!ready_sem) {
+        M3_ERR("Unable to find the M3READY semaphore.\n");
+        //return false;
+    }
+    M3_INFO("Matching Kernel EC components with config file...\n");
+    int rm_cnt=0; 
+    for(vector<M3ComponentEc *>::iterator it_ec=m3ec_list.begin();it_ec!=m3ec_list.end();/*++it_ec*/){
+        if((*it_ec)->SetSlaveEcShm(shm_ec->slave, shm_ec->slaves_responding) == false){
+	    factory->ReleaseComponent((*it_ec));
+	    m3ec_list.erase(it_ec);
+	    rm_cnt++; 
+	}else{
+	  it_ec++;
+	}
+    }
+    for(int i=0;i<rm_cnt;i++){
+      idx_map_ec.pop_back();
+    }
+    // Hack to put back the indexes
+    for(int i=0;i<idx_map_rt.size();i++)
+      idx_map_rt[i]-=rm_cnt;
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;
     bool failure = true;
-
+    M3_INFO("Linking components ...\n");
     while(GetNumComponents() > 0 && failure) {
         bad_link.clear();
         failure = false;
@@ -349,13 +431,17 @@ bool M3RtSystem::StartupComponents()
             }
         }
     }
+    
     if(GetNumComponents() == 0) {
         M3_WARN("No M3 Components could be loaded....\n", 0);
         return false;
     }
+    M3_INFO("Done linking components.\n");
+    M3_INFO("Starting up components ...\n");
     for(int i = 0; i < GetNumComponents(); i++) {
         GetComponent(i)->Startup();
     }
+    M3_INFO("Done starting up components.\n");
     CheckComponentStates();
     PrettyPrintComponentNames();
     //Setup Monitor
@@ -433,8 +519,8 @@ void M3RtSystem::CheckComponentStates()
         if(GetComponent(i)->IsStateError() && !safeop_required) { //All or none in OP
             M3_WARN("Component error detected for %s. Forcing to state SAFEOP\n", GetComponent(i)->GetName().c_str());
 
-		safeop_required = true;
-                GetComponent(i)->SetStateSafeOp();
+            safeop_required = true;
+            GetComponent(i)->SetStateSafeOp();
             //return;
         }
     }
@@ -450,6 +536,24 @@ bool M3RtSystem::SetComponentStateOp(int idx)
             return true;
         }
     return false;
+}
+void M3RtSystem::SetComponentStateOpAll(void)
+{
+	std::vector<M3Component* >::iterator it_rt;
+	std::vector<M3ComponentEc* >::iterator it_ec;
+	for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
+		(*it_ec)->SetStateOp();
+	for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
+		(*it_rt)->SetStateOp();
+}
+void M3RtSystem::SetComponentStateSafeOpAll(void)
+{
+	std::vector<M3Component* >::iterator it_rt;
+	std::vector<M3ComponentEc* >::iterator it_ec;
+	for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
+		(*it_ec)->SetStateSafeOp();
+	for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
+		(*it_rt)->SetStateSafeOp();
 }
 
 bool M3RtSystem::SetComponentStateSafeOp(int idx)
@@ -530,29 +634,27 @@ bool M3RtSystem::Step(bool safeop_only)
     step_cnt++;
 
     /*
-    	1: Block External Data Service from chaging state
-    	2: Wait until EtherCAT mod signals finished a cycle (synchronize)
-    	3: Acquire lock on EtherCAT shared mem
-    	4: Get data from EtherCAT shared mem
-    	5: Step all components
-    	6: Transmit newly computed commands to EtherCAT shared mem
-    	7: Upload status to logger
-    	8: Release locks, allow External Data Service to update components if new data is available.
+        1: Block External Data Service from chaging state
+        2: Wait until EtherCAT mod signals finished a cycle (synchronize)
+        3: Acquire lock on EtherCAT shared mem
+        4: Get data from EtherCAT shared mem
+        5: Step all components
+        6: Transmit newly computed commands to EtherCAT shared mem
+        7: Upload status to logger
+        8: Release locks, allow External Data Service to update components if new data is available.
     */
 
     /*
-    	The order of components in m3ec_list and m3rt_list is important as they can overwrite eachother.
-    	Given components A, B, where A computes and sets value B.x .
-    	If we place A before B in the component list of m3_config.yml, then A.Step() will run before B.Step() within once cycle.
-    	Otherwise, B.Step() uses the A.x value from the previous cycle.
+        The order of components in m3ec_list and m3rt_list is important as they can overwrite eachother.
+        Given components A, B, where A computes and sets value B.x .
+        If we place A before B in the component list of m3_config.yml, then A.Step() will run before B.Step() within once cycle.
+        Otherwise, B.Step() uses the A.x value from the previous cycle.
 
-    	If we have an External Data Service that sets B.x=e periodically, then A.Step() will overwrite value e.
-    	Therefore if we want to directly communicate with B.x from the outside world, we must not publish to component A.
+        If we have an External Data Service that sets B.x=e periodically, then A.Step() will overwrite value e.
+        Therefore if we want to directly communicate with B.x from the outside world, we must not publish to component A.
     */
 #ifdef __RTAI__
-    rt_sem_wait(ext_sem);
-    rt_sem_wait(sync_sem);
-    rt_sem_wait(shm_sem);
+
     start = rt_get_cpu_time_ns();
 #else
     sem_wait(ext_sem);
@@ -722,132 +824,12 @@ bool M3RtSystem::Step(bool safeop_only)
     s->set_cycle_frequency_hz((mReal)(rate * 1000000000.0));
     last_cycle_time = end;
 #ifdef __RTAI__
-    rt_sem_signal(shm_sem);
-    rt_sem_signal(ext_sem);
+	rt_sem_signal(shm_sem);
+	rt_sem_signal(ext_sem);
 #else
     sem_post(ext_sem);
 #endif
     return true;
 }
 
-bool M3RtSystem::ReadConfigEc(const char *filename)
-{
-    YAML::Node doc;
-    YAML::Emitter out;
-    m3rt::GetYamlStream(filename, out);
-    std::stringstream stream(out.c_str());
-    YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc)) {
-
-        //Make sure an ec_component section
-        if(!doc.FindValue("ec_components")) {
-            M3_INFO("No ec_components key in m3_config.yml. Proceeding without it...\n");
-            continue;
-        }
-	const YAML::Node& ec_components = doc["ec_components"];
-        for(YAML::Iterator it = ec_components.begin(); it != ec_components.end(); ++it) {
-            string dir;
-
-            it.first() >> dir;
-
-            for(YAML::Iterator it_dir = ec_components[dir.c_str()].begin();
-                    it_dir != ec_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
-                it_dir.second() >> type;
-
-                M3ComponentEc *m = NULL;
-                m = (M3ComponentEc *) factory->CreateComponent(type);
-                if(m != NULL) {
-                    m->SetFactory(factory);
-                    string f = dir + "/" + name + ".yml";
-                    try {
-                        if(m->ReadConfig(f.c_str())) {
-                            if(!m->SetSlaveEcShm(shm_ec->slave, shm_ec->slaves_responding))
-                                factory->ReleaseComponent(m);
-                            else {
-                                m3ec_list.push_back(m);
-                                idx_map_ec.push_back(GetNumComponents() - 1);
-                            }
-                        } else factory->ReleaseComponent(m);
-                    } catch(YAML::TypedKeyNotFound<string> e) {
-                        M3_WARN("Missing key: %s in config file for EC component %s \n", e.key.c_str(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(YAML::RepresentationException e) {
-                        M3_WARN("%s while parsing config files for EC component %s \n", e.what(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(...) {
-                        M3_WARN("Error while parsing config files for EC component %s \n", name.c_str());
-                        factory->ReleaseComponent(m);
-                    }
-                }
-            }
-        }
-    }
-    return true;
 }
-
-bool M3RtSystem::ReadConfigRt(const char *filename)
-{
-    YAML::Node doc;
-    YAML::Emitter out;
-    m3rt::GetYamlStream(filename, out);
-    std::stringstream stream(out.c_str());
-    YAML::Parser parser(stream);
-    while(parser.GetNextDocument(doc) ){
-	
-        if(!doc.FindValue("rt_components")) {
-            M3_INFO("No rt_components key in m3_config.yml. Proceeding without it...\n");
-            continue;
-        }
-	const YAML::Node& rt_components = doc["rt_components"];
-        for(YAML::Iterator it = rt_components.begin(); it != rt_components.end(); ++it) {
-            string dir;
-
-            it.first() >> dir;
-            for(YAML::Iterator it_dir = rt_components[dir.c_str()].begin();
-                    it_dir != rt_components[dir.c_str()].end(); ++it_dir) {
-                string  name, type;
-                it_dir.first() >> name;
-                it_dir.second() >> type;
-                M3Component *m = factory->CreateComponent(type);
-                if(m != NULL) {
-                    m->SetFactory(factory);
-                    string f = dir + "/" + name + ".yml";
-                    try {
-                        if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
-                            m3rt_list.push_back(m);
-                            idx_map_rt.push_back(GetNumComponents() - 1);
-                        } else {
-                            factory->ReleaseComponent(m);
-                            M3_ERR("Error reading config for %s\n", name.c_str());
-                        }
-                    } catch(YAML::TypedKeyNotFound<string> e) {
-                        M3_WARN("Missing key: %s in config file for RT component %s \n", e.key.c_str(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(YAML::RepresentationException e) {
-                        M3_WARN("%s while parsing config files for RT component %s \n", e.what(), name.c_str());
-                        factory->ReleaseComponent(m);
-                    } catch(...) {
-                        M3_WARN("Error while parsing config files for RT component %s \n", name.c_str());
-                        factory->ReleaseComponent(m);
-                    }
-
-                }
-            }
-        }
-    }
-    return true;
-}
-
-}
-
-
-
-
-
-
-
-
-
-

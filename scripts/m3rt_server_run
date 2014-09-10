@@ -1,14 +1,14 @@
 #!/bin/bash
 
-if $(python /usr/local/bin/m3/m3rt_check_server.py) 2>/dev/null ; then
+if $(m3rt_check_server.py) 2>/dev/null ; then
     echo 'Running insmods'
-    /usr/local/bin/m3/m3rt_insmods
+    m3rt_insmods
     #echo 'Disabling ROS KDL (tmp workaround)'
-    #source /usr/local/bin/disable_kdl_ros
+    #source disable_kdl_ros
     echo 'Running m3rt_server.py'
-    /usr/local/bin/m3/m3rt_server.py $@
+    m3rt_server.py $@
     echo 'Running rmmods'
-    /usr/local/bin/m3/m3rt_rmmods
+    m3rt_rmmods
 else
     echo 'Server already running, abording'
 fi

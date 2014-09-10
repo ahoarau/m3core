@@ -23,6 +23,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include "m3rt/base/component.h"
 #include <string>
 #include <vector>
+#include <iterator>
 
 namespace m3rt
 {
@@ -52,6 +53,7 @@ private:
 	std::vector<M3Component *>	m3_list;
 	std::vector<std::string>	m3_types;
 	std::vector<void *> 		dl_list; 						//handles for dynamic libs
+	std::vector<std::string> 	dl_list_str;
 	std::vector<std::string> 	dl_types;
 	M3MonitorStatus  monitor_status; 					//Container for all component rt stats
 };

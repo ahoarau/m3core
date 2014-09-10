@@ -22,13 +22,17 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "m3rt/base/component.h"
 #include <google/protobuf/message.h>
+#include "m3rt/base/m3rt_def.h"
+#include "m3rt/base/component_factory.h"
+
+//#include "inttypes.h"
 
 #ifdef __RTAI__	
 #ifdef __cplusplus
 extern "C" {
 #endif 
 #include <rtai.h>
-#include "rtai_sem.h"
+#include <rtai_sem.h>
 #ifdef __cplusplus
 }  // extern "C"
 #endif 
@@ -82,7 +86,7 @@ class M3ComponentAsync : public M3Component
 		virtual void Shutdown();
 		virtual void StepStatus();
 		virtual void StepCommand();			
-		virtual bool LinkDependentComponents();				
+		virtual bool LinkDependentComponents();		
 	private:	      
 	      long rc;
 	      bool stop_thread;

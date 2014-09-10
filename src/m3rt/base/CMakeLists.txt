@@ -4,24 +4,24 @@ set(SUBPROJECT_INSTALL_DIR_NAME m3rt)
 set(SUBPROJECT_INSTALL_NAME ${PROJECT_NAME})
 set(LIBNAME "m3base")
 
-OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
+#OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
 if(RTAI)
-add_definitions(-D__RTAI__)
-find_package(RTAI REQUIRED)
-SET(LIBS ${RTAI_LIBRARY})
-include_directories(${RTAI_INCLUDE_DIR})
+	add_definitions(-D__RTAI__)
+	find_package(RTAI REQUIRED)
+	SET(LIBS ${RTAI_LIBRARY})
+	include_directories(${RTAI_INCLUDE_DIR})
 endif(RTAI)
 
-find_package(Boost  REQUIRED)
+find_package(Boost REQUIRED)
 
 
 ## YAML CPP 
 find_package(PkgConfig REQUIRED)
 #find_package(YamlCpp  REQUIRED)
-pkg_check_modules(YAMLCPP REQUIRED yaml-cpp<=0.5)
+pkg_check_modules(YAMLCPP REQUIRED yaml-cpp)
 if(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
-add_definitions(-DHAVE_NEW_YAMLCPP)
+add_definitions(-DYAMLCPP_05)
 endif(NOT ${YAMLCPP_VERSION} VERSION_LESS "0.5")
 link_directories(${YAMLCPP_LIBRARY_DIRS})
 
@@ -52,7 +52,6 @@ add_custom_target(python_protobuf_output ALL DEPENDS ${PySources}) # force the g
 
 
 # End Protobuf stuff
-
 SET(LIBS  ${LIBS} ${YAMLCPP_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread ${Boost_LIBRARIES} ${EIGEN3_LIBRARIES})
 include_directories(${M3RT_INCLUDE_DIR} ${YAMLCPP_INCLUDE_DIRS} ${THREADS_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR})
 
@@ -83,7 +82,7 @@ simple_server.h
 toolbox.h
 )
 if(RTAI)
-list(APPEND all_srcs
+list(APPEND all_hdrs
 component_shm.h
 )
 endif()
@@ -99,10 +98,7 @@ ${ProtoFiles}
 )
 
 add_library(${LIBNAME} SHARED ${all_srcs})
-add_dependencies(${LIBNAME} rt_system)
 target_link_libraries(${LIBNAME} ${LIBS})
-#set_target_properties(${LIBNAME} PROPERTIES LINKER_LANGUAGE CXX)
-
 
 install(TARGETS ${LIBNAME} DESTINATION lib COMPONENT library)
 install(FILES ${all_hdrs} DESTINATION include/${SUBPROJECT_INSTALL_DIR_NAME}/${SUBPROJECT_INSTALL_NAME})
