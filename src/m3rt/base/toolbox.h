@@ -71,7 +71,6 @@ void operator >> (const YAML::Node &node, std::vector<_T> & v)
 inline void operator >> (const YAML::Node &node, std::vector<mReal> & v)
 {
 	for(unsigned i = 0; i < node.size(); i++) {
-		v.push_back(node.
 		mReal x;
 		node[i] >> x;
 		v.push_back(x);
