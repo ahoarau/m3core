@@ -13,7 +13,7 @@ message(WARNING "ROS option is deprecated!")
 add_definitions(-D_ROS_)
 endif(ROS)
 
-if(NOT VIRTUAL_MEKA)
+if(VIRTUAL_MEKA)
 message(STATUS "Disabled kernel sync (Virtual installation only)")
 add_definitions("-D__NO_KERNEL_SYNC__")
 endif()
