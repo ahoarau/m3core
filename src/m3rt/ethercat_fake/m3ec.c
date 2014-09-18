@@ -142,9 +142,10 @@ void run(long shm)
 	tstart=rt_get_time_ns();
 	print_start = rt_get_time_ns();
 	while (1) {
+		ts0=rt_get_time_ns();
 	/*	t_last_cycle = get_cycles();
 	//Process Domain
-		ts0=rt_get_time_ns();
+		
 		rt_sem_wait(&master_sem);
 		ts1=rt_get_time_ns();
 		//ecrt_master_receive(sys.master); //Get Status data
