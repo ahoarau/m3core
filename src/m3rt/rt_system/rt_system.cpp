@@ -105,7 +105,9 @@ void *rt_system_thread(void *arg)
 #if defined(__RTAI__)
 	#ifndef ONESHOT_MODE
 		RTIME now = rt_get_time();
+#ifndef __NO_KERNEL_SYNC__
 		rt_sleep(nano2count((long long)1e9));
+#endif
 		if(rt_task_make_periodic(task, rt_get_time() + tick_period, tick_period)) {
 			M3_ERR("Couldn't make rt_system task periodic.\n");
 			return 0;
@@ -137,7 +139,9 @@ void *rt_system_thread(void *arg)
 */
 	M3_INFO("Entering realtime loop.\n");
 #endif
-
+#ifdef __NO_KERNEL_SYNC__
+	M3_INFO("Kernel sync is disabled (virtual installation only)\n");
+#endif
 #ifndef __RTAI__
     long long start, end, dt;
 #endif

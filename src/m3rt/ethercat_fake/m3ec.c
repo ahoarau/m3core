@@ -142,7 +142,7 @@ void run(long shm)
 	tstart=rt_get_time_ns();
 	print_start = rt_get_time_ns();
 	while (1) {
-		t_last_cycle = get_cycles();
+	/*	t_last_cycle = get_cycles();
 	//Process Domain
 		ts0=rt_get_time_ns();
 		rt_sem_wait(&master_sem);
@@ -212,7 +212,7 @@ void run(long shm)
 			check_slave_state();
 			if (!check_master_state())
 				goto run_cleanup; 
-		}
+		}*/
 		rt_task_wait_period();
 		dt =rt_get_time_ns() -ts0;
 		if (rt_get_time_ns() -print_start >= print_dt)
