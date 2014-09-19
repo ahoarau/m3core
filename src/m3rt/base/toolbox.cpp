@@ -367,12 +367,12 @@ bool GetYamlDoc(const char *filename, YAML::Node &doc, std::string *doc_root_pat
 	
         ifstream fin(path.c_str());
         if(fin.fail()) {
-            if(verbose)
-            cout<<"Could not read "<<path<<" , trying the next one."<<endl;
+            //if(verbose)
+            //cout<<"Could not read "<<path<<" , trying the next one."<<endl;
             continue;
         }
         if(verbose)
-        cout << "For component " << s << " ,loading file : " << path;
+        cout << "For component " << s << " ,loading file : " << path<<endl;
         parser.Load(fin);
         parser.GetNextDocument(doc);
         fin.close();
