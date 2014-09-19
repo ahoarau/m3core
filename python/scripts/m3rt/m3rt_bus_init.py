@@ -20,7 +20,5 @@
 """Configures the M3 EtherCAT hub to enable Port 3"""
 
 import m3.m3rt_toolbox as m3t
-import time
 
-if __name__ == '__main__':
-    m3t.ethercat_bus_init()
+exit(int(0==m3t.ethercat_bus_init()))

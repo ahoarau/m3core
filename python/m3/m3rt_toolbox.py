@@ -156,7 +156,7 @@ def ethercat_bus_init(verbose=True):
 	if verbose:
 		print 'Opening Port3'
 	echub_init()
-	time.sleep(4.0)
+	#time.sleep(4.0)
 	n=get_num_slaves()
 	if verbose:
 		print 'Slaves on bus: ',n
@@ -170,11 +170,11 @@ def ethercat_bus_init(verbose=True):
 		if o!=0:
 			if verbose:
 				print 'Slaves in operational state. Stop all M3 processes and try again'
-			exit()
+			return True
 		if p==n:
 			if verbose:
 				print 'All slaves in state PREOP. Initialization successful...'
-			exit()
+			return True
 		if ie>0:
 			if verbose:
 				print 'Num Slaves:',n,'INIT',i,'INIT_E',ie,'PREOP',p
