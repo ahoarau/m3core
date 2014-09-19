@@ -675,10 +675,10 @@ bool M3RtSystem::Step(bool safeop_only,bool dry_run)
 {
 #ifdef __RTAI__
     RTIME start, end, dt, start_c, end_c, start_p, end_p;
-    bool ret_step=true;
 #else
     long long start, end, dt, start_c, end_c, start_p, end_p;
 #endif
+    bool ret_step=true;
     vector<M3ComponentEc *>::iterator j;
     step_cnt++;
 
