@@ -55,10 +55,11 @@ unsigned long long getNanoSec(void)
             1000LL * (long long) tp.tv_usec;
 }
 
+
 void *rt_system_thread(void *arg)
 {
     M3RtSystem *m3sys = (M3RtSystem *)arg;
-    sys_thread_end = true; //gonna be at true is startup fails=> no wait
+    sys_thread_end = false; //gonna be at true is startup fails=> no wait
 	bool safeop_only = false;
     int tmp_cnt = 0;
 	bool ready_sent=false;
@@ -98,7 +99,7 @@ void *rt_system_thread(void *arg)
 
 #endif
 #ifdef __RTAI__
-	RTIME print_start=rt_get_cpu_time_ns();
+	RTIME print_start=rt_get_time_ns();
 	RTIME diff=0;
 	int dt_us,tick_period_us,overrun_us;
 #endif
@@ -129,14 +130,56 @@ void *rt_system_thread(void *arg)
 		M3_INFO("Hard real time initialized.\n");
 		rt_make_hard_real_time();
 	}
-	
-/*	M3_INFO("Syncing with kernel module...\n");
-	while(rt_get_time_ns()- count2nano(now) <=  5*print_dt){
-			if(!m3sys->Step(false))  //This waits on m3ec.ko semaphore for timing
+#ifndef __NO_KERNEL_SYNC__
+        M3_INFO("Dry running components...\n");
+        for(int i = 0; i < m3sys->GetNumComponents(); i++){
+            m3sys->GetComponent(i)->SetVerbose(false);
+            
+        }
+        bool dry_run_ok=false;
+        now=rt_get_time_ns();
+        print_start = rt_get_time_ns();
+       // RTIME print_dt = 1e9;
+        int nerr = 0;
+        while(1){
+                        if(sys_thread_end)
+                            return 0;
+                        nerr = 0;
+                        // Let's try to step
+                        dry_run_ok = m3sys->Step(false,true);
+                        // We count the num of error raised
+                        for(int i = 0; i < m3sys->GetNumComponents(); i++)
+                            if(m3sys->GetComponent(i)->IsStateError()) nerr++;
+                            // Print the status
+                        if (dry_run_ok==false && ((rt_get_time_ns() -print_start) > print_dt))
+                        {
+                            print_start = rt_get_time_ns();
+                            M3_INFO("Components ready %d/%d\n",m3sys->GetNumComponents()-nerr,m3sys->GetNumComponents());
+                        }
+                        // If step wasn't ok, we give it another chance 
+                        if(!dry_run_ok){
+                            m3sys->SetComponentStateOpAll();
+                        }else{ // or we can enter the realtime loop
+                            M3_INFO("All %d components successfully started.\n",m3sys->GetNumComponents());
+                            break;
+                        }
+                        // Timeout
+                        if ((rt_get_time_ns()- count2nano(now))<=  (RTIME)4e9)
+                        {
+                            dry_run_ok=false;
+                            break;
+                        }
+                        rt_task_wait_period();
+        }
+        if(!dry_run_ok){
+            M3_INFO("Synced failed, please restart the server\n");
             return 0;
-			rt_task_wait_period();
-	}
-*/
+        }
+        for(int i = 0; i < m3sys->GetNumComponents(); i++){
+            m3sys->GetComponent(i)->SetVerbose(true);
+            
+        }
+#endif
 	M3_INFO("Entering realtime loop.\n");
 #endif
 #ifdef __NO_KERNEL_SYNC__
@@ -239,7 +282,6 @@ M3RtSystem::~M3RtSystem() {}
 bool M3RtSystem::Startup()
 {
     sys_thread_active = false;
-    sys_thread_end = true;
     BannerPrint(60, "Startup of M3RtSystem");
     if(!this->StartupComponents()) {
         sys_thread_active = false;
@@ -261,10 +303,10 @@ bool M3RtSystem::Startup()
 		m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%ld]).\n",ret);
         return false;
     }
-    for(int i = 0; i < 20; i++) {
+    for(int i = 0; i < 10; i++) {
 		if(sys_thread_active)
             break;
-		M3_INFO("Waiting for the Ready Signal.\n");
+		//M3_INFO("Waiting for the Ready Signal.\n");
         usleep(1e6); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
         
     }
@@ -519,8 +561,10 @@ bool M3RtSystem::SerializeStatusToExt(M3StatusAll &msg, vector<string>& names)
 
 void M3RtSystem::CheckComponentStates()
 {
+    if(safeop_required)
+        return;
     for(int i = 0; i < GetNumComponents(); i++) {
-        if(GetComponent(i)->IsStateError() && !safeop_required) { //All or none in OP
+        if(GetComponent(i)->IsStateError()) { //All or none in OP
             M3_WARN("Component error detected for %s. Forcing to state SAFEOP\n", GetComponent(i)->GetName().c_str());
 
             safeop_required = true;
@@ -627,10 +671,11 @@ void M3RtSystem::PrettyPrintComponent(int idx)
         GetComponent(idx)->PrettyPrint();
 }
 
-bool M3RtSystem::Step(bool safeop_only)
+bool M3RtSystem::Step(bool safeop_only,bool dry_run)
 {
 #ifdef __RTAI__
     RTIME start, end, dt, start_c, end_c, start_p, end_p;
+    bool ret_step=true;
 #else
     long long start, end, dt, start_c, end_c, start_p, end_p;
 #endif
@@ -667,7 +712,10 @@ bool M3RtSystem::Step(bool safeop_only)
     if(safeop_only) { // in case we are too slow
         for(int i = 0; i < GetNumComponents(); i++)
             if(GetComponent(i)->IsStateError()) {
-                GetComponent(i)->SetStateSafeOp();
+                if(!dry_run)
+                    GetComponent(i)->SetStateSafeOp();
+                else
+                    GetComponent(i)->SetStateOp();
             }
 
     }
@@ -807,6 +855,12 @@ bool M3RtSystem::Step(bool safeop_only)
     s->set_cycle_time_command_us((mReal)(end_p - start_p) / 1000);
     //Now see if any errors raised
     CheckComponentStates();
+    if(dry_run&&safeop_required){// Let's give it another chance!
+        safeop_required=false;
+        ret_step=false;
+    }else if(dry_run&&!safeop_required){
+        ret_step=true;
+    }
 
     if(log_service) {
         logging = true;
@@ -833,7 +887,7 @@ bool M3RtSystem::Step(bool safeop_only)
 #else
     sem_post(ext_sem);
 #endif
-    return true;
+    return ret_step;
 }
 
 }

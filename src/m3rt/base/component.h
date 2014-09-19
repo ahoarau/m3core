@@ -63,6 +63,8 @@ class M3Component{
 		int  GetState(){return (int)GetBaseStatus()->state();}
 		int  GetPriority(){return priority;}
 		void  SetPriority(int p){priority=p;}
+		void SetVerbose(bool v){verbose_=v;}
+		const YAML::Node& GetConfig(){return this->doc;}
 		void SetStateError(){GetBaseStatus()->set_state(M3COMP_STATE_ERR);}
 		void SetStateOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_OP);}
 		void SetStateSafeOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_SAFEOP);}
@@ -100,6 +102,7 @@ class M3Component{
 		virtual bool ReadConfig(const char * filename);
 		M3ComponentFactory * factory;
 		int priority;
+                bool verbose_;
 		std::vector<std::string> version_names;
 		std::vector<int> version_ids;
 		int version_id;

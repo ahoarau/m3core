@@ -17,20 +17,26 @@ MODULES=/usr/realtime/modules
 
 #sync paranoia might be useful
 sync
+echo 'Inserting rtai_hal'
 $SUDO $insmod $MODULES/rtai_hal.ko IsolCpusMask=0;
 sync
+echo 'Inserting rtai_sched'
 $SUDO $insmod $MODULES/rtai_sched.ko;
 sync
+echo 'Inserting rtai_lxrt'
 $SUDO $insmod $MODULES/rtai_lxrt.ko;
 #$insmod $MODULES/rtai_ksched.ko;
 #$insmod $MODULES/rtai_smp.o;
 sync
+echo 'Inserting rtai_sem'
 $SUDO $insmod $MODULES/rtai_sem.ko;
 sync
+echo 'Inserting rtai_shm'
 $SUDO $insmod $MODULES/rtai_shm.ko;
 if [ -f $MODULES/rtai_smi.ko ]
 then
   sync
+  echo 'Inserting rtai_smi'
   $SUDO $insmod $MODULES/rtai_smi.ko;
 fi
 sync

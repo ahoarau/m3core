@@ -123,7 +123,7 @@ void  M3ComponentEc::StepStatus()
 		SetStateSafeOp();
 		return;
 	}
-	if (!IsStateError())
+	//if (!IsStateError())
 		SetStatusFromPdo(shm->status);
 	
 	status->set_online(shm->online);
@@ -131,7 +131,7 @@ void  M3ComponentEc::StepStatus()
 	status->set_al_state(shm->al_state);
 	status->set_active(shm->active);
 	//Do this last 
-	if (IsEcError())
+	if (IsEcError() && IsStateError())
 		SetStateError();
         else
             SetStateOp();
@@ -163,7 +163,7 @@ bool M3ComponentEc::IsEcError()
 	M3EtherCATStatus * status = GetEcStatus();
 	if (!status->online())
 	{
-		if (!IsStateError())
+		if (!IsStateError() && verbose_)
 		{
 			M3_ERR("M3ComponentEc component %s is not online\n",GetName().c_str());
 		}
@@ -171,7 +171,7 @@ bool M3ComponentEc::IsEcError()
 	}
 	if (!status->operational())
 	{
-		if (!IsStateError())
+		if (!IsStateError() && verbose_)
 		{
 			M3_ERR("M3ComponentEc component %s is not operational\n",GetName().c_str());
 		}
@@ -179,7 +179,7 @@ bool M3ComponentEc::IsEcError()
 	}
 	if (!status->active())
 	{
-		if (!IsStateError())
+		if (!IsStateError() && verbose_)
 		{
 			M3_ERR("M3ComponentEc component %s is not active\n",GetName().c_str());
 		}
@@ -187,7 +187,7 @@ bool M3ComponentEc::IsEcError()
 	}
 	if (!(status->al_state()==8))
 	{
-		if (!IsStateError())
+		if (!IsStateError() && verbose_)
 		{
 			M3_ERR("M3ComponentEc component %s state is not OP. Is %d\n",GetName().c_str(),status->al_state() );
 		}

@@ -3,9 +3,7 @@
 if $(m3rt_check_server.py) 2>/dev/null ; then
     echo 'Running insmods'
     m3rt_insmods
-    #echo 'Disabling ROS KDL (tmp workaround)'
-    #source disable_kdl_ros
-    echo 'Running m3rt_server.py'
+    echo 'Running m3rt server'
     m3rt_server.py $@
     echo 'Running rmmods'
     m3rt_rmmods

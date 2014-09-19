@@ -61,7 +61,7 @@ public:
     bool Startup();
     bool StartupComponents();
     bool Shutdown();
-    bool Step(bool safeop_only);
+    bool Step(bool safeop_only,bool dry_run=false);
     void PrettyPrint();
     void PrettyPrintComponents();
     void PrettyPrintComponent(int idx);
@@ -79,6 +79,8 @@ public:
 	void SetComponentStateOpAll(void);
     bool IsOperational(){return !safeop_required;}
     bool IsHardRealTime(){return hard_realtime;}
+    M3ComponentFactory * GetFactory()const{return factory;}
+    bool WaitForEcComponents(mReal timeout_ns=3e9);
 #ifdef __RTAI__
     int GetEcCounter(){return shm_ec->counter;}
     SEM * ready_sem;

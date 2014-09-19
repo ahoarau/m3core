@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define M3_ERR(fmt, args...) rt_printk(KERN_ERR "M3 ERROR: " fmt, ##args)
 #define M3_WARN(fmt, args...) rt_printk(KERN_WARNING "M3 WARNING: " fmt, ##args)
 
-// #define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
+ #define USE_DISTRIBUTED_CLOCKS //Version 1.0 and newer
 
 #define NUM_EC_CYCLES_PER_RT 1
 #define RT_KMOD_FREQUENCY (RT_TASK_FREQUENCY*NUM_EC_CYCLES_PER_RT*NUM_EC_DOMAIN)	//Frequency of rt kernel module (HZ) (3000)
@@ -102,7 +102,7 @@ spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
 cycles_t t_last_cycle;
 cycles_t t_critical;
 
-
+bool end=0;
 /*****************************************************************************/
 
 
@@ -227,7 +227,7 @@ void run(long shm)
 	sys.shm->counter=0;
 	M3_INFO("EtherCAT kernel loop starting...\n");
 	tstart=rt_get_time_ns();
-	while (1) {
+	while (!end) {
 	    
 		t_last_cycle = get_cycles();
 	//Process Domain
@@ -586,6 +586,7 @@ int __init init_mod(void)
 
 void __exit cleanup_mod(void)
 {
+        end = 1;
         int i=0;
         for (i=0;i<sys.num_domain;i++){
             if(sys.domain_pd[i]!=NULL)

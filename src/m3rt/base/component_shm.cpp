@@ -30,9 +30,12 @@ bool M3CompShm::ReadConfig(const char * filename)
 	
 	if (!M3Component::ReadConfig(filename)) return false;
 	//GetYamlDoc(filename, doc);
-	
+	try{
 	doc["shm_id"] >> shm_id;
-	
+        }catch(...){
+            shm_id = "M3WAR";
+            M3_WARN("shm_id key not found, please add it to %s\n",filename);
+        }
 	return true;
 }
 
@@ -44,7 +47,7 @@ void  M3CompShm::StepStatus()
 		SetStateSafeOp();
 		return;
 	}
-	if (!IsStateError()) // 
+	//if (!IsStateError()) // 
 		SetSdsFromStatus(shm->status);
 }
 
