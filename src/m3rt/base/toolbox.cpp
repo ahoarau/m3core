@@ -422,6 +422,7 @@ std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
 		if(verbose)
 			cout<<"Could not read "<<path<<" , trying the next one."<<endl;
 		continue;
+
 	}
 	parser.Load(fin);
 	parser.GetNextDocument(doc);
