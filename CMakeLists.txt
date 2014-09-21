@@ -21,6 +21,21 @@ OPTION(ETHERCAT "Enable/Disable EtherCAT (sim or not)" OFF)
 
 OPTION(VIRTUAL_MEKA "To be used on simulation or not" ON)
 
+if(ETHERCAT)
+	set(VIRTUAL_MEKA OFF)
+endif()
+
+if(RTAI AND NOT ETHERCAT)
+    find_package(RTAI)
+elseif(RTAI AND ETHERCAT)
+    find_package(RTAI REQUIRED)
+endif()
+
+if(RTAI AND NOT RTAI_FOUND)
+    set(RTAI OFF)
+    message(WARNING "Rtai not present, only generating python")
+endif()
+
 # Tmp solution for the FindXXX.cmake 
 set(CMAKE_MODULE_PATH 
     "${CMAKE_CURRENT_SOURCE_DIR}/../meka-cmake-modules/Modules/"
