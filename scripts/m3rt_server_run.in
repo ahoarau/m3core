@@ -1,0 +1,22 @@
+#!/bin/bash
+
+virtual=${VIRTUAL}
+
+if $(m3rt_check_server.py) 2>/dev/null ; then
+    echo 'Checking Ethercat'
+    if [ ! $virtual ] && [ ! m3rt_bus_init.py 2>/dev/null ]; then
+		exit
+    fi
+    echo 'Running insmods'
+    m3rt_insmods
+    echo 'Running m3rt server'
+    m3rt_server.py $@
+    echo 'Running rmmods'
+    m3rt_rmmods
+else
+    echo 'Server already running, abording'
+fi
+
+
+
+
