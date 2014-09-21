@@ -196,16 +196,9 @@ void *rt_system_thread(void *arg)
     while(!sys_thread_end) {
 #ifdef __RTAI__
 		start = rt_get_cpu_time_ns();
-		rt_sem_wait(m3sys->ext_sem);
-		#ifndef __NO_KERNEL_SYNC__
-		//rt_sem_wait_timed(m3sys->sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
-		rt_sem_wait(m3sys->sync_sem); // AH: this guy is causing ALL the overrruns
-		#endif
-		rt_sem_wait(m3sys->shm_sem);
 #else
 		start = getNanoSec();
 #endif
-		
 		if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
             break;
 #ifdef __RTAI__
@@ -703,7 +696,12 @@ bool M3RtSystem::Step(bool safeop_only,bool dry_run)
         Therefore if we want to directly communicate with B.x from the outside world, we must not publish to component A.
     */
 #ifdef __RTAI__
-
+	rt_sem_wait(ext_sem);
+	#ifndef __NO_KERNEL_SYNC__
+	//rt_sem_wait_timed(sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
+	rt_sem_wait(sync_sem); // AH: this guy is causing ALL the overrruns
+	#endif
+	rt_sem_wait(shm_sem);
     start = rt_get_cpu_time_ns();
 #else
     sem_wait(ext_sem);
