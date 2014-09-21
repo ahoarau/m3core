@@ -36,10 +36,9 @@ install:
   - cd build
   #-DKERNEL_NAME=$rtkernel..
   #-DCMAKE_BUILD_TYPE=$M3CORE_BUILD_TYPE .. 
-  - cmake -DETHERCAT=0 -DROS=0 -DRTAI=0 .. 
+  - cmake .. 
   
 script:
   # compile and install m3core
   - make -j$(nproc)
   - sudo make install
-#  - cpack ..
