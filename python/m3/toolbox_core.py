@@ -18,11 +18,10 @@
 #import matplotlib
 #matplotlib.use('TkAgg')
 import pylab
-
+import exceptions
 import os
 import sys
 import time
-import exceptions
 import yaml
 import Gnuplot
 import numpy as nu
@@ -215,15 +214,14 @@ def set_config_hostname(hostname):
     m3_config= get_m3_config()
     for config in m3_config:
         try:
-            old_hostname = c['hostname']
+            old_hostname = config['hostname']
             config['hostname']=hostname
-            if get_yes_no('no'):
-                with open(config['config_path'], 'w') as f:
-                    yaml.safe_dump(config,f,default_flow_style=False)
-                print "Config hostname changed (",old_hostname,"->",hostname,")"
+            with open(config['config_path']+ROBOT_CONFIG_FILENAME, 'w') as f:
+                yaml.safe_dump(config,f,default_flow_style=False)
+            print "Config hostname changed (",old_hostname,"->",hostname,")"
             return True
-        except exception,e:
-                pass
+        except Exception,e:
+                print e
     return False
 
 def configure_virtual_meka():
