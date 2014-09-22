@@ -153,9 +153,9 @@ def echub_init():
 def ethercat_bus_init(verbose=True):
 	print 'Initializing the M3 EtherCAT bus...'
 	print '-----------------------------------'
-	if verbose:
-		print 'Opening Port3'
-	echub_init()
+	#if verbose:
+	#	print 'Opening Port3'
+	#echub_init()
 	#time.sleep(4.0)
 	n=get_num_slaves()
 	if verbose:
