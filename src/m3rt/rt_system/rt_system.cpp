@@ -141,6 +141,7 @@ void *rt_system_thread(void *arg)
         print_start = rt_get_time_ns();
        // RTIME print_dt = 1e9;
         int nerr = 0;
+        int ntrialsmin=500;
         while(1){
                         if(sys_thread_end)
                             return 0;
@@ -159,20 +160,21 @@ void *rt_system_thread(void *arg)
                         // If step wasn't ok, we give it another chance 
                         if(!dry_run_ok){
                             m3sys->SetComponentStateOpAll();
-                        }else{ // or we can enter the realtime loop
-                            M3_INFO("All %d components successfully started.\n",m3sys->GetNumComponents());
-                            break;
+                        }else if(ntrialsmin<=0){
+                                M3_INFO("All %d components successfully started.\n",m3sys->GetNumComponents());
+                                break;
                         }
                         // Timeout
-                        if ((rt_get_time_ns()- count2nano(now))<=  (RTIME)4e9)
+                        if ((rt_get_time_ns()- now) >=  (RTIME)4e9)
                         {
                             dry_run_ok=false;
                             break;
                         }
+                        ntrialsmin--;
                         rt_task_wait_period();
         }
         if(!dry_run_ok){
-            M3_INFO("Synced failed, please restart the server\n");
+            M3_INFO("Dry run failed, server should stop now. Please restart it.\n");
             return 0;
         }
         for(int i = 0; i < m3sys->GetNumComponents(); i++){
