@@ -96,8 +96,8 @@ SEM shm_sem;
 SEM sync_sem;
 
 //A.Hoarau: Fix on deprecated SPIN_LOCK_UNLOCKED
-spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
-//static DEFINE_SPINLOCK(master_lock) ;
+static spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
+static DEFINE_SPINLOCK(master_lock) ;
 
 cycles_t t_last_cycle;
 cycles_t t_critical;
@@ -586,8 +586,8 @@ int __init init_mod(void)
 
 void __exit cleanup_mod(void)
 {
+        int i;
         end = 1;
-        int i=0;
         for (i=0;i<sys.num_domain;i++){
             if(sys.domain_pd[i]!=NULL)
                 kfree(sys.domain_pd[i]);
