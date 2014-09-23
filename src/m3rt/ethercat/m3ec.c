@@ -96,7 +96,6 @@ SEM shm_sem;
 SEM sync_sem;
 
 //A.Hoarau: Fix on deprecated SPIN_LOCK_UNLOCKED
-static spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
 static DEFINE_SPINLOCK(master_lock) ;
 
 cycles_t t_last_cycle;
