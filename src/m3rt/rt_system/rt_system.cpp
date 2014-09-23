@@ -84,7 +84,7 @@ void *rt_system_thread(void *arg)
     M3_INFO("Beginning RTAI Initialization.\n");
 	rt_allow_nonroot_hrt();
     ;
-    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0x3))) {
+    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0))) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
         sys_thread_active = false;
         return 0;
