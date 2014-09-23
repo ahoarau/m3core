@@ -552,6 +552,7 @@ int __init init_mod(void)
 	t_critical = cpu_khz * 1000 / RT_KMOD_FREQUENCY - cpu_khz * RT_INHIBIT_TIME / 1000;
 	M3_INFO("Starting cyclic sample thread...\n");
 	requested_ticks = nano2count(RT_KMOD_TIMER_TICKS_NS); //
+        if(!rt_is_hard_timer_running())
 	tick_period = start_rt_timer(requested_ticks);
 	M3_INFO("Rt timer started with %lld/%lld ticks (t_critical=%lld).\n", tick_period, requested_ticks,t_critical);
 	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
