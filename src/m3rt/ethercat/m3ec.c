@@ -96,7 +96,6 @@ SEM shm_sem;
 SEM sync_sem;
 
 //A.Hoarau: Fix on deprecated SPIN_LOCK_UNLOCKED
-static spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
 static DEFINE_SPINLOCK(master_lock) ;
 
 cycles_t t_last_cycle;
@@ -217,7 +216,6 @@ void run(long shm)
 	RTIME print_dt=print_sec*1e9;
 	RTIME print_start=rt_get_time_ns();
 	RTIME dt=0;
-        int ps=0;
 	unsigned int tmp_cnt=0;
 #ifdef USE_DISTRIBUTED_CLOCKS
 	struct timeval tv;
@@ -227,8 +225,8 @@ void run(long shm)
 	sys.shm->counter=0;
 	M3_INFO("EtherCAT kernel loop starting...\n");
 	tstart=rt_get_time_ns();
-	while (!end) {
-	    
+	while (1) {
+                if(end) break;
 		t_last_cycle = get_cycles();
 	//Process Domain
 		ts0=rt_get_time_ns();
@@ -553,7 +551,10 @@ int __init init_mod(void)
 	t_critical = cpu_khz * 1000 / RT_KMOD_FREQUENCY - cpu_khz * RT_INHIBIT_TIME / 1000;
 	M3_INFO("Starting cyclic sample thread...\n");
 	requested_ticks = nano2count(RT_KMOD_TIMER_TICKS_NS); //
-	tick_period = start_rt_timer(requested_ticks);
+        if(!rt_is_hard_timer_running())
+            tick_period = start_rt_timer(requested_ticks);
+        else
+            tick_period = requested_ticks;
 	M3_INFO("Rt timer started with %lld/%lld ticks (t_critical=%lld).\n", tick_period, requested_ticks,t_critical);
 	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
 		M3_ERR("Failed to init RtAI task!\n");
