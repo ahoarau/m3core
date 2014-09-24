@@ -542,20 +542,28 @@ int __init init_mod(void)
 	rt_sem_init(&sync_sem, 0); //Only signaled when ec update done
 	rt_register(nam2num(SEMNAM_M3LSHM),&shm_sem,IS_SEM,0);
 	rt_register(nam2num(SEMNAM_M3SYNC),&sync_sem,IS_SEM,0);
+        
 	M3_INFO("Starting...\n");
 	sys.shm= rtai_kmalloc(nam2num(SHMNAM_M3MKMD), sizeof(M3EcSystemShm));
 	memset(sys.shm,0,sizeof(M3EcSystemShm));
 	M3_INFO("Allocated M3System shared memory of size: %u.\n",(int)sizeof(M3EcSystemShm));
+        
 	if (!m3sys_startup())
 		goto out_return;
+        
 	t_critical = cpu_khz * 1000 / RT_KMOD_FREQUENCY - cpu_khz * RT_INHIBIT_TIME / 1000;
 	M3_INFO("Starting cyclic sample thread...\n");
+
 	requested_ticks = nano2count(RT_KMOD_TIMER_TICKS_NS); //
-        if(!rt_is_hard_timer_running())
+        if(!rt_is_hard_timer_running()){
+            rt_set_periodic_mode();
             tick_period = start_rt_timer(requested_ticks);
-        else
+            M3_INFO("Rt timer started with %lld/%lld ticks (t_critical=%lld).\n", tick_period, requested_ticks,t_critical);
+        }else{
             tick_period = requested_ticks;
-	M3_INFO("Rt timer started with %lld/%lld ticks (t_critical=%lld).\n", tick_period, requested_ticks,t_critical);
+            M3_WARN("Rt timer already started.\n", tick_period, requested_ticks,t_critical);
+        }
+	
 	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
 		M3_ERR("Failed to init RtAI task!\n");
 		goto out_free_timer;
