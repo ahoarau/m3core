@@ -55,30 +55,48 @@ void data_thread(void * arg)
 	}
 #ifdef __RTAI__
 	RT_TASK *task;
-
+        int cnt=0;
+        RTIME tstart,dt;
+        int printdt = 4;
+        RTIME printdt_ns=printdt*1e9;
+        RTIME printstart;
+        RTIME requested_period = nano2count(4000000); // 250 Hz
+        //RTIME requested_period=4000000;//1e9/250.;
 	//Need to consider multiple threads, name conflict
 	ss << "M3DSV" << svc->instances;
 	ss >> rt_name;
 	task = rt_task_init_schmod(nam2num(rt_name.c_str()), 0, 0, 0, SCHED_FIFO, 0xF); 
-	rt_allow_nonroot_hrt();
+	//rt_allow_nonroot_hrt();
+        //rt_make_soft_real_time();
+        //rt_task_make_periodic(task,rt_get_time()+requested_period,requested_period);
 	svc->instances++;
 	if (task==NULL)
 	{
 		M3_ERR("Failed to create M3RtDataService RT Task\n",0);
 		return;
 	}
-	mlockall(MCL_CURRENT | MCL_FUTURE);
-#endif
-	while(!svc->data_thread_end)
-	{
+	//mlockall(MCL_CURRENT | MCL_FUTURE);
+        printstart = rt_get_time_ns();
+#endif 
+	while(1)
+	{       
+                tstart = rt_get_time();
+                if (svc->data_thread_end) break;
 		if (!svc->Step())
 		{
 		   svc->data_thread_error=true;		   
 		   break;
 		}
 #ifdef __RTAI__
+                dt = rt_get_time()-tstart;
 		//rt_task_wait_period(); //A.H Just go as fast as you can (No locks for now) TODO: test this more
-		rt_sleep(nano2count(4000000)); //250 Hz
+		rt_sleep(MAX(0,requested_period-dt)); //250 Hz
+                cnt++;
+                if(rt_get_time_ns() - printstart >= printdt_ns){
+                    printstart = rt_get_time_ns();
+                    rt_printk("%s (TCP/IP Server) freq=%d (dt=%lldns)\n",rt_name.c_str(),cnt/printdt,count2nano(dt));
+                    cnt=0;
+                }
 #else
 		usleep(10000); //100hz
 #endif
@@ -148,7 +166,8 @@ void M3RtDataService::ClientSubscribeStatus(string name)
 bool M3RtDataService::Step()
 {
 	int nw,nr,res;
-	res=server.ReadStringFromPort(sread, nr);
+
+        res=server.ReadStringFromPort(sread, nr);
 	if (res==-1) //error
 	  return false;
 	//If receive cmd data, parse and reply with status data (or just reply with status data if no cmd)

@@ -95,7 +95,7 @@ int M3SimpleServer:: WriteStringToPort ( string & s ) {
     return 0;
     }
 
-#define MAX_STRING_SIZE 65536 //8192 //as a safety measure
+#define MAX_STRING_SIZE 8192//65536 //8192 //as a safety measure
 //Return true if a packet is successfully recieved. Size is the data size minus the header.
 // return -1 if error
 // return -2 if no cmd data

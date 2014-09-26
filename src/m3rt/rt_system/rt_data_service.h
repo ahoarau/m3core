@@ -46,7 +46,9 @@ namespace m3rt
 class M3RtDataService
 {
 public:
-	M3RtDataService(M3RtSystem * s, int port):sys(s),data_thread_active(false),data_thread_error(false),data_thread_end(false),portno(port){}
+	M3RtDataService(M3RtSystem * s, int port):sys(s),data_thread_active(false),data_thread_error(false),data_thread_end(false),portno(port){
+            status_names.reserve(50);
+        }
 	bool Startup();							//Start thread, open port
 	void Shutdown();						//Stop thread, close port
 	bool StartServer(){return server.Startup(portno);}

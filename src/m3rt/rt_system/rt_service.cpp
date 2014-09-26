@@ -61,19 +61,21 @@ bool M3RtService::IsServiceThreadActive()
 bool M3RtService::Startup()
 {
     factory.Startup();
-//#ifdef __RTAI__
-//    rt_allow_nonroot_hrt();
-//#endif
+#ifdef __RTAI__
+    // A.H: This one is absolutely necessary as it's should be in the main thread
+    rt_allow_nonroot_hrt();
+#endif
     if (svc_thread_active)
     {
         m3rt::M3_ERR("M3RtService thread already active\n",0);
         return false;
     }
-    //#ifdef __RTAI__
-    //	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
-    //#else
-    hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
-    //#endif
+#ifdef __RTAI__
+    	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
+        long ret = (hst!=0 ? 0:-1);
+#else
+        long hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
+#endif
 
     usleep(100000);
     if (hst != 0) //A.H : ie there was an error initializing the thread
