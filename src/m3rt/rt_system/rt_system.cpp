@@ -194,7 +194,8 @@ void *rt_system_thread(void *arg)
 	sys_thread_end = false;
 	sys_thread_active = true;
 	
-    while(!sys_thread_end) {
+    while(1) {
+            if(sys_thread_end) break;
 #ifdef __RTAI__
 		start = rt_get_cpu_time_ns();
 #else
