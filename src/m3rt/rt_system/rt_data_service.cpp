@@ -80,7 +80,9 @@ void data_thread(void * arg)
 #endif 
 	while(1)
 	{       
+#ifdef __RTAI__
                 tstart = rt_get_time();
+#endif
                 if (svc->data_thread_end) break;
 		if (!svc->Step())
 		{
