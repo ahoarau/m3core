@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(m3core)
 SET(MAJOR_VERSION "1")
 SET(MINOR_VERSION "9")
-SET(PATCH_VERSION "3")
+SET(PATCH_VERSION "9")
 set(M3CORE_VERSION
   ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
 
@@ -38,8 +38,14 @@ endif()
 
 # Tmp solution for the FindXXX.cmake 
 set(CMAKE_MODULE_PATH 
-    "${CMAKE_CURRENT_SOURCE_DIR}/../meka-cmake-modules/Modules/"
+    "${MEKABOT}/meka-cmake-modules/Modules/"
     ${CMAKE_MODULE_PATH})
+
+if(NOT MEKABOT)
+message(WARNING "m3meka is not in mekabot, so the FindXXX.cmake might not be found, if so, please run:\n git clone https://github.com/ahoarau/meka-cmake-modules\n To get the FindXXX.cmake")
+endif()
+
+
 
 set(M3RT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -53,9 +59,11 @@ add_subdirectory(scripts)
 add_subdirectory(src)
 add_subdirectory(python)
 
+if(M3_SRC AND NOT MEKABOT)
 configure_file(setup.bash.in ${CMAKE_CURRENT_BINARY_DIR}/setup.bash)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.bash DESTINATION ${CMAKE_INSTALL_PREFIX}/share/m3)
- 
+endif()
+
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 INCLUDE(InstallRequiredSystemLibraries)
  
