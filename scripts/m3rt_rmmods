@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 MODULES=/usr/realtime/modules
 
 if [ "${UID}" != 0 ]; then SUDO="sudo "; else SUDO=""; fi

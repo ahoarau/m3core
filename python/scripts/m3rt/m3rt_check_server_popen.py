@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 # Antoine Hoarau <hoarau.robotics@gmail.com>
 
 ## This allow to check if a running instance exists

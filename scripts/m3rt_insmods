@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 if [ "${UID}" != 0 ]; then SUDO="sudo "; else SUDO=""; fi
 
 #if test \! -c /dev/rtai_shm; then
