@@ -67,20 +67,20 @@ bool M3RtService::Startup()
 #endif
     if (svc_thread_active)
     {
-        m3rt::M3_ERR("M3RtService thread already active\n",0);
+        m3rt::M3_ERR("M3RtService thread already active\n");
         return false;
     }
 #ifdef __RTAI__
     	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
         long ret = (hst!=0 ? 0:-1);
 #else
-        long hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
+        long ret=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
 #endif
 
     usleep(100000);
-    if (hst != 0) //A.H : ie there was an error initializing the thread
+    if (ret != 0) //A.H : ie there was an error initializing the thread
     {
-        m3rt::M3_ERR("Unable to start M3RtService\n",0);
+        m3rt::M3_ERR("Unable to start M3RtService\n");
         return false;
     }
     return svc_thread_active;
