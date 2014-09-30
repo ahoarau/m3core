@@ -88,12 +88,12 @@ SEM shm_sem;
 SEM sync_sem;
 
 //A.Hoarau: Fix on deprecated SPIN_LOCK_UNLOCKED
-spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
+//spinlock_t master_lock = __SPIN_LOCK_UNLOCKED();
 //static DEFINE_SPINLOCK(master_lock) ;
 
 cycles_t t_last_cycle;
 cycles_t t_critical;
-
+bool end=false;
 
 /*****************************************************************************/
 
@@ -133,7 +133,8 @@ void run(long shm)
 	RTIME ts4;
 	RTIME ts5;
 	RTIME ts6;
-	RTIME print_dt=1e9;
+	int print_mult_dt=5;
+	RTIME print_dt=print_mult_dt*1e9;
 	RTIME print_start;
 	RTIME dt;
 	int tmp_cnt=0;
@@ -142,6 +143,7 @@ void run(long shm)
 	tstart=rt_get_time_ns();
 	print_start = rt_get_time_ns();
 	while (1) {
+		if(end) break;
 		ts0=rt_get_time_ns();
 	/*	t_last_cycle = get_cycles();
 	//Process Domain
@@ -218,7 +220,7 @@ void run(long shm)
 		dt =rt_get_time_ns() -ts0;
 		if (rt_get_time_ns() -print_start >= print_dt)
         {
-            rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us)\n",tmp_cnt,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000));
+            rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us)\n",tmp_cnt/print_mult_dt,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000));
 			tmp_cnt = 0;
 			print_start = rt_get_time_ns();
 			
@@ -341,6 +343,7 @@ int __init init_mod(void)
 
 void __exit cleanup_mod(void)
 {
+	end=true;
 	M3_INFO("Stopping...\n");
 	rt_task_delete(&task);
 	stop_rt_timer();
