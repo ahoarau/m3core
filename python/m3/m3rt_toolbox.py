@@ -66,8 +66,8 @@ def get_echub_ids():
     s=s.split('\n')
     ret=[]
     for x in s:
-	if len(x):
-	    ret.append(int(x[:3]))
+        if len(x):
+            ret.append(int(x[:3]))
     #print ret
     #ret = [int(x[:2]) for x in s]
     return ret
@@ -78,7 +78,14 @@ def get_num_slaves_init_e():
     s = stdout_handle.read()
     s=s.split('\n')
     return len(s)-1
-
+    
+def get_num_slaves_not_init_yet():
+    cmd = 'sudo ethercat slaves | grep 0x00000000:0x00000000'
+    stdout_handle = os.popen(cmd, "r")
+    s = stdout_handle.read()
+    s=s.split('\n')
+    return len(s)-1
+    
 def get_num_slaves_init():
     cmd = 'sudo ethercat slaves | grep INIT'
     stdout_handle = os.popen(cmd, "r")
@@ -151,56 +158,59 @@ def echub_init():
  
 
 def ethercat_bus_init(verbose=True):
-	print 'Initializing the M3 EtherCAT bus...'
-	print '-----------------------------------'
-	#if verbose:
-	#	print 'Opening Port3'
-	#echub_init()
-	#time.sleep(4.0)
-	n=get_num_slaves()
-	if verbose:
-		print 'Slaves on bus: ',n
-	i=get_num_slaves_init()
-	ie=get_num_slaves_init_e()
-	p=get_num_slaves_preop()
-	o=get_num_slaves_op()
-	if verbose:
-		print 'Confirming slave states'
-	for i in range(5):
-		if o!=0:
-			if verbose:
-				print 'Slaves in operational state. Stop all M3 processes and try again'
-			return True
-		if p==n:
-			if verbose:
-				print 'All slaves in state PREOP. Initialization successful...'
-			return True
-		if ie>0:
-			if verbose:
-				print 'Num Slaves:',n,'INIT',i,'INIT_E',ie,'PREOP',p
-			time.sleep(1.0)
-			i=get_num_slaves_init()
-			ie=get_num_slaves_init_e()
-			p=get_num_slaves_preop()
-	if ie!=0:
-		if verbose:
-			print ie,'slaves still in state INIT_E. Restarting EtherCAT master...'
-		restart_ethercat()
-		time.sleep(3.0)
-		i=get_num_slaves_init()
-		ie=get_num_slaves_init_e()
-		p=get_num_slaves_preop()
-		for i in range(10):
-			p=get_num_slaves_preop()
-			if verbose:
-				print i,': Slaves in PREOP',p,', of ',n
-			if p==n:
-				print 'All slaves in state PREOP. Initialization successful...'
-				return True
-			time.sleep(1.0)
+    print 'Initializing the M3 EtherCAT bus...'
+    print '-----------------------------------'
+    #if verbose:
+    #    print 'Opening Port3'
+    #echub_init()
+    #time.sleep(4.0)
+    n=get_num_slaves()
+    if verbose:
+        print 'Slaves on bus: ',n
+    ni=get_num_slaves_not_init_yet()
+    i=get_num_slaves_init()
+    ie=get_num_slaves_init_e()
+    p=get_num_slaves_preop()
+    o=get_num_slaves_op()
+    if verbose:
+        print 'Confirming slave states'
+    for i in range(5):
+        if o!=0:
+            if verbose:
+                print 'Slaves in operational state. Stop all M3 processes and try again'
+            return True
+        if p==n:
+            if verbose:
+                print 'All slaves in state PREOP. Initialization successful...'
+            return True
+        if ie>0 or ni>0:
+            if verbose:
+                print 'Num Slaves:',n,'INIT',i,'INIT_E',ie,'PREOP',p
+            time.sleep(1.0)
+            i=get_num_slaves_init()
+            ie=get_num_slaves_init_e()
+            p=get_num_slaves_preop()
+            ni=get_num_slaves_not_init_yet()
+    if ie!=0 or ni>0:
+        if verbose:
+            print ie,'slaves still in state INIT_E. Restarting EtherCAT master...'
+        restart_ethercat()
+        while get_num_slaves_not_init_yet():
+            time.sleep(1.0)
+        i=get_num_slaves_init()
+        ie=get_num_slaves_init_e()
+        p=get_num_slaves_preop()
+        for i in range(10):
+            p=get_num_slaves_preop()
+            if verbose:
+                print i,': Slaves in PREOP',p,', of ',n
+            if p==n:
+                print 'All slaves in state PREOP. Initialization successful...'
+                return True
+            time.sleep(1.0)
 
-		print 'Unable to initialize the EtherCAT bus. Power cycle the robot and try again'
-		return False
-	    
+        print 'Unable to initialize the EtherCAT bus. Power cycle the robot and try again'
+        return False
+        
 # #######################################################################################
 
