@@ -45,7 +45,10 @@ extern "C" {
 	
 class M3RtService{
 public:
-	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){}
+	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){
+            log_components.reserve(50);
+            data_services.reserve(20);
+        }
 	~M3RtService();
 	bool Startup();
 	void Shutdown();
@@ -92,7 +95,6 @@ private:
 #endif
 	std::vector<int> ports;
 	int next_port;
-        int hst;
 	int num_rtsys_attach;
 };
 

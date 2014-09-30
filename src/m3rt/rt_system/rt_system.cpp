@@ -66,6 +66,7 @@ void *rt_system_thread(void *arg)
 	int sem_cnt=0;
     M3_INFO("Starting M3RtSystem real-time thread.\n");
 #ifdef __RTAI__
+    rt_allow_nonroot_hrt();
 	RTIME print_dt=1e9;
     RT_TASK *task=NULL;
     RTIME start, end, dt,tick_period,dt_wait;
@@ -82,9 +83,7 @@ void *rt_system_thread(void *arg)
 		tick_period = nano2count(RT_TIMER_TICKS_NS);
 	}
     M3_INFO("Beginning RTAI Initialization.\n");
-	rt_allow_nonroot_hrt();
-    ;
-    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0))) {
+    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), RT_TASK_PRIORITY, 1024, 0, SCHED_FIFO, 0xF))) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
         sys_thread_active = false;
         return 0;
@@ -195,7 +194,8 @@ void *rt_system_thread(void *arg)
 	sys_thread_end = false;
 	sys_thread_active = true;
 	
-    while(!sys_thread_end) {
+    while(1) {
+            if(sys_thread_end) break;
 #ifdef __RTAI__
 		start = rt_get_cpu_time_ns();
 #else
@@ -284,6 +284,8 @@ bool M3RtSystem::Startup()
     }
     long ret=0;//return for the thread
 #ifdef __RTAI__
+    // A.H: This one is absolutely necessary as it's should be in the main thread
+    rt_allow_nonroot_hrt();
     hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
 	ret = (hst!=0 ? 0:-1);
 	//rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)

@@ -62,19 +62,20 @@ bool M3RtService::Startup()
 {
     factory.Startup();
 #ifdef __RTAI__
+    // A.H: This one is absolutely necessary as it's should be in the main thread
     rt_allow_nonroot_hrt();
 #endif
-
     if (svc_thread_active)
     {
         m3rt::M3_ERR("M3RtService thread already active\n",0);
         return false;
     }
-    //#ifdef __RTAI__
-    //	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
-    //#else
-    hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
-    //#endif
+#ifdef __RTAI__
+    	long int hst=rt_thread_create((void*)service_thread, (void*)this, 1000000);
+        long ret = (hst!=0 ? 0:-1);
+#else
+        long hst=pthread_create((pthread_t *)&hlt, NULL, &service_thread, (void*)this);
+#endif
 
     usleep(100000);
     if (hst != 0) //A.H : ie there was an error initializing the thread
@@ -90,9 +91,13 @@ void M3RtService::Shutdown()
     m3rt::M3_INFO("Begin shutdown of M3RtService...\n");
     svc_thread_end=true;
     void *end;
-    if (hst != 0){
-        pthread_join((pthread_t)hlt, &end);
-        //if (svc_thread_active) m3rt::M3_WARN("M3RtService thread did not shut down correctly\n");
+    clock_t start_time=clock();
+    int timeout_s = 2.0*CLOCKS_PER_SEC; //2s
+    ///rt_thread_join(hst);
+    while(svc_thread_active && (clock()-start_time < timeout_s))
+    {
+        m3rt::M3_INFO("Waiting for Service thread to shutdown...\n");
+        usleep(500000);
     }
     //m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
     RemoveRtSystem();
