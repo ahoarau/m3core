@@ -325,7 +325,8 @@ void run(long shm)
 		dt =rt_get_time_ns() -ts0;
 		if (rt_get_time_ns() -print_start >= print_dt)
 		{
-			rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us)\n",tmp_cnt/print_sec,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000));
+			rt_printk("M3ec (Kernel) freq : %d (dt: %lld us / des period: %lld us) nslaves=%d\n",
+                                  tmp_cnt/print_sec,(dt/1000),(RT_KMOD_TIMER_TICKS_NS/1000),sys.shm->slaves_responding);
 			tmp_cnt = 0;
 			print_start = rt_get_time_ns();
 			
@@ -563,7 +564,6 @@ int __init init_mod(void)
             tick_period = requested_ticks;
             M3_WARN("Rt timer already started.\n", tick_period, requested_ticks,t_critical);
         }
-	
 	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
 		M3_ERR("Failed to init RtAI task!\n");
 		goto out_free_timer;

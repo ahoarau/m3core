@@ -60,22 +60,20 @@ void data_thread(void * arg)
         int printdt = 4;
         RTIME printdt_ns=printdt*1e9;
         RTIME printstart;
-        RTIME requested_period = nano2count(4000000); // 250 Hz
-        //RTIME requested_period=4000000;//1e9/250.;
+        RTIME requested_period_hz = RT_DATA_SERVICE_PERIOD_HZ; // Period in Hz
+        RTIME requested_period_ns = 1e9/requested_period_hz;
+        RTIME requested_period = nano2count(requested_period_ns); 
 	//Need to consider multiple threads, name conflict
 	ss << "M3DSV" << svc->instances;
 	ss >> rt_name;
 	task = rt_task_init_schmod(nam2num(rt_name.c_str()), 0, 0, 0, SCHED_FIFO, 0xF); 
-	//rt_allow_nonroot_hrt();
-        //rt_make_soft_real_time();
-        //rt_task_make_periodic(task,rt_get_time()+requested_period,requested_period);
 	svc->instances++;
 	if (task==NULL)
 	{
 		M3_ERR("Failed to create M3RtDataService RT Task\n",0);
 		return;
 	}
-	//mlockall(MCL_CURRENT | MCL_FUTURE);
+	mlockall(MCL_CURRENT | MCL_FUTURE);
         printstart = rt_get_time_ns();
 #endif 
 	while(1)
@@ -91,12 +89,11 @@ void data_thread(void * arg)
 		}
 #ifdef __RTAI__
                 dt = rt_get_time()-tstart;
-		//rt_task_wait_period(); //A.H Just go as fast as you can (No locks for now) TODO: test this more
 		rt_sleep(MAX(0,requested_period-dt)); //250 Hz
                 cnt++;
                 if(rt_get_time_ns() - printstart >= printdt_ns){
                     printstart = rt_get_time_ns();
-                    rt_printk("%s (TCP/IP Server) freq=%d (dt=%lldns)\n",rt_name.c_str(),cnt/printdt,count2nano(dt));
+                    rt_printk("%s (TCP/IP Server) freq=%d (dt=%lldus, sleep=%lldus)\n",rt_name.c_str(),cnt/printdt,count2nano(dt/1000));
                     cnt=0;
                 }
 #else

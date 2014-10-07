@@ -42,7 +42,9 @@ using namespace std;
 static bool sys_thread_active;
 static bool sys_thread_end;
 static int step_cnt = 0;
-
+#ifdef __RTAI__
+static RT_TASK* main_task=NULL;
+#endif
 unsigned long long getNanoSec(void)
 {
     struct timeval tp;
@@ -222,7 +224,7 @@ void *rt_system_thread(void *arg)
                 tick_period = nano2count(dt);
 				rt_make_soft_real_time();
 				rt_set_period(task,tick_period);
-                //safeop_only = true;
+                safeop_only = true;
                 m3sys->over_step_cnt = 0;
             }
         } else {
@@ -276,6 +278,13 @@ M3RtSystem::~M3RtSystem() {}
 
 bool M3RtSystem::Startup()
 {
+#ifdef __RTAI__
+    if(!( main_task = rt_task_init_schmod(nam2num("M3MAIN"), 0, 0, 0, SCHED_FIFO, 0))) {
+        m3rt::M3_ERR("Failed to create RT-TASK M3MAIN\n", 0);
+        sys_thread_active = false;
+        return 0;
+    }
+#endif
     sys_thread_active = false;
     BannerPrint(60, "Startup of M3RtSystem");
     if(!this->StartupComponents()) {
@@ -284,8 +293,6 @@ bool M3RtSystem::Startup()
     }
     long ret=0;//return for the thread
 #ifdef __RTAI__
-    // A.H: This one is absolutely necessary as it's should be in the main thread
-    rt_allow_nonroot_hrt();
     hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
 	ret = (hst!=0 ? 0:-1);
 	//rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
@@ -363,6 +370,10 @@ bool M3RtSystem::Shutdown()
 #endif
         ready_sem = NULL;
     }
+#ifdef __RTAI__
+    rt_task_delete(main_task);
+    main_task=NULL;
+#endif
     shm_ec = NULL;
     shm_sem = NULL;
     sync_sem = NULL;
@@ -383,10 +394,19 @@ bool M3RtSystem::StartupComponents()
 	
     M3_INFO("Done reading components config files.\n");
 #ifdef __RTAI__
+    sync_sem = (SEM *)rt_get_adr(nam2num(SEMNAM_M3SYNC));
+    if(!sync_sem) {
+        M3_ERR("Unable to find the SYNCSEM semaphore.\n", 0);
+        return false;
+    }
     M3_INFO("Getting Kernel EC components.\n");
+#ifndef __NO_KERNEL_SYNC__
+    if(!rt_sem_wait_timed(sync_sem,nano2count(1e9)))
+        M3_WARN("Timeout for sync signal with kernel, all frames might not be processed.\n");
+#endif
     shm_ec = (M3EcSystemShm *) rtai_malloc(nam2num(SHMNAM_M3MKMD), 1);
     if(shm_ec)
-        M3_PRINTF("Found %d active M3 EtherCAT slaves\n", shm_ec->slaves_active);
+        M3_INFO("Found %d active M3 EtherCAT slaves\n", shm_ec->slaves_active);
     else {
         M3_ERR("Rtai_malloc failure for SHMNAM_M3KMOD\n", 0);
         return false;
@@ -397,11 +417,6 @@ bool M3RtSystem::StartupComponents()
         return false;
     }
 
-    sync_sem = (SEM *)rt_get_adr(nam2num(SEMNAM_M3SYNC));
-    if(!sync_sem) {
-        M3_ERR("Unable to find the SYNCSEM semaphore.\n", 0);
-        return false;
-    }
     ext_sem = rt_typed_sem_init(nam2num(SEMNAM_M3LEXT), 1, BIN_SEM);
 #else
     ext_sem = new sem_t();

@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 
 #M3 -- Meka Robotics Robot Components
 #Copyright (c) 2010 Meka Robotics
@@ -20,5 +20,8 @@
 """Configures the M3 EtherCAT hub to enable Port 3"""
 
 import m3.m3rt_toolbox as m3t
+if m3t.ethercat_bus_init() :
+        exit(0)
+else:
+        exit(-1)
 
-exit(int(0==m3t.ethercat_bus_init()))

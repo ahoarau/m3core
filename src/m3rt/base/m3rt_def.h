@@ -58,6 +58,8 @@ typedef double mReal;
 #define SEMNAM_M3SYNC  "M3SN"
 #define SEMNAM_M3READY  "M3READY"
 
+#define RT_DATA_SERVICE_PERIOD_HZ 250
+
 /*-------------------- ENVIRONMENT AND CONFIG ----------------------------*/
 #define M3_ROBOT_ENV_VAR "M3_ROBOT"
 #define M3_CONFIG_DIR "/robot_config/"

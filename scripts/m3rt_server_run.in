@@ -1,11 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 virtual=${VIRTUAL}
 
 if $(m3rt_check_server.py) 2>/dev/null ; then
-    echo 'Checking Ethercat'
-    if [ ! $virtual ] && [ ! m3rt_bus_init.py 2>/dev/null ]; then
+    if [ $virtual = 0 ]; then
+	echo 'Checking Ethercat'
+	if $(m3rt_bus_init.py) 2>/dev/null ; then
+           echo 'EtherCAT failed to initialize components, please run m3rt_bus_init for debug.'
 		exit
+	fi
     fi
     echo 'Running insmods'
     m3rt_insmods
