@@ -333,10 +333,12 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
     vector<string> vpath; 
     GetFileConfigPath(filename,vpath);
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
-		try{
-        const YAML::Node& node = YAML::LoadFile((*it).c_str());
+	try{
+		if(!file_exists((*it).c_str())) continue;
+		YAML::Node node = YAML::LoadFile((*it).c_str());
+		if(!node.IsNull())
 		out << node;
-		}catch(...){}
+	}catch(...){}
     }
     assert(out.good());
     return;

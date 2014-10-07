@@ -138,7 +138,7 @@ protected:
 		bool ret=false;
 		for(std::vector<std::string>::iterator it=vpath.begin();it!=vpath.end();++it){
 			if( ret=this->ReadConfigUnordered(*it,component_type,comp_list,idx_map) && comp_list.size()>0){
-			  M3_WARN("Old config file detected, please update your %s\n",M3_CONFIG_FILENAME);
+			  M3_WARN("Old config file detected, please update your %s\n",(*it).c_str());
 			continue;
 			}
 #if defined(YAMLCPP_05)
@@ -146,7 +146,7 @@ protected:
 			try{
 				ret = this->ReadConfigOrdered(*it,component_type,comp_list,idx_map);
 			}catch(std::exception &e){
-				M3_ERR("(Ordered) Error while reading %s config: %s\n",component_type,e.what());
+				M3_ERR("Error while reading %s checking for %s config: %s\n",(*it).c_str(),component_type,e.what());
 			}
 #endif
 		}
@@ -163,6 +163,7 @@ protected:
 		while(parser.GetNextDocument(doc)) {
 #else
 		doc = YAML::LoadFile(filename);
+		if(doc.IsNull()){M3_ERR("%s not found, please update the robot's config files.\n",filename.c_str()); return false;}
 #endif
 
 #ifndef YAMLCPP_05
@@ -170,7 +171,7 @@ protected:
 #else
 			if(!doc[component_type]){
 #endif
-				M3_INFO("No %s key in %s. Proceeding without it...\n",component_type,M3_CONFIG_FILENAME);
+				M3_INFO("No %s key in %s. Proceeding without it...\n",component_type,filename.c_str());
 				return true;
 			}
 			
@@ -236,10 +237,11 @@ protected:
 	{
 		// New version with -ma17: -actuator1:type1 etc
 		YAML::Node doc = YAML::LoadFile(filename);
+		if(doc.IsNull()){M3_ERR("%s not found, please update the robot's config files.\n",filename.c_str()); return false;}
 		//for(std::vector<YAML::Node>::const_iterator it_doc=all_docs.begin(); it_doc!=all_docs.end();++it_doc){
 			//doc = *it_doc;
 			if(!doc[component_type]){
-				M3_INFO("No %s keys in m3_config.yml. Proceeding without it...\n",component_type);
+				M3_INFO("No %s keys in %s. Proceeding without it...\n",component_type,filename.c_str());
 				return true;
 			}
 			const YAML::Node& components = doc[component_type];

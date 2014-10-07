@@ -27,7 +27,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
+#include <sys/stat.h>
 namespace m3rt
 {
 
@@ -36,6 +36,12 @@ void M3_WARN(const char * format, ...);
 void M3_ERR(const char * format, ...);
 void M3_INFO(const char * format, ...);
 void M3_DEBUG(const char * format, ...);
+
+inline bool file_exists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 void BannerPrint(int width, const char *format, ...);
 bool GetEnvironmentVariable(const char * var, std::vector<std::string>& result);
 bool GetEnvironmentVar(const char * var, std::string &s);
