@@ -51,16 +51,16 @@ std::vector<std::string> YamlReadVectorString(std::string s);
 std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 #endif
 unsigned int xtoi(const char* xs);
-void GetRobotConfigPath(std::vector< std::string >& vpath,std::string sub_dir= std::string(M3_CONFIG_DIR));
+bool GetRobotConfigPath(std::vector< std::string >& vpath, std::string sub_dir = std::string(M3_CONFIG_DIR));
 
-void GetFileConfigPath(const char *filename,std::vector<std::string>& vpath);
+bool GetFileConfigPath(const char* filename, std::vector< std::string >& vpath);
 
 void WriteYamlDoc(const char *filename, YAML::Emitter &doc, std::string sub_dir= std::string(M3_CONFIG_DIR));
 
 std::string GetYamlDoc(const char* filename, YAML::Node& doc, void*);
 bool GetYamlDoc(const char* filename, YAML::Node& doc);
 
-void GetYamlStream(const char *filename, YAML::Emitter& out);
+bool GetYamlStream(const char* filename, YAML::Emitter& out);
 #ifdef YAMLCPP_05	
 template <typename _T >
 void operator >>(const YAML::Node& input, _T& value) {
@@ -95,8 +95,8 @@ inline bool ContainsString(const std::vector<std::string>& v_in, const std::stri
 	return false;
 }
 
-void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs );
-void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs );
+bool GetAllYamlDocs(const char* filename, std::vector< YAML::Node >& docs );
+bool GetAllYamlDocs(std::vector< std::string > vpath, std::vector< YAML::Node >& docs );
 
 }
 

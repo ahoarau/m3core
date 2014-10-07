@@ -59,7 +59,7 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
 bool M3ComponentFactory::ReadConfig(const char *filename)
 {
     YAML::Emitter out;
-    m3rt::GetYamlStream(filename, out);
+    if(!m3rt::GetYamlStream(filename, out)){return false;};
     if(!out.size()){M3_ERR("Failed to read %s, please make sure it exists!\n",filename);return false;}
 	std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
     for(std::vector<YAML::Node>::iterator doc_it=all_docs.begin() ; doc_it!= all_docs.end() ; ++doc_it){

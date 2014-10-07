@@ -173,7 +173,9 @@ for idx in range(1,len(sys.argv)):
 
 try:
     svc=m3.m3rt_system.M3RtService()
-    svc.Startup() # Let client start rt_system
+    if not svc.Startup(): # Let client start rt_system
+	print("M3 ERROR: M3RtService failed to start, exiting.")
+	exit(-1)
     #for i in xrange(40):
     #    time.sleep(0.05)
     # Instantiate the server
@@ -182,7 +184,7 @@ try:
     try:
         m3server = M3Server()
     except Exception,e:
-        print "M3 EROOR: Error creating the server:",e
+        print "M3 ERROR: Error creating the server:",e
         raise M3Exception("M3 RPC Server failed to start")
     
     # Start the server

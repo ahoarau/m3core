@@ -150,8 +150,12 @@ bool GetEnvironmentVariable(const char *var, vector<string>& result)
     result.clear();
     if(!result.empty())
         return false;
-
-    const std::string PATH = getenv(var);
+    char const* tmp = secure_getenv(var);
+    if ( tmp == NULL ) {
+	M3_ERR("%s is not set, exiting.\n",var);
+	return false;
+    }
+    std::string PATH(tmp);
     const char delimiter = ':';
 
     if(PATH.empty())
@@ -243,26 +247,29 @@ void WriteYamlDoc(const char *filepath, YAML::Emitter &doc, string sub_dir)
 		M3_ERR("Caught error while trying to write %s:\n%s\n",filepath,e.what());
 	}
 }
-void GetRobotConfigPath(vector<string>& vpath,string sub_dir)
+bool GetRobotConfigPath(vector<string>& vpath,string sub_dir)
 {
         vpath.clear();
         if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
-        for(size_t i = 0; i < vpath.size(); i++) {
-            vpath[i] += sub_dir;
-        }
-    }
-    return;
+	  for(size_t i = 0; i < vpath.size(); i++)
+	      vpath[i] += sub_dir;
+	}else{
+	  return false;
+	}
+    return true;
 }
 
-void GetFileConfigPath(const char *filename,vector<string>& vpath)
+bool GetFileConfigPath(const char *filename,vector<string>& vpath)
 {
         string s(filename);
         vpath.clear();
-	GetRobotConfigPath(vpath);
-        for(size_t i = 0; i < vpath.size(); i++) {
-            vpath[i] += s;
-        }
-    return;
+	if(GetRobotConfigPath(vpath)){
+	  for(size_t i = 0; i < vpath.size(); i++)
+	      vpath[i] += s;
+	}else{
+	  return false;
+	} 
+    return true;
 }
 
 /*void GetYamlParser(const char *filename, YAML::Parser &parser )
@@ -305,13 +312,13 @@ void GetFileConfigPath(const char *filename,vector<string>& vpath)
     return docs.Clone();
 }*/
 #ifndef YAMLCPP_05
-void GetYamlStream(const char *filename, YAML::Emitter &out)
+bool GetYamlStream(const char *filename, YAML::Emitter &out)
 {
     string path;
     YAML::Node node;
     YAML::Parser parser;
     vector<string> vpath; 
-    GetFileConfigPath(filename,vpath);
+    if(!GetFileConfigPath(filename,vpath)) return false;
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
         ifstream fin((*it).c_str());
         if(fin.fail()) { continue;}
@@ -324,14 +331,14 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
     }
     assert(out.good());
     //parser.PrintTokens(cout);
-    return;
+    return true;
 }
 #else
-void GetYamlStream(const char *filename, YAML::Emitter &out)
+bool GetYamlStream(const char *filename, YAML::Emitter &out)
 {
     string path;
     vector<string> vpath; 
-    GetFileConfigPath(filename,vpath);
+    if(!GetFileConfigPath(filename,vpath)) return false;
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
 	try{
 		if(!file_exists((*it).c_str())) continue;
@@ -341,7 +348,7 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
 	}catch(...){}
     }
     assert(out.good());
-    return;
+    return true;
 }
 #endif
 
@@ -352,11 +359,11 @@ bool GetYamlDoc(const char* filename, YAML::Node& doc)
 	return !ret.empty();
 }
 #if defined(YAMLCPP_05)
-void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
+bool GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
 {
-	assert(filename!=0);
+	if(!filename) return false;
 	vector<string> vpath;
-	GetFileConfigPath(filename,vpath);
+	if(!GetFileConfigPath(filename,vpath)) return false;
 	for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
 		try{
 			const YAML::Node& node = YAML::LoadFile(*it);
@@ -367,8 +374,9 @@ void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
 			continue;
 		}
 	}
+	return !docs.empty();
 }
-void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs )
+bool GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs )
 {
 	//assert(filename!=0);
 	//vector<string> vpath;
@@ -383,18 +391,19 @@ void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& doc
 			continue;
 		}
 	}
+	return !docs.empty();
 }
 #endif
 
 std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
 {
-	assert(filename!=0);
+    if(!filename) return "";
     vector<string> vpath;
-    GetFileConfigPath(filename,vpath);
+    if(!GetFileConfigPath(filename,vpath)) return "";
 	
     vector<string> vpath_root;
-    GetRobotConfigPath(vpath_root);
-    assert(vpath.size()==vpath_root.size());
+    if(!GetRobotConfigPath(vpath_root)) return "";
+    if(vpath.size()!=vpath_root.size()) return "";
     
     map<string, string> paths;
     std::map<string,string>::iterator it = paths.begin();
