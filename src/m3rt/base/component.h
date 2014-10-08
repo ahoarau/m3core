@@ -55,7 +55,7 @@ A component can be in one of 4 states:
 
 class M3Component{
 	public:
-		M3Component(int p=0):factory(NULL),priority(p),version_id(-1){GOOGLE_PROTOBUF_VERIFY_VERSION;}
+		M3Component(int p=0):factory(NULL),priority(p),version_id(-1),doc_path(""){GOOGLE_PROTOBUF_VERIFY_VERSION;}
 		virtual ~M3Component(){}
 		friend class M3RtSystem;
 		friend class M3RtLogService;
@@ -75,12 +75,12 @@ class M3Component{
 		bool IsRateMedium(){return GetBaseStatus()->rate()=="medium";}
 		bool IsRateSlow(){return GetBaseStatus()->rate()=="slow";}
 		bool IsVersion(int id){return version_id==id;} 
+		const std::string GetConfigPath(){ return doc_path;}
 		void RegisterVersion(const char * name, int id){version_names.push_back(name);version_ids.push_back(id);} 
 		virtual void Startup()=0;
 		virtual void Shutdown()=0;
 		virtual void StepStatus()=0;
 		virtual void StepCommand()=0;
-		
 		
 		void SetTimestamp(int64_t ts){GetBaseStatus()->set_timestamp(ts);}
 		void GetTimestamp(int64_t ts){GetBaseStatus()->timestamp();}
@@ -100,14 +100,14 @@ class M3Component{
 		virtual M3BaseStatus *  GetBaseStatus()=0;
 	protected:
 		virtual bool ReadConfig(const char * filename);
-		M3ComponentFactory * factory;
+		m3rt::M3ComponentFactory * factory;
 		int priority;
                 bool verbose_;
 		std::vector<std::string> version_names;
 		std::vector<int> version_ids;
 		int version_id;
 		YAML::Node doc;
-		//std::std::string doc_path;
+		std::string doc_path;
 };
 
 //Factory defn.

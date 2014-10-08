@@ -33,29 +33,29 @@ namespace m3rt
 //So make this once on system startup, close only on exit
 class M3ComponentFactory{
 public:
-	M3ComponentFactory(){}
-	~M3ComponentFactory(){}
-	bool Startup();												//Load libraries
-	void Shutdown();											//Free libraries, release components
-	M3Component * CreateComponent(std::string type);			//Instantiate a component of this type
-	bool ReleaseComponent(M3Component * c);						//Safe delete of a component
-	void ReleaseAllComponents();								//Safe delete of all components
-	M3Component *  	GetComponent(int idx);
-	std::string  	GetComponentType(int idx);
-	int 			GetComponentIdx(std::string name); 			//Returns -1 if not found
-	M3Component * 	GetComponent(std::string name);
-	std::string  	GetComponentName(int idx);
-	int 			GetNumComponents();
-	M3MonitorStatus * GetMonitorStatus(){return &monitor_status;}
+    M3ComponentFactory(){}
+    ~M3ComponentFactory(){}
+    bool Startup();												//Load libraries
+    void Shutdown();											//Free libraries, release components
+    M3Component * CreateComponent(std::string type);			//Instantiate a component of this type
+    bool ReleaseComponent(M3Component * c);						//Safe delete of a component
+    void ReleaseAllComponents();								//Safe delete of all components
+    M3Component *  	GetComponent(int idx);
+    std::string  	GetComponentType(int idx);
+    int 			GetComponentIdx(std::string name); 			//Returns -1 if not found
+    M3Component * 	GetComponent(std::string name);
+    std::string  	GetComponentName(int idx);
+    int 			GetNumComponents();
+    M3MonitorStatus * GetMonitorStatus(){return &monitor_status;}
 private:
-	bool ReadConfig(const char * filename);
-	bool AddComponentLibrary(std::string lib);
-	std::vector<M3Component *>	m3_list;
-	std::vector<std::string>	m3_types;
-	std::vector<void *> 		dl_list; 						//handles for dynamic libs
-	std::vector<std::string> 	dl_list_str;
-	std::vector<std::string> 	dl_types;
-	M3MonitorStatus  monitor_status; 					//Container for all component rt stats
+    bool ReadConfig(const char * filename);
+    bool AddComponentLibrary(std::string lib);
+    std::vector<M3Component *>	m3_list;
+    std::vector<std::string>	m3_types;
+    std::vector<void *> 		dl_list; 						//handles for dynamic libs
+    std::vector<std::string> 	dl_list_str;
+    std::vector<std::string> 	dl_types;
+    M3MonitorStatus  monitor_status; 					//Container for all component rt stats
 };
 
 }

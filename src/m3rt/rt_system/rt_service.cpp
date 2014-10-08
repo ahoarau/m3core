@@ -40,6 +40,7 @@ static void* service_thread(void * arg)
         if (svc->IsDataServiceError())
         {
             m3rt::M3_ERR("Detected dropped M3RtDataService. Stopping RtSystem;\n");
+	    svc_thread_end=true;
             svc->RemoveRtSystem();
             break;
         }

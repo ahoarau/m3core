@@ -45,7 +45,7 @@ extern "C" {
 #include <semaphore.h>
 #include <pthread.h>
 #include <sys/time.h>
-
+#include <algorithm>
 
 
 namespace m3rt
@@ -123,23 +123,34 @@ private:
     double test;
 	
 protected:
+    template <class T>
+    bool IsComponentInList(std::string& name,std::vector<T*>& comp_list){
+	for(int i=0;i<comp_list.size();++i){
+	      if( comp_list[i]->GetName() == name)
+		return true;
+	}
+	return false;
+    }
 #ifdef __RTAI__
     SEM * GetExtSem(){return ext_sem;}
 #else
     sem_t * GetExtSem(){return ext_sem;}
 #endif
-    //bool ReadConfigEc(const char * filename);
-    //bool ReadConfigRt(const char * filename);
+	// Here we read the config files in robot_config1:robot_config_add:robot_config_overlap
 	template <class T>
 	bool ReadConfig(const char* filename, const char* component_type, std::vector<T*>& comp_list, std::vector< int >& idx_map)
 	{
 		std::vector<std::string> vpath;
 		GetFileConfigPath(filename,vpath);
 		bool ret=false;
-		for(std::vector<std::string>::iterator it=vpath.begin();it!=vpath.end();++it){
+		// let's read first the last ones, and go back to the first one (so we can check if already exists)
+		for(std::vector<std::string>::reverse_iterator it=vpath.rbegin();it!=vpath.rend();++it){
+		      // Old notations (without the "-" is doesnt not guarranty order
+			std::cout<<std::endl;
+			M3_INFO("Reading %s for %s\n\n",(*it).c_str(),component_type);
 			if( ret=this->ReadConfigUnordered(*it,component_type,comp_list,idx_map) && comp_list.size()>0){
 			  M3_WARN("Old config file detected, please update your %s\n",(*it).c_str());
-			continue;
+			  continue;
 			}
 #if defined(YAMLCPP_05)
 
@@ -199,13 +210,18 @@ protected:
 					std::string name=it_dir->first.as<std::string>();
 					std::string type=it_dir->second.as<std::string>();
 #endif
+					if(IsComponentInList(name,comp_list))
+					{
+					  M3_WARN("Component %s (of type %s) already loaded, please make sure your component's name is unique.\n",name.c_str(),type.c_str());
+					  continue;
+					}
 					T m = reinterpret_cast<T>(factory->CreateComponent(type));
 					if(m != NULL) {
 						m->SetFactory(factory);
 						std::string f = dir + "/" + name + ".yml";
 						try {
 							std::cout <<"------------------------------------------"<<std::endl;
-							std::cout <<"Component " << name<<std::endl;
+							std::cout <<"Component " << name<<" of type "<<type<<std::endl;
 							if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
 								comp_list.push_back(m);
 								idx_map.push_back(GetNumComponents() - 1);
@@ -251,13 +267,18 @@ protected:
 				for(YAML::const_iterator it_dir = dir_comp.begin();it_dir != dir_comp.end(); ++it_dir) {
 					std::string name=it_dir->begin()->first.as<std::string>();
 					std::string type=it_dir->begin()->second.as<std::string>();
+					if(IsComponentInList(name,comp_list))
+					{
+					  M3_WARN("Component %s (of type %s) already loaded, please make sure your component's name is unique.\n",name.c_str(),type.c_str());
+					  continue;
+					}
 					T m = reinterpret_cast<T>(factory->CreateComponent(type));
 					if(m != NULL) {
 						m->SetFactory(factory);
 						std::string f = dir + "/" + name + ".yml";
 						try {
 							std::cout <<"------------------------------------------"<<std::endl;
-							std::cout <<"Component " << name<<std::endl;
+							std::cout <<"Component " << name<<" of type "<<type<<std::endl;
 							if(m->ReadConfig(f.c_str())) { //A.H: this should look first in local and to back to original if it exists
 								comp_list.push_back(m);
 								idx_map.push_back(GetNumComponents() - 1);

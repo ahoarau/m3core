@@ -42,9 +42,7 @@ using namespace std;
 static bool sys_thread_active;
 static bool sys_thread_end;
 static int step_cnt = 0;
-#ifdef __RTAI__
-static RT_TASK* main_task=NULL;
-#endif
+
 unsigned long long getNanoSec(void)
 {
     struct timeval tp;
@@ -62,30 +60,30 @@ void *rt_system_thread(void *arg)
 {
     M3RtSystem *m3sys = (M3RtSystem *)arg;
     sys_thread_end = false; //gonna be at true is startup fails=> no wait
-	bool safeop_only = false;
+    bool safeop_only = false;
     int tmp_cnt = 0;
-	bool ready_sent=false;
-	int sem_cnt=0;
+    bool ready_sent=false;
+    int sem_cnt=0;
     M3_INFO("Starting M3RtSystem real-time thread.\n");
 #ifdef __RTAI__
     rt_allow_nonroot_hrt();
-	RTIME print_dt=1e9;
+    RTIME print_dt=1e9;
     RT_TASK *task=NULL;
     RTIME start, end, dt,tick_period,dt_wait;
-			#ifdef ONESHOT_MODE
-				M3_INFO("Oneshot mode activated.\n");
-				rt_set_oneshot_mode();
-			#endif
-	if ( !(rt_is_hard_timer_running() ))
-	{
-		M3_INFO("Starting the real-time timer.\n");
-		tick_period = start_rt_timer(nano2count(RT_TIMER_TICKS_NS) );
-	}else{
-		M3_INFO("Real-time timer running.\n");
-		tick_period = nano2count(RT_TIMER_TICKS_NS);
-	}
+#ifdef ONESHOT_MODE
+    M3_INFO("Oneshot mode activated.\n");
+    rt_set_oneshot_mode();
+#endif
+    if ( !(rt_is_hard_timer_running() ))
+    {
+        M3_INFO("Starting the real-time timer.\n");
+        tick_period = start_rt_timer(nano2count(RT_TIMER_TICKS_NS) );
+    }else{
+        M3_INFO("Real-time timer running.\n");
+        tick_period = nano2count(RT_TIMER_TICKS_NS);
+    }
     M3_INFO("Beginning RTAI Initialization.\n");
-    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), RT_TASK_PRIORITY, 1024, 0, SCHED_FIFO, 0xF))) {
+    if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0xF))) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
         sys_thread_active = false;
         return 0;
@@ -96,114 +94,114 @@ void *rt_system_thread(void *arg)
     M3_INFO("Use fpu initialized.\n");
     mlockall(MCL_CURRENT | MCL_FUTURE);
     M3_INFO("Mem lock all initialized.\n");
-	RTIME tick_period_orig = tick_period;
+    RTIME tick_period_orig = tick_period;
 
 #endif
 #ifdef __RTAI__
-	RTIME print_start=rt_get_time_ns();
-	RTIME diff=0;
-	int dt_us,tick_period_us,overrun_us;
+    RTIME print_start=rt_get_time_ns();
+    RTIME diff=0;
+    int dt_us,tick_period_us,overrun_us;
 #endif
 #if defined(__RTAI__)
-	#ifndef ONESHOT_MODE
-		RTIME now = rt_get_time();
+#ifndef ONESHOT_MODE
+    RTIME now = rt_get_time();
 #ifndef __NO_KERNEL_SYNC__
-		rt_sleep(nano2count((long long)1e9));
+    rt_sleep(nano2count((long long)1e9));
 #endif
-		if(rt_task_make_periodic(task, rt_get_time() + tick_period, tick_period)) {
-			M3_ERR("Couldn't make rt_system task periodic.\n");
-			return 0;
-		}
-		M3_INFO("Periodic task initialized.\n");
-	#endif
+    if(rt_task_make_periodic(task, rt_get_time() + tick_period, tick_period)) {
+        M3_ERR("Couldn't make rt_system task periodic.\n");
+        return 0;
+    }
+    M3_INFO("Periodic task initialized.\n");
 #endif
-		
+#endif
+
 #ifndef __RTAI__
     usleep(1e6);
     M3_INFO("Using pthreads\n");
 #endif
 
 #if defined(__RTAI__)
-	if(!m3sys->IsHardRealTime()){
-		M3_INFO("Soft real time initialized.\n");
-		rt_make_soft_real_time();
-	}else{
-		M3_INFO("Hard real time initialized.\n");
-		rt_make_hard_real_time();
-	}
+    if(!m3sys->IsHardRealTime()){
+        M3_INFO("Soft real time initialized.\n");
+        rt_make_soft_real_time();
+    }else{
+        M3_INFO("Hard real time initialized.\n");
+        rt_make_hard_real_time();
+    }
 #ifndef __NO_KERNEL_SYNC__
-        M3_INFO("Dry running components...\n");
-        for(int i = 0; i < m3sys->GetNumComponents(); i++){
-            m3sys->GetComponent(i)->SetVerbose(false);
-            
-        }
-        bool dry_run_ok=false;
-        now=rt_get_time_ns();
-        print_start = rt_get_time_ns();
-       // RTIME print_dt = 1e9;
-        int nerr = 0;
-        int ntrialsmin=500;
-        while(1){
-                        if(sys_thread_end)
-                            return 0;
-                        nerr = 0;
-                        // Let's try to step
-                        dry_run_ok = m3sys->Step(false,true);
-                        // We count the num of error raised
-                        for(int i = 0; i < m3sys->GetNumComponents(); i++)
-                            if(m3sys->GetComponent(i)->IsStateError()) nerr++;
-                            // Print the status
-                        if (dry_run_ok==false && ((rt_get_time_ns() -print_start) > print_dt))
-                        {
-                            print_start = rt_get_time_ns();
-                            M3_INFO("Components ready %d/%d\n",m3sys->GetNumComponents()-nerr,m3sys->GetNumComponents());
-                        }
-                        // If step wasn't ok, we give it another chance 
-                        if(!dry_run_ok){
-                            m3sys->SetComponentStateOpAll();
-                        }else if(ntrialsmin<=0){
-                                M3_INFO("All %d components successfully started.\n",m3sys->GetNumComponents());
-                                break;
-                        }
-                        // Timeout
-                        if ((rt_get_time_ns()- now) >=  (RTIME)4e9)
-                        {
-                            dry_run_ok=false;
-                            break;
-                        }
-                        ntrialsmin--;
-                        rt_task_wait_period();
-        }
-        if(!dry_run_ok){
-            M3_INFO("Dry run failed, server should stop now. Please restart it.\n");
+    M3_INFO("Dry running components...\n");
+    for(int i = 0; i < m3sys->GetNumComponents(); i++){
+        m3sys->GetComponent(i)->SetVerbose(false);
+
+    }
+    bool dry_run_ok=false;
+    now=rt_get_time_ns();
+    print_start = rt_get_time_ns();
+    // RTIME print_dt = 1e9;
+    int nerr = 0;
+    int ntrialsmin=500;
+    while(1){
+        if(sys_thread_end)
             return 0;
+        nerr = 0;
+        // Let's try to step
+        dry_run_ok = m3sys->Step(false,true);
+        // We count the num of error raised
+        for(int i = 0; i < m3sys->GetNumComponents(); i++)
+            if(m3sys->GetComponent(i)->IsStateError()) nerr++;
+        // Print the status
+        if (dry_run_ok==false && ((rt_get_time_ns() -print_start) > print_dt))
+        {
+            print_start = rt_get_time_ns();
+            M3_INFO("Components ready %d/%d\n",m3sys->GetNumComponents()-nerr,m3sys->GetNumComponents());
         }
-        for(int i = 0; i < m3sys->GetNumComponents(); i++){
-            m3sys->GetComponent(i)->SetVerbose(true);
-            
+        // If step wasn't ok, we give it another chance
+        if(!dry_run_ok){
+            m3sys->SetComponentStateOpAll();
+        }else if(ntrialsmin<=0){
+            M3_INFO("All %d components successfully started.\n",m3sys->GetNumComponents());
+            break;
         }
+        // Timeout
+        if ((rt_get_time_ns()- now) >=  (RTIME)4e9)
+        {
+            dry_run_ok=false;
+            break;
+        }
+        ntrialsmin--;
+        rt_task_wait_period();
+    }
+    if(!dry_run_ok){
+        M3_INFO("Dry run failed, server should stop now. Please restart it.\n");
+        return 0;
+    }
+    for(int i = 0; i < m3sys->GetNumComponents(); i++){
+        m3sys->GetComponent(i)->SetVerbose(true);
+
+    }
 #endif
-	M3_INFO("Entering realtime loop.\n");
+    M3_INFO("Entering realtime loop.\n");
 #endif
 #ifdef __NO_KERNEL_SYNC__
-	M3_INFO("Kernel sync is disabled (virtual installation only)\n");
+    M3_INFO("Kernel sync is disabled (virtual installation only)\n");
 #endif
 #ifndef __RTAI__
     long long start, end, dt;
 #endif
 
     m3sys->over_step_cnt = 0;
-	sys_thread_end = false;
-	sys_thread_active = true;
-	
+    sys_thread_end = false;
+    sys_thread_active = true;
+
     while(1) {
-            if(sys_thread_end) break;
+        if(sys_thread_end) break;
 #ifdef __RTAI__
-		start = rt_get_cpu_time_ns();
+        start = rt_get_cpu_time_ns();
 #else
-		start = getNanoSec();
+        start = getNanoSec();
 #endif
-		if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
+        if(!m3sys->Step(safeop_only))  //This waits on m3ec.ko semaphore for timing
             break;
 #ifdef __RTAI__
         end = rt_get_cpu_time_ns();
@@ -222,37 +220,37 @@ void *rt_system_thread(void *arg)
                 M3_INFO("Step %d: Computation time of components is too long (dt:%d). Forcing all components to state SafeOp - switching to SAFE REALTIME.\n", step_cnt,(int)(dt/1000.0));
                 M3_INFO("Previous period: %d. New period: %d\n", (int)(count2nano(tick_period)/1000), (int)(dt/1000));
                 tick_period = nano2count(dt);
-				rt_make_soft_real_time();
-				rt_set_period(task,tick_period);
+                rt_make_soft_real_time();
+                rt_set_period(task,tick_period);
                 safeop_only = true;
                 m3sys->over_step_cnt = 0;
             }
         } else {
             if(m3sys->over_step_cnt > 0){
                 m3sys->over_step_cnt--;
-			}
+            }
         }
 #ifndef ONESHOT_MODE
         rt_task_wait_period(); //No longer need as using sync semaphore of m3ec.ko // A.H : oneshot mode is too demanding => periodic mode is necessary !
-		
+
 #else
-		diff = count2nano(tick_period)-(rt_get_cpu_time_ns()-start);
-		rt_sleep(min((RTIME)0,nano2count(diff)));
+        diff = count2nano(tick_period)-(rt_get_cpu_time_ns()-start);
+        rt_sleep(min((RTIME)0,nano2count(diff)));
 #endif
-	if (rt_get_time_ns() -print_start > print_dt)
+        if (rt_get_time_ns() -print_start > print_dt)
         {
             rt_printk("M3System freq : %d (dt: %d us / des period: %d us)\n",tmp_cnt,(int)(dt/1000.0),(int)(count2nano(tick_period)/1000));
-			if(!(rt_is_hard_real_time(task)))
-			rt_printk("WARNING: M3System is running in SOFT real-time mode !\n");
-			tmp_cnt = 0;
-			print_start = rt_get_time_ns();
-			
+            if(!(rt_is_hard_real_time(task)))
+                rt_printk("WARNING: M3System is running in SOFT real-time mode !\n");
+            tmp_cnt = 0;
+            print_start = rt_get_time_ns();
+
         }
 #else
-		if(!ready_sent){
-			sem_post(m3sys->ready_sem);
-			ready_sent=true;
-		}
+        if(!ready_sent){
+            sem_post(m3sys->ready_sem);
+            ready_sent=true;
+        }
         end = getNanoSec();
         dt = end - start;
         if(tmp_cnt++==1000)
@@ -262,7 +260,7 @@ void *rt_system_thread(void *arg)
         }
         usleep((RT_TIMER_TICKS_NS - ((unsigned int)dt)) / 1000);
 #endif
-		tmp_cnt++;
+        tmp_cnt++;
     }
 #ifdef __RTAI__
     rt_make_soft_real_time();
@@ -278,39 +276,33 @@ M3RtSystem::~M3RtSystem() {}
 
 bool M3RtSystem::Startup()
 {
-#ifdef __RTAI__
-    if(!( main_task = rt_task_init_schmod(nam2num("M3MAIN"), 0, 0, 0, SCHED_FIFO, 0))) {
-        m3rt::M3_ERR("Failed to create RT-TASK M3MAIN\n", 0);
-        sys_thread_active = false;
-        return 0;
-    }
-#endif
     sys_thread_active = false;
     BannerPrint(60, "Startup of M3RtSystem");
     if(!this->StartupComponents()) {
         sys_thread_active = false;
         return false;
     }
+    usleep(500000);
     long ret=0;//return for the thread
 #ifdef __RTAI__
     hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
-	ret = (hst!=0 ? 0:-1);
-	//rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
+    ret = (hst!=0 ? 0:-1);
+    //rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
 #else
-	//struct timespec ts;
-	//ts.tv_sec = 3;
+    //struct timespec ts;
+    //ts.tv_sec = 3;
     ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
-	//sem_timedwait(ready_sem, &ts);
+    //sem_timedwait(ready_sem, &ts);
 #endif
 
-	if(!(ret==0)){
-		m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%ld]).\n",ret);
+    if(!(ret==0)){
+        m3rt::M3_INFO("Startup of M3RtSystem thread failed (error code [%ld]).\n",ret);
         return false;
     }
     for(int i = 0; i < 10; i++) {
-		if(sys_thread_active)
+        if(sys_thread_active)
             break;
-		//M3_INFO("Waiting for the Ready Signal.\n");
+        //M3_INFO("Waiting for the Ready Signal.\n");
         usleep(1e6); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
         
     }
@@ -320,6 +312,12 @@ bool M3RtSystem::Startup()
     }
     return true;
 }
+/*static void shutdown(void *arg)
+{
+    m3rt::M3Component * comp=reinterpret_cast<m3rt::M3Component *>(arg);
+    M3_INFO("%s is shutting down...\n",comp->GetName().c_str());
+    comp->Shutdown();
+}*/
 
 bool M3RtSystem::Shutdown()
 {
@@ -348,8 +346,15 @@ bool M3RtSystem::Shutdown()
 #endif
     {
         //Send out final shutdown command to EC slaves
-        for(int i = 0; i < GetNumComponents(); i++)
-            GetComponent(i)->Shutdown();
+        int n_comp = GetNumComponents();
+        for(int i = n_comp; i > 0; --i){
+            //long int shutdown_thread;
+            //int ret = pthread_create((pthread_t *)&shutdown_thread, NULL, (void * ( *)(void *))shutdown, (void *)GetComponent(i-1));
+            M3_INFO("%s is shutting down...",GetComponentName(i-1).c_str());
+            printf("OK (%d/%d)\n",n_comp-i+1,n_comp);
+            GetComponent(i-1)->Shutdown();
+        }
+        //usleep(2e6);
 #ifdef __RTAI__
         rt_shm_free(nam2num(SHMNAM_M3MKMD));
 #endif
@@ -362,7 +367,7 @@ bool M3RtSystem::Shutdown()
 #endif
         ext_sem = NULL;
     }
-        if(ready_sem != NULL) {
+    if(ready_sem != NULL) {
 #ifdef __RTAI__
         rt_sem_delete(ready_sem);
 #else
@@ -370,10 +375,6 @@ bool M3RtSystem::Shutdown()
 #endif
         ready_sem = NULL;
     }
-#ifdef __RTAI__
-    rt_task_delete(main_task);
-    main_task=NULL;
-#endif
     shm_ec = NULL;
     shm_sem = NULL;
     sync_sem = NULL;
@@ -386,12 +387,11 @@ bool M3RtSystem::Shutdown()
 
 bool M3RtSystem::StartupComponents()
 {
-	M3_INFO("Reading components config files ...\n");
-	if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
-		return false;
-	if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
-		return false;
-	
+    M3_INFO("Reading components config files ...\n");
+    if(!ReadConfig(M3_CONFIG_FILENAME,"ec_components",this->m3ec_list,this->idx_map_ec))
+        return false;
+    if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
+        return false;
     M3_INFO("Done reading components config files.\n");
 #ifdef __RTAI__
     sync_sem = (SEM *)rt_get_adr(nam2num(SEMNAM_M3SYNC));
@@ -438,22 +438,22 @@ bool M3RtSystem::StartupComponents()
         //return false;
     }
     M3_INFO("Matching Kernel EC components with config file...\n");
-    int rm_cnt=0; 
+    int rm_cnt=0;
     for(vector<M3ComponentEc *>::iterator it_ec=m3ec_list.begin();it_ec!=m3ec_list.end();/*++it_ec*/){
         if((*it_ec)->SetSlaveEcShm(shm_ec->slave, shm_ec->slaves_responding) == false){
-	    factory->ReleaseComponent((*it_ec));
-	    m3ec_list.erase(it_ec);
-	    rm_cnt++; 
-	}else{
-	  it_ec++;
-	}
+            factory->ReleaseComponent((*it_ec));
+            m3ec_list.erase(it_ec);
+            rm_cnt++;
+        }else{
+            it_ec++;
+        }
     }
     for(int i=0;i<rm_cnt;i++){
-      idx_map_ec.pop_back();
+        idx_map_ec.pop_back();
     }
     // Hack to put back the indexes
     for(int i=0;i<idx_map_rt.size();i++)
-      idx_map_rt[i]-=rm_cnt;
+        idx_map_rt[i]-=rm_cnt;
     //Link dependent components. Drop failures.
     //Keep dropping until no failures
     vector<M3Component *> bad_link;
@@ -599,21 +599,21 @@ bool M3RtSystem::SetComponentStateOp(int idx)
 }
 void M3RtSystem::SetComponentStateOpAll(void)
 {
-	std::vector<M3Component* >::iterator it_rt;
-	std::vector<M3ComponentEc* >::iterator it_ec;
-	for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
-		(*it_ec)->SetStateOp();
-	for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
-		(*it_rt)->SetStateOp();
+    std::vector<M3Component* >::iterator it_rt;
+    std::vector<M3ComponentEc* >::iterator it_ec;
+    for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
+        (*it_ec)->SetStateOp();
+    for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
+        (*it_rt)->SetStateOp();
 }
 void M3RtSystem::SetComponentStateSafeOpAll(void)
 {
-	std::vector<M3Component* >::iterator it_rt;
-	std::vector<M3ComponentEc* >::iterator it_ec;
-	for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
-		(*it_ec)->SetStateSafeOp();
-	for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
-		(*it_rt)->SetStateSafeOp();
+    std::vector<M3Component* >::iterator it_rt;
+    std::vector<M3ComponentEc* >::iterator it_ec;
+    for(it_ec = m3ec_list.begin();it_ec!=m3ec_list.end();++it_ec)
+        (*it_ec)->SetStateSafeOp();
+    for(it_rt = m3rt_list.begin();it_rt!=m3rt_list.end();++it_rt)
+        (*it_rt)->SetStateSafeOp();
 }
 
 bool M3RtSystem::SetComponentStateSafeOp(int idx)
@@ -665,7 +665,7 @@ void M3RtSystem::PrettyPrintComponentNames()
 {
     BannerPrint(60, "M3 SYSTEM COMPONENTS");
     for(int i = 0; i < GetNumComponents(); i++)
-        M3_PRINTF("%s\n", GetComponentName(i).c_str());
+        M3_PRINTF("%s \n-- Config: %s\n", GetComponentName(i).c_str(),GetComponent(i)->GetConfigPath().c_str());
     BannerPrint(60, "");
 }
 
@@ -715,12 +715,12 @@ bool M3RtSystem::Step(bool safeop_only,bool dry_run)
         Therefore if we want to directly communicate with B.x from the outside world, we must not publish to component A.
     */
 #ifdef __RTAI__
-	rt_sem_wait(ext_sem);
-	#ifndef __NO_KERNEL_SYNC__
-	//rt_sem_wait_timed(sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
-	rt_sem_wait(sync_sem); // AH: this guy is causing ALL the overrruns
-	#endif
-	rt_sem_wait(shm_sem);
+    rt_sem_wait(ext_sem);
+#ifndef __NO_KERNEL_SYNC__
+    //rt_sem_wait_timed(sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
+    rt_sem_wait(sync_sem); // AH: this guy is causing ALL the overrruns
+#endif
+    rt_sem_wait(shm_sem);
     start = rt_get_cpu_time_ns();
 #else
     sem_wait(ext_sem);
@@ -899,8 +899,8 @@ bool M3RtSystem::Step(bool safeop_only,bool dry_run)
     s->set_cycle_frequency_hz((mReal)(rate * 1000000000.0));
     last_cycle_time = end;
 #ifdef __RTAI__
-	rt_sem_signal(shm_sem);
-	rt_sem_signal(ext_sem);
+    rt_sem_signal(shm_sem);
+    rt_sem_signal(ext_sem);
 #else
     sem_post(ext_sem);
 #endif

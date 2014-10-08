@@ -93,9 +93,12 @@ void M3Component::PrettyPrint()
 
 bool M3Component::ReadConfig(const char *filename)
 {
-    if(!m3rt::GetYamlDoc(filename, doc)) {
-        return false;
+    string ret = GetYamlDoc(filename,doc,NULL);
+    if(ret.empty()){
+      return false;
     }
+    ret +=filename;
+    this->doc_path = ret;
 #ifndef YAMLCPP_05
 	std::string name;
 	std::string version;

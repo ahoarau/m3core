@@ -45,11 +45,11 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
     YAML::Parser parser(stream);
     while(parser.GetNextDocument(doc)) {
         try {
-		const YAML::Node& factory_rt_libs=doc["factory_rt_libs"];
+            const YAML::Node& factory_rt_libs=doc["factory_rt_libs"];
             for(unsigned i = 0; i < factory_rt_libs.size(); i++) {
                 string lib;
                 factory_rt_libs[i] >> lib;
-		AddComponentLibrary(lib);
+                AddComponentLibrary(lib);
             }
         } catch(YAML::BadDereference &e) {cout<<e.what()<<endl;}
     }
@@ -61,16 +61,16 @@ bool M3ComponentFactory::ReadConfig(const char *filename)
     YAML::Emitter out;
     if(!m3rt::GetYamlStream(filename, out)){return false;};
     if(!out.size()){M3_ERR("Failed to read %s, please make sure it exists!\n",filename);return false;}
-	std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
+    std::vector<YAML::Node> all_docs = YAML::LoadAll(out.c_str());
     for(std::vector<YAML::Node>::iterator doc_it=all_docs.begin() ; doc_it!= all_docs.end() ; ++doc_it){
         try {
-			YAML::Node factory_rt_libs=(*doc_it)["factory_rt_libs"];
+            YAML::Node factory_rt_libs=(*doc_it)["factory_rt_libs"];
             for (YAML::const_iterator it=factory_rt_libs.begin();it!=factory_rt_libs.end();++it) {
-				AddComponentLibrary(it->as<std::string>());
+                AddComponentLibrary(it->as<std::string>());
             }
         } catch(YAML::Exception &e) {cout<<"M3ComponentFactory::ReadConfig: "<<e.what()<<endl;}
     }
-	return true;
+    return true;
 }
 #endif
 int M3ComponentFactory::GetComponentIdx(string name)
@@ -115,9 +115,11 @@ string  	M3ComponentFactory::GetComponentName(int idx)
 
 bool M3ComponentFactory::AddComponentLibrary(string lib)
 {
-	if(ContainsString(dl_list_str,lib))
-		return true;
-	dl_list_str.push_back(lib);
+    if(ContainsString(dl_list_str,lib)){
+        M3_WARN("Library %s already loaded.\n",lib.c_str());
+        return true;
+    }
+    dl_list_str.push_back(lib);
     void *dlib;
     dlib = dlopen(lib.c_str(), RTLD_LAZY);//RTLD_NOW);
     if(dlib == NULL) {

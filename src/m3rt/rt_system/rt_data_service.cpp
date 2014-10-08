@@ -116,7 +116,7 @@ int M3RtDataService::instances = 0;
 
 bool M3RtDataService::Startup()
 {
-	if (data_thread_active)
+	if (data_thread_active && !data_thread_end)
 	{
 		M3_ERR("M3RtDataService thread already active\n",0);
 		return true;
