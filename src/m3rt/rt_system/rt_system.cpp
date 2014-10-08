@@ -34,7 +34,7 @@ extern "C" {
 }
 #endif
 
-
+#include <ctime>
 
 namespace m3rt
 {
@@ -324,19 +324,18 @@ bool M3RtSystem::Shutdown()
     M3_INFO("Begin shutdown of M3RtSystem...\n");
     //Stop RtSystem thread
     sys_thread_end = true;
-#ifdef __RTAI__
-    //RTIME timeout = nano2count(rt_get_cpu_time_ns());
-    int timeout_us = 2e6; //2s
-    RTIME start_time = rt_get_time_ns();
-    ///rt_thread_join(hst);
-    while(sys_thread_active && (rt_get_time_ns()-start_time < timeout_us*1000))
+//#ifdef __RTAI__
+    usleep(500000);
+    clock_t start_time=clock();
+    int timeout = 2.0*CLOCKS_PER_SEC; //2s
+    while(sys_thread_active && (clock()-start_time < timeout))
     {
-        M3_INFO("Waiting for Real-Time thread to shutdown...\n");
+        M3_INFO("Waiting for M3RtSystem thread to shutdown... (%.2fs/%.2fs)\n",(float)(clock()/CLOCKS_PER_SEC),(float)(timeout/CLOCKS_PER_SEC));
         usleep(500000);
     }
-#else
-    pthread_join((pthread_t)hst, NULL);
-#endif
+//#else
+//    pthread_join((pthread_t)hst, NULL);
+//#endif
     if(sys_thread_active) {
         m3rt::M3_WARN("M3RtSystem thread did not shutdown correctly\n");
         //return false;
