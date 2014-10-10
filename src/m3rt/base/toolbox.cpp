@@ -150,7 +150,7 @@ bool GetEnvironmentVariable(const char *var, vector<string>& result)
     result.clear();
     if(!result.empty())
         return false;
-    char const* tmp = secure_getenv(var);
+    char const* tmp = getenv(var);
     if ( tmp == NULL ) {
         M3_ERR("%s is not set, exiting.\n",var);
         return false;
