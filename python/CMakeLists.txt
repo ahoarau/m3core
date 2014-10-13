@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(m3core-python)
 
+add_subdirectory(scripts)
 
 file(GLOB ${PROJECT_NAME}_m3
     "m3/*.py"
@@ -24,11 +25,12 @@ execute_process (
 file ( TO_CMAKE_PATH "${PYTHON_SITE_DIR}" PYTHON_SITE_DIR )
 string ( REGEX REPLACE "^${PYTHON_PREFIX}/" "" 
    PYTHON_SITE_DIR "${PYTHON_SITE_DIR}" 
-) 
+)
+set(M3CORE_PYTHON_DIR ${PYTHON_SITE_DIR}/m3/ PARENT_SCOPE)
 install (
 	FILES ${${PROJECT_NAME}_m3} 
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ WORLD_EXECUTE
-	DESTINATION ${PYTHON_SITE_DIR}/m3/ 
+	DESTINATION ${PYTHON_SITE_DIR}/m3/
 	COMPONENT library
 )
 
@@ -51,6 +53,4 @@ install (
 
 #    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
 #endif()
-
-add_subdirectory(scripts)
 

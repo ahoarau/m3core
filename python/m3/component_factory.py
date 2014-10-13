@@ -17,9 +17,6 @@
 
 #You should have received a copy of the GNU Lesser General Public License
 #along with M3.  If not, see <http://www.gnu.org/licenses/>.
-
-import yaml
-import os 
 import m3.toolbox_core as m3t
 import m3.monitor
 import sys
@@ -38,6 +35,7 @@ m3_fpfx={}
 m3_eeprom_cfgs={}
 
 config_all = m3t.get_m3_config()
+success = False
 for config in config_all:
     if 'factory_py_libs' in config:
         success = False
@@ -61,6 +59,18 @@ for config in config_all:
                             break
                         except:
                             pass
+                ## and in M3_ROBOT !
+                if not success: ## last chance !
+                    p = config['config_path']
+                    if p and not p[-1] == '/':
+                        p = p + '/'
+                        try:
+                            execfile(p + k)
+                            print 'M3 INFO: Loading m3 python factory lib at :', p + k
+                            success = True
+                            break
+                        except:
+                            pass
 ## Generate an error message if could not load the python lib
 if not success:
        print("M3 WARNING: Could not load any python factory lib at:")
@@ -73,7 +83,8 @@ if not success:
                                         for p in PYTHONPATH:
 		                                if not p[-1]=='/':
 		                                        p=p+'/'
-                                                print p+k
+                                                print '-',p+k
+                                        print '-',config['config_path']+k
 
 
 def create_component(name):

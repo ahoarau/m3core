@@ -6,7 +6,7 @@ SET(PATCH_VERSION "9")
 set(M3CORE_VERSION
   ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
 
-set(KERNEL_NAME "" CACHE STRING "The rtai patched kernel to use. Ex:-DKERNEL_NAME=\"3.8.13-rtmeka4.0\" (default is uname -a) ")
+set(KERNEL_NAME "" CACHE STRING "The rtai patched kernel to use. -DKERNEL_NAME=$(uname -r)")
 #OPTION(KERNEL_NAME)
 
 if(KERNEL_NAME)
