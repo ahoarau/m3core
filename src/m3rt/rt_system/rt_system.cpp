@@ -42,7 +42,9 @@ using namespace std;
 static bool sys_thread_active;
 static bool sys_thread_end;
 static int step_cnt = 0;
-
+#ifdef __RTAI__
+static RT_TASK * main_task;
+#endif
 unsigned long long getNanoSec(void)
 {
     struct timeval tp;
@@ -374,6 +376,10 @@ bool M3RtSystem::Shutdown()
 #endif
         ready_sem = NULL;
     }
+#ifdef __RTAI__
+    rt_task_delete(main_task);
+    main_task=NULL;
+#endif
     shm_ec = NULL;
     shm_sem = NULL;
     sync_sem = NULL;
@@ -392,6 +398,13 @@ bool M3RtSystem::StartupComponents()
     if(!ReadConfig(M3_CONFIG_FILENAME,"rt_components",this->m3rt_list,this->idx_map_rt))
         return false;
     M3_INFO("Done reading components config files.\n");
+#ifdef __RTAI__
+    main_task = rt_task_init_schmod(nam2num("M3MAIN"),RT_TASK_PRIORITY,RT_STACK_SIZE,0,SCHED_FIFO,0);
+    if(!main_task){
+        M3_ERR("Unable to start M3RtSystem main RTAI task, abording.\n");
+        return false;
+    }
+#endif
 #ifdef __RTAI__
     sync_sem = (SEM *)rt_get_adr(nam2num(SEMNAM_M3SYNC));
     if(!sync_sem) {
