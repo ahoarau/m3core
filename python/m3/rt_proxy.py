@@ -99,7 +99,7 @@ class M3RtProxy:
         self.is_server_started=True
     def __del__(self):
         if not self.stopped:
-            print 'M3 WARNING: Be sure to call proxy.stop() at the end of your script.'
+            print 'M3 WARNING: make sure to call proxy.stop() at the end of your script.'
             self.stop()
             
     def stop(self, force_safeop=True):
@@ -107,8 +107,9 @@ class M3RtProxy:
     This should be called at client process shutdown
     Will automatically move all components to SAFEOP by default (for safety)"""
         try:
-            if self.is_server_started and len(self.published_command):
-                self.make_safe_operational_all()
+            if self.is_server_started:
+                for comp_name in self.command_raw.name_cmd:
+                    self.make_safe_operational(comp_name)
             if self.data_svc is not None:
                 self.__stop_data_service()
             if self.ros_svc is not None:
