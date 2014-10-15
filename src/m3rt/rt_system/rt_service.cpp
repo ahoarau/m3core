@@ -40,6 +40,7 @@ static void* service_thread(void * arg)
         if (svc->IsDataServiceError())
         {
             m3rt::M3_ERR("Detected dropped M3RtDataService. Stopping RtSystem;\n");
+	    svc_thread_end=true;
             svc->RemoveRtSystem();
             break;
         }
@@ -60,7 +61,10 @@ bool M3RtService::IsServiceThreadActive()
 }
 bool M3RtService::Startup()
 {
-    factory.Startup();
+    if(!factory.Startup()){
+      m3rt::M3_ERR("Factory failed to start, exiting.\n");
+      return false;
+    }
 #ifdef __RTAI__
     // A.H: This one is absolutely necessary as it's should be in the main thread
     rt_allow_nonroot_hrt();

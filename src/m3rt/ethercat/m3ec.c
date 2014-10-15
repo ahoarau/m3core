@@ -39,10 +39,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <rtai_sem.h>
 #include <rtai_registry.h>
 
+#ifdef ETHERCAT
 #include "ecrt.h"
 #include "slave.h"
 #include "slave_config.h"
-
+#endif
 
 
 //Convenience printf-like macros for printing M3-specific information.
@@ -62,7 +63,7 @@ typedef struct
 	unsigned int offset_status[MAX_NUM_SLAVE];
 	unsigned int offset_command[MAX_NUM_SLAVE];	
 	uint8_t *domain_pd[NUM_EC_DOMAIN];
-	
+#ifdef ETHERCAT	
 	ec_slave_config_t  *     slave_config[MAX_NUM_SLAVE];
 	ec_slave_config_state_t  slave_state[MAX_NUM_SLAVE];
 	
@@ -71,6 +72,7 @@ typedef struct
 	
 	ec_master_state_t master_state;
 	ec_domain_state_t domain_state[NUM_EC_DOMAIN];
+#endif
 	int num_domain;
 	int domain_idx;
 		
@@ -95,8 +97,10 @@ SEM master_sem;
 SEM shm_sem;
 SEM sync_sem;
 
+#ifdef ETHERCAT
 //A.Hoarau: Fix on deprecated SPIN_LOCK_UNLOCKED
 static DEFINE_SPINLOCK(master_lock) ;
+#endif
 
 cycles_t t_last_cycle;
 cycles_t t_critical;
@@ -107,6 +111,7 @@ bool end=0;
 
 int check_master_state(void)
 {
+#ifdef ETHERCAT
 	ec_master_state_t ms;
 
 	spin_lock(&master_lock);
@@ -133,11 +138,13 @@ int check_master_state(void)
 	}
 
 	sys.master_state = ms;
+#endif
 	return 1;
 }
 /*****************************************************************************/
 void check_domain_state(void)
 {
+#ifdef ETHERCAT
 	int i;
 	ec_domain_state_t ds;
 	for (i=0;i<sys.num_domain;i++)
@@ -160,10 +167,12 @@ void check_domain_state(void)
 		}
 		sys.domain_state[i] = ds;
 	}
+#endif
 }
 /*****************************************************************************/
 void check_slave_state(void)
 {
+#ifdef ETHERCAT
 	int i;
 	M3EcSlaveShm * ss;
 	
@@ -190,6 +199,7 @@ void check_slave_state(void)
 			ss->operational=s.operational;
 		}
 	}
+#endif
 }
 /*****************************************************************************/
 void run(long shm)
@@ -217,7 +227,7 @@ void run(long shm)
 	RTIME print_start=rt_get_time_ns();
 	RTIME dt=0;
 	unsigned int tmp_cnt=0;
-#ifdef USE_DISTRIBUTED_CLOCKS
+#if defined(ETHERCAT) && defined(USE_DISTRIBUTED_CLOCKS)
 	struct timeval tv;
 	unsigned int sync_ref_counter = 0;	
 	count2timeval(nano2count(rt_get_real_time_ns()), &tv);
@@ -232,12 +242,15 @@ void run(long shm)
 		ts0=rt_get_time_ns();
 		rt_sem_wait(&master_sem);
 		ts1=rt_get_time_ns();
+#ifdef ETHERCAT
 		ecrt_master_receive(sys.master); //Get Status data
 		ecrt_domain_process(sys.domain[sys.domain_idx]);
+#endif
 		rt_sem_signal(&master_sem);
 		ts2=rt_get_time_ns();
-#ifdef USE_DISTRIBUTED_CLOCKS	
-	// use tv for timestamping to match EC
+		
+#if defined(ETHERCAT) && defined(USE_DISTRIBUTED_CLOCKS)	
+		// use tv for timestamping to match EC
 		tv.tv_usec += RT_KMOD_TIMER_TICKS_NS/1000;
 		if (tv.tv_usec >= 1000000)  {
 			tv.tv_usec -= 1000000;
@@ -247,11 +260,13 @@ void run(long shm)
 	//Exchange data with shared memory
 		rt_sem_wait(&shm_sem);
 		ts3=rt_get_time_ns();
-#ifdef USE_DISTRIBUTED_CLOCKS	
+		
+#if defined(ETHERCAT) && defined(USE_DISTRIBUTED_CLOCKS)
 		sys.shm->timestamp_ns=EC_TIMEVAL2NANO(tv);
-#else
+#elif defined(ETHERCAT)
 		sys.shm->timestamp_ns=rt_get_time_ns()-tstart;
 #endif
+
 	
 		for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
 		{
@@ -278,7 +293,7 @@ void run(long shm)
 		}
 		ts4=rt_get_time_ns();
 	//Send data out
-#ifdef USE_DISTRIBUTED_CLOCKS	
+#if defined(ETHERCAT) && defined(USE_DISTRIBUTED_CLOCKS)	
 	// Set Slave DC Ref Clks
 		ecrt_master_application_time(sys.master, EC_TIMEVAL2NANO(tv));
 		if (sync_ref_counter) {
@@ -290,8 +305,10 @@ void run(long shm)
 #endif
 		rt_sem_wait(&master_sem);
 		ts5=rt_get_time_ns();
+#ifdef ETHERCAT
 		ecrt_domain_queue(sys.domain[sys.domain_idx]);
 		ecrt_master_send(sys.master);
+#endif
 		rt_sem_signal(&master_sem);
 		ts6=rt_get_time_ns();
 		// calc timing for monitor:		
@@ -344,14 +361,15 @@ run_cleanup:
 			unsigned char * pc = sys.domain_pd[sidx%sys.num_domain]+sys.offset_command[sidx];
 			memset(pc,0,MAX_PDO_SIZE_BYTES);
 			s->active=0;
-
 		}
 	}
 	for (i=0;i<sys.num_domain;i++)
 	{
 		rt_sem_wait(&master_sem);
+#ifdef ETHERCAT
 		ecrt_domain_queue(sys.domain[i]);
 		ecrt_master_send(sys.master);
+#endif
 		rt_sem_signal(&master_sem);
 	}
 }
@@ -376,7 +394,7 @@ void release_lock(void *shm)
 /*****************************************************************************/
 int m3sys_startup(void)
 {
-	 
+#ifdef ETHERCAT 
 	int sidx,i;
 	int pcode;
 	M3EcSlaveShm * s;
@@ -392,11 +410,13 @@ int m3sys_startup(void)
 
 	ecrt_master_state(sys.master, &sys.master_state);
 	sys.shm->slaves_responding=sys.master_state.slaves_responding; 
+#endif
 	M3_INFO("Slaves Responding: %d\n",sys.shm->slaves_responding);
 
 	sys.num_domain=MAX(1,MIN(sys.shm->slaves_responding,NUM_EC_DOMAIN));
 	M3_INFO("Creating %d domains...\n",sys.num_domain);
 	sys.domain_idx=0;
+#ifdef ETHERCAT
 	for (i=0;i<sys.num_domain;i++)
 	{
 		if (!(sys.domain[i] = ecrt_master_create_domain(sys.master))) {
@@ -404,10 +424,11 @@ int m3sys_startup(void)
 			goto out_release_master;
 		}
 	}
-	
+#endif
 	M3_INFO("Registering PDOs...\n");
 	//Search for an M3 product code for each slave
 	sys.shm->slaves_active=0;
+#ifdef ETHERCAT
 	for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
 	{
 		s=&(sys.shm->slave[sidx]);
@@ -524,14 +545,16 @@ int m3sys_startup(void)
                 M3_ERR("Failed to activate master!\n");
                 goto out_release_master;
         }
+#endif
 	M3_INFO("Successful Setup of all slaves\n");
 	return 1;
 	
+#ifdef ETHERCAT
 out_release_master:
 	M3_ERR("Releasing master...\n");
 	ecrt_release_master(sys.master);
 	return 0;
-	
+#endif
 }
 
 int __init init_mod(void)
@@ -564,7 +587,7 @@ int __init init_mod(void)
             tick_period = requested_ticks;
             M3_WARN("Rt timer already started.\n", tick_period, requested_ticks,t_critical);
         }
-	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, RT_TASK_PRIORITY+1, 1, NULL)) {
+	if (rt_task_init(&task, run, 0, RT_STACK_SIZE, 0, 1, NULL)) { // A.H: 0 is highest priority
 		M3_ERR("Failed to init RtAI task!\n");
 		goto out_free_timer;
 	}
@@ -604,7 +627,9 @@ void __exit cleanup_mod(void)
 	M3_INFO("Stopping...\n");
 	rt_task_delete(&task);
 	stop_rt_timer();
+#ifdef ETHERCAT
 	ecrt_release_master(sys.master);
+#endif
 	rt_sem_delete(&master_sem);
 	rt_sem_delete(&shm_sem);
 	rt_sem_delete(&sync_sem);

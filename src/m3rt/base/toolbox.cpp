@@ -41,10 +41,10 @@ void M3_WARN(const char *format, ...)
     string path;
 
     /*	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
-    	{
-    		path.append(LOG_FILE);
-    		pFile = fopen (path.c_str(),"a");
-    	}	*/
+        {
+            path.append(LOG_FILE);
+            pFile = fopen (path.c_str(),"a");
+        }	*/
 
     char buffer[256];
     va_list args;
@@ -53,11 +53,11 @@ void M3_WARN(const char *format, ...)
     printf("M3 WARNING: ");
     printf("%s", buffer);
     /*	 if (pFile)
-    	 {
-    	    fprintf(pFile,"M3 WARNING: ");
-    	    fprintf(pFile,"%s", buffer);
-    	    fclose (pFile);
-    	 }*/
+         {
+            fprintf(pFile,"M3 WARNING: ");
+            fprintf(pFile,"%s", buffer);
+            fclose (pFile);
+         }*/
     va_end(args);
 }
 
@@ -68,8 +68,8 @@ void M3_ERR(const char *format, ...)
 
     /*if (GetEnvironmentVariable(M3_ROBOT_ENV_VAR, path))
     {
-    	path.append(LOG_FILE);
-    	pFile = fopen (path.c_str(),"a");
+        path.append(LOG_FILE);
+        pFile = fopen (path.c_str(),"a");
     }*/
 
     char buffer[256];
@@ -103,10 +103,10 @@ void M3_INFO(const char *format, ...)
     string path;
 
     /*	if (GetEnvironmentVar(M3_ROBOT_ENV_VAR, path))
-    	{
-    		path.append(LOG_FILE);
-    		pFile = fopen (path.c_str(),"a");
-    	}	*/
+        {
+            path.append(LOG_FILE);
+            pFile = fopen (path.c_str(),"a");
+        }	*/
 
     char buffer[256];
     va_list args;
@@ -115,11 +115,11 @@ void M3_INFO(const char *format, ...)
     printf("M3 INFO: ");
     printf("%s", buffer);
     /*	 if (pFile)
-    	 {
-    	    fprintf(pFile,"M3 INFO: ");
-    	    fprintf(pFile,"%s", buffer);
-    	    fclose (pFile);
-    	 }*/
+         {
+            fprintf(pFile,"M3 INFO: ");
+            fprintf(pFile,"%s", buffer);
+            fclose (pFile);
+         }*/
     va_end(args);
 }
 
@@ -150,8 +150,12 @@ bool GetEnvironmentVariable(const char *var, vector<string>& result)
     result.clear();
     if(!result.empty())
         return false;
-
-    const std::string PATH = getenv(var);
+    char const* tmp = getenv(var);
+    if ( tmp == NULL ) {
+        M3_ERR("%s is not set, exiting.\n",var);
+        return false;
+    }
+    std::string PATH(tmp);
     const char delimiter = ':';
 
     if(PATH.empty())
@@ -160,15 +164,15 @@ bool GetEnvironmentVariable(const char *var, vector<string>& result)
     size_t previous = 0;
     size_t index = PATH.find(delimiter);
     while(index != string::npos) {
-		const std::string curr = PATH.substr(previous, index - previous);
-		if(false == ContainsString(result,curr))
-        result.push_back(curr);
+        const std::string curr = PATH.substr(previous, index - previous);
+        if(! ContainsString(result,curr))
+            result.push_back(curr);
         previous = index + 1;
         index = PATH.find(delimiter, previous);
     }
     const std::string last = PATH.substr(previous);
-    if(false == ContainsString(result,last))
-    result.push_back(last);
+    if(! ContainsString(result,last))
+        result.push_back(last);
     return true;
 }
 
@@ -235,41 +239,44 @@ unsigned int xtoi(const char *xs)
 void WriteYamlDoc(const char *filepath, YAML::Emitter &doc, string sub_dir)
 {
     try{
-		std::ofstream fout(filepath);
-		fout << doc.c_str();
-		fout.close();
-		M3_INFO("Writing %s\n",filepath);
-	}catch(std::exception &e){
-		M3_ERR("Caught error while trying to write %s:\n%s\n",filepath,e.what());
-	}
-}
-void GetRobotConfigPath(vector<string>& vpath,string sub_dir)
-{
-        vpath.clear();
-        if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
-        for(size_t i = 0; i < vpath.size(); i++) {
-            vpath[i] += sub_dir;
-        }
+        std::ofstream fout(filepath);
+        fout << doc.c_str();
+        fout.close();
+        M3_INFO("Writing %s\n",filepath);
+    }catch(std::exception &e){
+        M3_ERR("Caught error while trying to write %s:\n%s\n",filepath,e.what());
     }
-    return;
+}
+bool GetRobotConfigPath(vector<string>& vpath,string sub_dir)
+{
+    vpath.clear();
+    if(GetEnvironmentVariable(M3_ROBOT_ENV_VAR, vpath)) {
+        for(size_t i = 0; i < vpath.size(); i++)
+            vpath[i] += sub_dir;
+    }else{
+        return false;
+    }
+    return true;
 }
 
-void GetFileConfigPath(const char *filename,vector<string>& vpath)
+bool GetFileConfigPath(const char *filename,vector<string>& vpath)
 {
-        string s(filename);
-        vpath.clear();
-	GetRobotConfigPath(vpath);
-        for(size_t i = 0; i < vpath.size(); i++) {
+    string s(filename);
+    vpath.clear();
+    if(GetRobotConfigPath(vpath)){
+        for(size_t i = 0; i < vpath.size(); i++)
             vpath[i] += s;
-        }
-    return;
+    }else{
+        return false;
+    }
+    return true;
 }
 
 /*void GetYamlParser(const char *filename, YAML::Parser &parser )
 {
     string path;
     YAML::Node node;
-    vector<string> vpath; 
+    vector<string> vpath;
     YAML::Emitter out;
     GetFileConfigPath(filename,vpath);
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
@@ -291,7 +298,7 @@ void GetFileConfigPath(const char *filename,vector<string>& vpath)
 {
     YAML::Parser parser;
     YAML::Node docs;
-    vector<string> vpath; 
+    vector<string> vpath;
     GetFileConfigPath(filename,vpath);
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
         ifstream fin((*it).c_str());
@@ -305,13 +312,13 @@ void GetFileConfigPath(const char *filename,vector<string>& vpath)
     return docs.Clone();
 }*/
 #ifndef YAMLCPP_05
-void GetYamlStream(const char *filename, YAML::Emitter &out)
+bool GetYamlStream(const char *filename, YAML::Emitter &out)
 {
     string path;
     YAML::Node node;
     YAML::Parser parser;
-    vector<string> vpath; 
-    GetFileConfigPath(filename,vpath);
+    vector<string> vpath;
+    if(!GetFileConfigPath(filename,vpath)) return false;
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
         ifstream fin((*it).c_str());
         if(fin.fail()) { continue;}
@@ -324,115 +331,126 @@ void GetYamlStream(const char *filename, YAML::Emitter &out)
     }
     assert(out.good());
     //parser.PrintTokens(cout);
-    return;
+    return true;
 }
 #else
-void GetYamlStream(const char *filename, YAML::Emitter &out)
+bool GetYamlStream(const char *filename, YAML::Emitter &out)
 {
-    string path;
-    vector<string> vpath; 
-    GetFileConfigPath(filename,vpath);
+    vector<string> vpath;
+    if(!GetFileConfigPath(filename,vpath)) return false;
     for(vector<string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
-		try{
-        const YAML::Node& node = YAML::LoadFile((*it).c_str());
-		out << node;
-		}catch(...){}
+        try{
+            if(!file_exists((*it).c_str())){
+                M3_WARN("%s does not exists, no file or directory.\n",(*it).c_str());
+                continue;
+            }
+            YAML::Node node = YAML::LoadFile((*it).c_str());
+            if(!node.IsNull())
+                out << node;
+        }catch(...){}
     }
     assert(out.good());
-    return;
+    return true;
 }
 #endif
 
 
 bool GetYamlDoc(const char* filename, YAML::Node& doc)
 {
-	std::string ret = GetYamlDoc(filename,doc,NULL);
-	return !ret.empty();
+    std::string ret = GetYamlDoc(filename,doc,NULL);
+    return !ret.empty();
 }
 #if defined(YAMLCPP_05)
-void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
+bool GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
 {
-	assert(filename!=0);
-	vector<string> vpath;
-	GetFileConfigPath(filename,vpath);
-	for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
-		try{
-			const YAML::Node& node = YAML::LoadFile(*it);
-			//cout<<endl<<endl<<YAML::Dump(node)<<endl<<endl;
-			//cout<<"Adding "<<*it<<endl;
-			docs.push_back(node);
-		}catch(...){
-			continue;
-		}
-	}
+    if(!filename) return false;
+    vector<string> vpath;
+    if(!GetFileConfigPath(filename,vpath)) return false;
+    for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+        try{
+            const YAML::Node& node = YAML::LoadFile(*it);
+            //cout<<endl<<endl<<YAML::Dump(node)<<endl<<endl;
+            //cout<<"Adding "<<*it<<endl;
+            docs.push_back(node);
+        }catch(...){
+            continue;
+        }
+    }
+    return !docs.empty();
 }
-void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs )
+bool GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs )
 {
-	//assert(filename!=0);
-	//vector<string> vpath;
-	//GetFileConfigPath(filename,vpath);
-	for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
-		try{
-			const YAML::Node& node = YAML::LoadFile(*it);
-			//cout<<endl<<endl<<YAML::Dump(node)<<endl<<endl;
-			//cout<<"Adding "<<*it<<endl;
-			docs.push_back(node);
-		}catch(...){
-			continue;
-		}
-	}
+    //assert(filename!=0);
+    //vector<string> vpath;
+    //GetFileConfigPath(filename,vpath);
+    for(std::vector<std::string>::iterator it = vpath.begin(); it != vpath.end(); ++it) {
+        try{
+            const YAML::Node& node = YAML::LoadFile(*it);
+            //cout<<endl<<endl<<YAML::Dump(node)<<endl<<endl;
+            //cout<<"Adding "<<*it<<endl;
+            docs.push_back(node);
+        }catch(...){
+            continue;
+        }
+    }
+    return !docs.empty();
 }
 #endif
 
 std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
 {
-	assert(filename!=0);
-    vector<string> vpath;
-    GetFileConfigPath(filename,vpath);
-	
-    vector<string> vpath_root;
-    GetRobotConfigPath(vpath_root);
-    assert(vpath.size()==vpath_root.size());
+    if(!filename) return std::string();
     
-    map<string, string> paths;
-    std::map<string,string>::iterator it = paths.begin();
+    vector<string> vpath;
+    if(!GetFileConfigPath(filename,vpath)) return std::string();
+
+    vector<string> vpath_root;
+    
+    if(!GetRobotConfigPath(vpath_root)) return std::string();
+    if(vpath.size()!=vpath_root.size()) return std::string();
+    
+    std::vector<std::pair<string,string> > paths;
     for(size_t i=0;i<vpath.size();i++)
-	    paths.insert(it,pair<string,string>(vpath[i],vpath_root[i]));
-	    
+        paths.push_back(pair<string,string>(vpath[i],vpath_root[i]));
+
     bool verbose = paths.size()>1;
-	string root_path = std::string();
-	string path = std::string();
-    for(std::map<string,string>::reverse_iterator it = paths.rbegin(); it != paths.rend(); ++it) {
-        cout<<"Trying with path:"<<it->second<<endl;
+    string root_path = std::string();
+    string path = std::string();
+    for(std::vector<std::pair<string,string> >::reverse_iterator it = paths.rbegin(); it != paths.rend(); ++it) {
+        cout<<"Trying with : "<<it->second<<endl;
         //A.H: Let's start by the very last one i.e a local version.
         //If the file exists, load it, otherwise go to previous path (down to original robot_config)
         //If the file is loaded, then check for an optional find_str provided to checkif this is the right file to load, otherwise go to previous path
         path = it->first;
-		root_path = it->second;
+        root_path = it->second;
 #if defined(YAMLCPP_05)
-		try{
-			doc = YAML::LoadFile(path);
-		}catch(...){
-			continue;
-		}
+        try{
+            if(m3rt::file_exists(path))
+                doc = YAML::LoadFile(path);
+            else
+                continue;
+        }catch(YAML::Exception){
+            continue;
+        }
 #else
-	YAML::Parser parser;
-	ifstream fin(path.c_str());
-	if(fin.fail()) {
-		if(verbose)
-			cout<<"Could not read "<<path<<" , trying the next one."<<endl;
-		continue;
+        YAML::Parser parser;
+        ifstream fin(path.c_str());
+        if(fin.fail()) {
+            if(verbose)
+                cout<<"Could not read "<<path<<" , trying the next one."<<endl;
+            continue;
 
-	}
-	parser.Load(fin);
-	parser.GetNextDocument(doc);
-	fin.close();
-	fin.clear();
+        }
+        parser.Load(fin);
+        parser.GetNextDocument(doc);
+        fin.close();
+        fin.clear();
 #endif
-		cout << "- Config file: " << path<<endl;
-		 
+        cout << "- Config file: " << path<<endl;
+        break;
+
     }
-	return root_path;
+    return root_path;
 }
 
 }

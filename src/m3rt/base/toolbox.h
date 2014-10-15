@@ -27,7 +27,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
+#include <sys/stat.h>
 namespace m3rt
 {
 
@@ -36,6 +36,12 @@ void M3_WARN(const char * format, ...);
 void M3_ERR(const char * format, ...);
 void M3_INFO(const char * format, ...);
 void M3_DEBUG(const char * format, ...);
+
+inline bool file_exists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 void BannerPrint(int width, const char *format, ...);
 bool GetEnvironmentVariable(const char * var, std::vector<std::string>& result);
 bool GetEnvironmentVar(const char * var, std::string &s);
@@ -45,16 +51,16 @@ std::vector<std::string> YamlReadVectorString(std::string s);
 std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 #endif
 unsigned int xtoi(const char* xs);
-void GetRobotConfigPath(std::vector< std::string >& vpath,std::string sub_dir= std::string(M3_CONFIG_DIR));
+bool GetRobotConfigPath(std::vector< std::string >& vpath, std::string sub_dir = std::string(M3_CONFIG_DIR));
 
-void GetFileConfigPath(const char *filename,std::vector<std::string>& vpath);
+bool GetFileConfigPath(const char* filename, std::vector< std::string >& vpath);
 
 void WriteYamlDoc(const char *filename, YAML::Emitter &doc, std::string sub_dir= std::string(M3_CONFIG_DIR));
 
 std::string GetYamlDoc(const char* filename, YAML::Node& doc, void*);
 bool GetYamlDoc(const char* filename, YAML::Node& doc);
 
-void GetYamlStream(const char *filename, YAML::Emitter& out);
+bool GetYamlStream(const char* filename, YAML::Emitter& out);
 #ifdef YAMLCPP_05	
 template <typename _T >
 void operator >>(const YAML::Node& input, _T& value) {
@@ -89,8 +95,8 @@ inline bool ContainsString(const std::vector<std::string>& v_in, const std::stri
 	return false;
 }
 
-void GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs );
-void GetAllYamlDocs(std::vector<std::string> vpath, std::vector<YAML::Node>& docs );
+bool GetAllYamlDocs(const char* filename, std::vector< YAML::Node >& docs );
+bool GetAllYamlDocs(std::vector< std::string > vpath, std::vector< YAML::Node >& docs );
 
 }
 

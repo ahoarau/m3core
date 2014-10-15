@@ -30,8 +30,16 @@ SET( KERNEL_DIR
 	"/lib/modules/${CMAKE_SYSTEM_VERSION}/build"
 )
 
+message("************************************")
+if(ETHERCAT)
+  message(STATUS "Ethercat is ON : Real Meka Hardware")
+else()
+  message(STATUS "Ethercat is OFF : Virtual Meka")
+endif()
+message("************************************")
+
 SET( KBUILD_COMMAND
-	${CMAKE_MAKE_PROGRAM} -C ${KERNEL_DIR} M=${MODULE_OUTPUT_DIR} modules
+	KCFLAGS="-D${ETHERCAT}" ${CMAKE_MAKE_PROGRAM} -C ${KERNEL_DIR} M=${MODULE_OUTPUT_DIR} modules
 )
 CONFIGURE_FILE(
 	Kbuild.in
@@ -67,6 +75,7 @@ ADD_CUSTOM_TARGET(
 	ALL
 	DEPENDS ${MODULE_OUTPUT_DIR}/${MODULE_FILE}
 )
+
 Install(FILES ${MODULE_OUTPUT_DIR}/${MODULE_FILE} 
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ WORLD_EXECUTE 
 	DESTINATION /lib/modules/${CMAKE_SYSTEM_VERSION}/extra/

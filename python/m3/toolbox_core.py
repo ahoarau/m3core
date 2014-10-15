@@ -240,7 +240,7 @@ def get_component_config(name):
         try:
                 config_filename = get_component_config_filename(name)
                 with open(str(config_filename),'r') as f:
-                    #print 'Config file for',name,':',config_filename
+                    print name,'config:',config_filename
                     return yaml.safe_load(f.read())
         except (IOError, EOFError):
                 print 'Config file not present for component ',name
@@ -311,15 +311,25 @@ def get_component_config_filename(component_name):
                         for comp_dir in component:           # ma17
                             for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
                                 for name in comp:               #actuator1,type1
-                                    if component_name in name:             
-                                        return config['config_path']+comp_dir+'/'+component_name+'.yml'
+                                    if component_name in name:
+                                        if 'config_path' in config:
+                                            f = config['config_path']+comp_dir+'/'+component_name+'.yml'
+                                            if os.path.isfile(f):
+                                                return f
                     except TypeError:
                         if component_name in config[comp_type][component]:
                             #print('M3_WARNING : Old config file detected.')
-                            return config['config_path']+component+'/'+component_name+'.yml'
+                            if 'config_path' in config:
+                                f = config['config_path']+component+'/'+component_name+'.yml'
+                                if os.path.isfile(f):
+                                    return f
         except KeyError:
             pass
     print "Config file not found for component ",component_name
+    print "Checked the following path :"
+    for config in m3_config:
+        if 'config_path' in config:
+            print '-',config['config_path']
     return ''
 
 def time_string():
@@ -1001,13 +1011,13 @@ def make_log_dir(logdir):
                 print 'Unable to make log directory: ',logdir
                 return False
             
-
+"""
 #print 'Getting config : '
 #from pprint import pprint
 #m3_config= get_m3_config()
 #for config in m3_config: # all the config files (M3_ROBOT way contain multiple paths)
 #    pprint(config)
-'''
+
 print 'Config hostname: ',get_config_hostname()
 
 print 'RT comp: ',get_rt_components_names()
@@ -1020,7 +1030,7 @@ print 'get_component_config_filename(\'m3actuator_ec_ma17_j0\'):',get_component_
 print 'get_component_config_type(\'m3actuator_ec_ma17_j0\'):',get_component_config_type('m3actuator_ec_ma17_j0') 
 print 'get_component_config_type(\'m3actuator_ms4_j7\'):',get_component_config_type('m3actuator_ms4_j7')  
 
-'''
+"""
 
 """
 p = M3ScopeN(xwidth=200)
