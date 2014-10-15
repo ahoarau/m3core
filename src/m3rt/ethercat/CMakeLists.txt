@@ -33,14 +33,18 @@ SET( KERNEL_DIR
 message("************************************")
 if(ETHERCAT)
   message(STATUS "Ethercat is ON : Real Meka Hardware")
+SET( KBUILD_COMMAND
+	KCFLAGS="-DETHERCAT" ${CMAKE_MAKE_PROGRAM} -C ${KERNEL_DIR} M=${MODULE_OUTPUT_DIR} modules
+)
 else()
   message(STATUS "Ethercat is OFF : Virtual Meka")
+SET( KBUILD_COMMAND
+	${CMAKE_MAKE_PROGRAM} -C ${KERNEL_DIR} M=${MODULE_OUTPUT_DIR} modules
+)
 endif()
 message("************************************")
 
-SET( KBUILD_COMMAND
-	KCFLAGS="-D${ETHERCAT}" ${CMAKE_MAKE_PROGRAM} -C ${KERNEL_DIR} M=${MODULE_OUTPUT_DIR} modules
-)
+
 CONFIGURE_FILE(
 	Kbuild.in
 	${MODULE_OUTPUT_DIR}/Kbuild
