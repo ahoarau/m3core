@@ -101,6 +101,9 @@ message M3MonitorStatus{
 	optional int32 num_ethercat_cycles=14;
  	optional double cycle_time_max_us=15;
     repeated M3MonitorEcDomain ec_domains=16;        
+        optional int64 t_ext_sem_wait=17;
+        optional int64 t_sync_sem_wait=18;
+        optional int64 t_shm_sem_wait=19;
 }
 
 message M3MonitorEcDomain

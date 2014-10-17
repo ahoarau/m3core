@@ -352,8 +352,8 @@ bool M3RtSystem::Shutdown()
             //long int shutdown_thread;
             //int ret = pthread_create((pthread_t *)&shutdown_thread, NULL, (void * ( *)(void *))shutdown, (void *)GetComponent(i-1));
             M3_INFO("%s is shutting down...",GetComponentName(i-1).c_str());
-            printf("OK (%d/%d)\n",n_comp-i+1,n_comp);
             GetComponent(i-1)->Shutdown();
+            printf("OK (%d/%d)\n",n_comp-i+1,n_comp);
         }
         //usleep(2e6);
 #ifdef __RTAI__
@@ -726,13 +726,27 @@ bool M3RtSystem::Step(bool safeop_only,bool dry_run)
         If we have an External Data Service that sets B.x=e periodically, then A.Step() will overwrite value e.
         Therefore if we want to directly communicate with B.x from the outside world, we must not publish to component A.
     */
+    
+    //Do some bookkeeping
+    M3MonitorStatus *s = factory->GetMonitorStatus();
+    
+    
 #ifdef __RTAI__
+    start_c = rt_get_cpu_time_ns();
     rt_sem_wait(ext_sem);
+    end_c = rt_get_cpu_time_ns();
+    s->set_t_ext_sem_wait(end_c - start_c);
 #ifndef __NO_KERNEL_SYNC__
-    //rt_sem_wait_timed(sync_sem,RTIME(nano2count(RT_TIMER_TICKS_NS/2)));
+    start_c = rt_get_cpu_time_ns();
     rt_sem_wait(sync_sem); // AH: this guy is causing ALL the overrruns
+    end_c = rt_get_cpu_time_ns();
+    s->set_t_sync_sem_wait(end_c - start_c);
 #endif
+    start_c = rt_get_cpu_time_ns();
     rt_sem_wait(shm_sem);
+    end_c = rt_get_cpu_time_ns();
+    s->set_t_shm_sem_wait(end_c - start_c);
+    
     start = rt_get_cpu_time_ns();
 #else
     sem_wait(ext_sem);
@@ -749,8 +763,7 @@ bool M3RtSystem::Step(bool safeop_only,bool dry_run)
 
     }
 
-    //Do some bookkeeping
-    M3MonitorStatus *s = factory->GetMonitorStatus();
+    
     int nop = 0, nsop = 0, nerr = 0;
     for(int i = 0; i < GetNumComponents(); i++) {
         if(GetComponent(i)->IsStateError()) nerr++;
