@@ -21,10 +21,11 @@ from m3.component import M3Component
 
 
 class M3Monitor(M3Component):
-	"""Interface for component real-time profiling data"""
-	def __init__(self,name):
-		M3Component.__init__(self,name,type='m3monitor')
-		self.status=mbs.M3MonitorStatus() 
-		self.command=mbs.M3MonitorCommand() 
-		self.param=mbs.M3MonitorParam() 
-		self.read_config()
+    """Interface for component real-time profiling data"""
+    def __init__(self,name):
+        M3Component.__init__(self,name,type='m3monitor')
+        self.status=mbs.M3MonitorStatus() 
+        self.command=mbs.M3MonitorCommand() 
+        self.param=mbs.M3MonitorParam()
+        self.read_config()
+  

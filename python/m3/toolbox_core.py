@@ -100,7 +100,7 @@ class M3KeyStrokeThread(Thread):
                         if self.value=='q':
                                 self.done=True
 
-# ###########################################	
+# ###########################################    
 def load_m3ec_kmod():
         os.system('sudo m3rt_insmods') 
 
@@ -229,10 +229,10 @@ def configure_virtual_meka():
     set_config_hostname(local_hostname)
     
 def get_local_hostname():
-	cmd='hostname'
-	stdout_handle = os.popen(cmd, "r")
-	s = stdout_handle.read()
-	return s[:-1]
+    cmd='hostname'
+    stdout_handle = os.popen(cmd, "r")
+    s = stdout_handle.read()
+    return s[:-1]
 
 def get_component_config(name):
         if not name:
@@ -240,7 +240,7 @@ def get_component_config(name):
         try:
                 config_filename = get_component_config_filename(name)
                 with open(str(config_filename),'r') as f:
-                    print name,'config:',config_filename
+                    #print name,'config:',config_filename
                     return yaml.safe_load(f.read())
         except (IOError, EOFError):
                 print 'Config file not present for component ',name
@@ -286,50 +286,68 @@ def get_component_config_type(component_name):
     for comp_type in ['ec_components','rt_components']:
         try:
             for config in m3_config:
-                for component in config[comp_type]: # ma17,mh28..
-                    try:
-                        for comp_dir in component:           # ma17
-                            for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
-                                for name in comp:               #actuator1
-                                    if component_name in name:             
-                                        return comp[name]
-                    except TypeError:
-                        if component_name in config[comp_type][component]:
-                            #print('M3_WARNING : Old config file detected.')
-                            return config[comp_type][component][component_name]
+                if comp_type in config:
+                    for component in config[comp_type]: # ma17,mh28..
+                        try:
+                            for comp_dir in component:           # ma17
+                                for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
+                                    for name in comp:               #actuator1
+                                        if component_name in name:             
+                                            return comp_dir,comp[name]
+                        except Exception:
+                            if component_name in config[comp_type][component]:
+                                #print('M3_WARNING : Old config file detected.')
+                                return component,config[comp_type][component][component_name]
         except Exception,e:
             pass
     return None
-
-def get_component_config_filename(component_name):
-    m3_config= get_m3_config()
+    
+def get_component_config_filenameDEPRECATED(component_name):
+    paths = []
     for comp_type in ['ec_components','rt_components']:
         try:
             for config in m3_config:
-                for component in config[comp_type]: # ma17,mh28..
-                    try:
-                        for comp_dir in component:           # ma17
-                            for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
-                                for name in comp:               #actuator1,type1
-                                    if component_name in name:
-                                        if 'config_path' in config:
-                                            f = config['config_path']+comp_dir+'/'+component_name+'.yml'
-                                            if os.path.isfile(f):
-                                                return f
-                    except TypeError:
-                        if component_name in config[comp_type][component]:
-                            #print('M3_WARNING : Old config file detected.')
-                            if 'config_path' in config:
-                                f = config['config_path']+component+'/'+component_name+'.yml'
-                                if os.path.isfile(f):
-                                    return f
-        except KeyError:
+                if comp_type in config:
+                    for component in config[comp_type]: # ma17,mh28..
+                        try:
+                            for comp_dir in component:           # ma17
+                                for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
+                                    for name in comp:               #actuator1,type1
+                                        if component_name in name:
+                                            if 'config_path' in config:
+                                                f = config['config_path']+comp_dir+'/'+component_name+'.yml'
+                                                paths.append(f)
+                                                if os.path.isfile(f):
+                                                    return f
+                        except Exception:
+                            if component_name in config[comp_type][component]:
+                                #print('M3_WARNING : Old config file detected.')
+                                if 'config_path' in config:
+                                    f = config['config_path']+component+'/'+component_name+'.yml'
+                                    paths.append(f)
+                                    if os.path.isfile(f):
+                                        return f
+        except Exception:
             pass
     print "Config file not found for component ",component_name
     print "Checked the following path :"
-    for config in m3_config:
-        if 'config_path' in config:
-            print '-',config['config_path']
+    for p in paths:
+        print '-',p
+    return ''
+    
+def get_component_config_filename(component_name):
+    cdir,component_type = get_component_config_type(component_name)
+    m3_paths = get_m3_config_path()
+    paths=[]
+    for p in m3_paths:
+        f = p+cdir+'/'+component_name+'.yml'
+        paths.append(f)
+        if os.path.isfile(f):
+            return f
+    print "Config file not found for component ",component_name
+    print "Checked the following path :"
+    for p in paths:
+        print '-',p
     return ''
 
 def time_string():
@@ -363,18 +381,18 @@ def GetIdMapDictFromMsg(msg=None,d=None,idx=0,root=''):
 #return a list: ['a','b','c.d',...]
 #exclude ['fielda','fieldb',...] : exclude certain fields
 def get_msg_fields(msg,prefix='',exclude=None):
-        ret=[]
-        fields=msg.DESCRIPTOR.fields_by_name.keys()
-        for f in fields:
-		if exclude==None or len([x for x in exclude if f.find(x)>=0])==0:
-			v=getattr(msg,f)
-			if type(v)==long or type(v)==float or type(v)==int or type(v)==bool or type(v)==str or hasattr(v,'__len__'):
-				ret.append(prefix+f)
-			elif hasattr(v,'__class__'):
-				ret=ret+get_msg_fields(v,prefix+f+'.',exclude)
-	return ret
+    ret=[]
+    fields=msg.DESCRIPTOR.fields_by_name.keys()
+    for f in fields:
+        if exclude==None or len([x for x in exclude if f.find(x)>=0])==0:
+            v=getattr(msg,f)
+            if type(v)==long or type(v)==float or type(v)==int or type(v)==bool or type(v)==str or hasattr(v,'__len__'):
+                ret.append(prefix+f)
+            elif hasattr(v,'__class__'):
+                ret=ret+get_msg_fields(v,prefix+f+'.',exclude)
+    return ret
 
-	
+    
 def user_select_msg_field(msg):
         name=''
         fields=msg.DESCRIPTOR.fields_by_name.keys()
@@ -594,7 +612,7 @@ def user_select_components_interactive(names,single=False,item='Components'):
                 else:
                         idx=(idx+1)%len(names)
 
-# #############################################################################################	
+# #############################################################################################    
 #RC filter, where:
 # y_k = (T/(T+h)) y_k-1 + (h/(T+h)) x_k
 #Will reach 63% of final value in time_constant_s seconds
@@ -615,7 +633,7 @@ class M3ExponentialAvg:
                 self.y_k = (self.T/(self.T+self.h))*self.y_k_last + (self.h/(self.T+self.h))*x_k
                 self.y_k_last=self.y_k
                 return self.y_k
-# #############################################################################################	
+# #############################################################################################    
 class M3Average():
         def __init__(self,n):
                 self.idx=0
@@ -628,7 +646,7 @@ class M3Average():
                 self.buf[self.idx]=x
                 self.idx=int((self.idx+1)%self.n)
                 return nu.average(self.buf)
-# #############################################################################################	
+# #############################################################################################    
 class M3Slew():
         def __init__(self):
                 self.val=0.0
@@ -638,7 +656,7 @@ class M3Slew():
                 else:
                         self.val=max(des,self.val-rate)
                 return self.val
-# #############################################################################################	
+# #############################################################################################    
 
 class M3ScopeN_():
         def __init__(self,n=12,xwidth=200,yrange=None,title='M3ScopeN_'):
@@ -666,7 +684,7 @@ class M3ScopeN_():
                 self.g.plot(*self.data)
         def stop(self):
             self.g.close()
-# #############################################################################################	
+# #############################################################################################    
 
 class M3ScopeN():
         def __init__(self,xwidth=200,yrange=None,title='M3ScopeN',options='lines'):
@@ -750,7 +768,7 @@ def DictPrint(d,space=''):
                 if type(d[key])==type({}):
                         print space,key
                         DictPrint(d[key],space+'    ') #recurse on dictionary
-                else:	
+                else:    
                         print space,key,':',d[key]
 
 def DictSet(dest,src):
@@ -761,7 +779,7 @@ def DictSet(dest,src):
         for key in key_names:
                 if type(src[key])==type({}):
                         DictSet(dest[key],src[key]) #recurse on dictionary
-                else:	
+                else:    
                         idx=0
                         try:
                                 try:
@@ -985,7 +1003,7 @@ def get_log_info(logname,logpath=None,logdir=None):
         log_files.sort()
         info=[]
         for lf in log_files:
-                istart=lf[:lf.rfind('_')]	
+                istart=lf[:lf.rfind('_')]    
                 istart=istart[istart.rfind('_')+1:]
                 if istart.isdigit():
                         istart=int(istart)
@@ -1017,6 +1035,7 @@ def make_log_dir(logdir):
 #m3_config= get_m3_config()
 #for config in m3_config: # all the config files (M3_ROBOT way contain multiple paths)
 #    pprint(config)
+print 'get_component_config_filename(\'m3actuator_ec_ma17_j0\'):',get_component_config_filename('m3actuator_ec_ma17_j0')
 
 print 'Config hostname: ',get_config_hostname()
 
@@ -1026,11 +1045,11 @@ print 'EC comp: ',get_ec_components_names()
 print 'get_component_config(\'m3actuator_ms4_j7\') :',get_component_config('m3actuator_ms4_j7') 
 
 print 'get_component_config(\'my_class_v1\'):',get_component_config('my_class_v1')
-print 'get_component_config_filename(\'m3actuator_ec_ma17_j0\'):',get_component_config_filename('m3actuator_ec_ma17_j0')
+
 print 'get_component_config_type(\'m3actuator_ec_ma17_j0\'):',get_component_config_type('m3actuator_ec_ma17_j0') 
 print 'get_component_config_type(\'m3actuator_ms4_j7\'):',get_component_config_type('m3actuator_ms4_j7')  
-
 """
+
 
 """
 p = M3ScopeN(xwidth=200)
