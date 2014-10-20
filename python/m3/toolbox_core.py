@@ -55,6 +55,14 @@ def get_m3_config_path():
         return ''
 
 def get_m3_config():
+        # Get all the m3_config.yml in all the path defines by M3_ROBOT
+        ## A.H: now defines a global variable to load just load it once (10x faster)
+        global __M3_CONFIG__
+        try:
+            if __M3_CONFIG__:
+                return __M3_CONFIG__
+        except NameError:
+            pass
         vpath=get_m3_config_path()
         filename= [p+ROBOT_CONFIG_FILENAME for p in vpath]
         fstream = ''
@@ -67,7 +75,12 @@ def get_m3_config():
                     fstream = f.read() + '\nconfig_path: ' + path
             except (IOError, EOFError):
                 print 'Config file not present:',fname,' Please check your',ROBOT_ENV_VAR,'variable'
-        return list(yaml.safe_load_all(fstream))
+        __M3_CONFIG__ =  list(yaml.safe_load_all(fstream))
+        return __M3_CONFIG__
+
+
+
+
 
 class M3Exception(exceptions.Exception):
         def __init__(self, value):
@@ -279,7 +292,7 @@ def get_rt_components_names():
 def get_ec_components_names():
     return get_components_names('ec_components')
 
-def get_component_config_type(component_name):
+def __get_component_config_type(component_name):
     if not component_name:
         return None
     m3_config= get_m3_config()
@@ -301,9 +314,11 @@ def get_component_config_type(component_name):
         except Exception,e:
             pass
     return None
-    
-def get_component_config_filenameDEPRECATED(component_name):
-    paths = []
+
+def get_component_config_type(component_name):
+    if not component_name:
+        return None
+    m3_config= get_m3_config()
     for comp_type in ['ec_components','rt_components']:
         try:
             for config in m3_config:
@@ -312,31 +327,19 @@ def get_component_config_filenameDEPRECATED(component_name):
                         try:
                             for comp_dir in component:           # ma17
                                 for comp in component[comp_dir]: #actuator1:type1,actuator2:type2
-                                    for name in comp:               #actuator1,type1
-                                        if component_name in name:
-                                            if 'config_path' in config:
-                                                f = config['config_path']+comp_dir+'/'+component_name+'.yml'
-                                                paths.append(f)
-                                                if os.path.isfile(f):
-                                                    return f
+                                    for name in comp:               #actuator1
+                                        if component_name in name:             
+                                            return comp[name]
                         except Exception:
                             if component_name in config[comp_type][component]:
                                 #print('M3_WARNING : Old config file detected.')
-                                if 'config_path' in config:
-                                    f = config['config_path']+component+'/'+component_name+'.yml'
-                                    paths.append(f)
-                                    if os.path.isfile(f):
-                                        return f
-        except Exception:
+                                return config[comp_type][component][component_name]
+        except Exception,e:
             pass
-    print "Config file not found for component ",component_name
-    print "Checked the following path :"
-    for p in paths:
-        print '-',p
-    return ''
+    return None
     
 def get_component_config_filename(component_name):
-    cdir,component_type = get_component_config_type(component_name)
+    cdir,component_type = __get_component_config_type(component_name)
     m3_paths = get_m3_config_path()
     paths=[]
     for p in m3_paths:
@@ -1028,6 +1031,17 @@ def make_log_dir(logdir):
         else:
                 print 'Unable to make log directory: ',logdir
                 return False
+def get_username():
+    import pwd
+    comment = pwd.getpwuid(os.getuid())[4]
+    name = comment.split(',')[0]
+    if name == "":
+        return pwd.getpwuid(os.getuid())[0]
+    return name
+
+def get_home_dir():
+    from os.path import expanduser
+    return expanduser("~")
             
 """
 #print 'Getting config : '
