@@ -121,7 +121,7 @@ string ( REGEX REPLACE "^${PYTHON_PREFIX}/" ""
 
 
 install ( FILES ${PySources} 
-   DESTINATION ${PYTHON_SITE_DIR}/m3/
+   DESTINATION ${PYTHON_SITE_DIR}/m3
    COMPONENT library 
 ) 
 

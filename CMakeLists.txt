@@ -61,7 +61,7 @@ add_subdirectory(python)
 
 if(M3_SRC AND NOT MEKABOT)
 configure_file(setup.bash.in ${CMAKE_CURRENT_BINARY_DIR}/setup.bash)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.bash DESTINATION ${CMAKE_INSTALL_PREFIX}/share/m3)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.bash DESTINATION share)
 endif()
 
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
