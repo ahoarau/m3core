@@ -41,14 +41,14 @@ ROBOT_ENV_VAR = 'M3_ROBOT'
 # ###########################################
 
 def get_m3_robot_path():
-    vpath=os.environ[ROBOT_ENV_VAR]
-    return vpath.split(':')
+    vpath = os.environ[ROBOT_ENV_VAR].split(':')
+    vpath.reverse()
+    return vpath
 
 def get_m3_config_path():
         try:
                 vpath = get_m3_robot_path()
                 path = [p+ROBOT_CONFIG_DIR for p in vpath]
-                path.reverse() 
                 return path
         except KeyError:
                 print 'SET YOUR M3_ROBOT ENVIRONMENT VARIABLE'
