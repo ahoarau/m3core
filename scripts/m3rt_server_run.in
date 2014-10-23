@@ -2,6 +2,18 @@
 
 virtual=${VIRTUAL}
 
+kernel_name=$(uname -r);
+
+if [[ ! $kernel_name == *-rt* ]]
+then
+  echo "You don't seem to be running on the realtime kernel."
+  echo "The name should contain \"-rt\""
+  echo "Your is $kernel_name"
+  echo "Please reboot and choose a realtime kernel"
+  exit
+fi
+
+
 if $(m3rt_check_server.py) 2>/dev/null ; then
     if [ $virtual = 0 ]; then
 	echo 'Checking Ethercat'
