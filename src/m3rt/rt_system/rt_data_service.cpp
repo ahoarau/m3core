@@ -54,7 +54,7 @@ void data_thread(void * arg)
 		return;
 	}
 #ifdef __RTAI__
-	RT_TASK *task;
+	RT_TASK *task=NULL;
         int cnt=0;
         RTIME tstart,dt;
         int printdt = 4;
@@ -104,9 +104,9 @@ void data_thread(void * arg)
 	rt_task_delete(task);
 #endif
 	if (svc->data_thread_error)
-	  M3_INFO("Exiting M3 Data Server Thread Prematurely\n",0);
+	  M3_INFO("Exiting Data Service thread Prematurely\n",0);
 	else
-	  M3_INFO("Exiting M3 Data Server Thread\n",0);
+	  M3_INFO("Exiting Data Service thread\n",0);
 	svc->data_thread_active=false;
 	return;
 }
@@ -118,13 +118,13 @@ bool M3RtDataService::Startup()
 {
 	if (data_thread_active && !data_thread_end)
 	{
-		M3_ERR("M3RtDataService thread already active\n",0);
+		M3_ERR("Data Service thread already active\n",0);
 		return true;
 	}
-	M3_INFO("Startup of M3RtDataService, port %d...\n",portno);
+	M3_INFO("Startup of Data Service, port %d...\n",portno);
 	ext_sem=sys->GetExtSem();
 #ifdef __RTAI__
-	M3_INFO("Creating rt_threadDataService...\n");
+	M3_INFO("Creating Data Service thread...\n");
 	hdt=rt_thread_create((void*)data_thread,this,10000);  // wait until thread starts
 #else
 	long int hdt = pthread_create((pthread_t *)&hdt, NULL, (void *(*)(void *))data_thread, (void*)this);
@@ -140,7 +140,7 @@ bool M3RtDataService::Startup()
 
 void M3RtDataService::Shutdown()
 {
-	M3_INFO("Shutdown of M3RtDataService , port %d\n",portno);
+	M3_INFO("Shutting down Data Service , port %d...\n",portno);
 	data_thread_end=true;
 #ifdef __RTAI__
 	rt_thread_join(hdt);
@@ -148,9 +148,9 @@ void M3RtDataService::Shutdown()
 	pthread_join((pthread_t)hdt, NULL);
 #endif
 	if (data_thread_active)
-		M3_WARN("M3RtDataService thread did not shut down correctly\n");
+		M3_WARN("Data Service thread did not shut down correctly\n");
 	server.Shutdown();
-	
+	M3_INFO("Shutdown of Data Service , port %d\n done",portno);
 }
 
 

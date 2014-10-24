@@ -31,11 +31,11 @@ static bool svc_thread_end=false;
 static void* service_thread(void * arg)
 {
     M3RtService * svc = (M3RtService *)arg;
-    svc_thread_active=true;
     svc_thread_end=false;
     m3rt::M3_INFO("Running Service Thread\n");
     while(!svc_thread_end)
     {
+	svc_thread_active=true;
         usleep(100000);
         if (svc->IsDataServiceError())
         {
@@ -95,15 +95,13 @@ void M3RtService::Shutdown()
     m3rt::M3_INFO("Begin shutdown of M3RtService...\n");
     svc_thread_end=true;
     void *end;
-    clock_t start_time=clock();
-    int timeout_s = 2.0*CLOCKS_PER_SEC; //2s
-    ///rt_thread_join(hst);
-    while(svc_thread_active && (clock()-start_time < timeout_s))
+    float timeout_s = 4;
+    time_t start_time=time(0);
+    while(svc_thread_active && (float)difftime(time(0),start_time) < timeout_s)
     {
-        m3rt::M3_INFO("Waiting for Service thread to shutdown...\n");
+        m3rt::M3_INFO("Waiting for Service thread to shutdown... (%.2fs/%.2fs)\n",(float)difftime(time(0),start_time) ,timeout_s);
         usleep(500000);
     }
-    //m3rt::M3_INFO("M3RtService: Removing RTSystem.\n");
     RemoveRtSystem();
     m3rt::M3_INFO("Shutdown of M3RtService complete.\n");
 }
@@ -111,6 +109,11 @@ void M3RtService::Shutdown()
 //////////////////////////////////////////////////////////////////////////////////////
 int M3RtService::AttachRtSystem()
 {
+    if(!svc_thread_active || svc_thread_end){
+      svc_thread_active=true;
+      svc_thread_end=false;
+      return -1;
+    }
     if(rt_system!=NULL)
         return ++num_rtsys_attach;
 
@@ -146,7 +149,7 @@ int M3RtService::RemoveRtSystem()
     }
     if (IsRosServiceRunning())
         RemoveRosService();
-    if (!IsDataServiceRunning())
+    if ((!IsDataServiceRunning() && !rt_system->IsRtSystemActive() ) || svc_thread_end)
     {
         RemoveLogService();
         bool success=rt_system->Shutdown();
@@ -154,7 +157,7 @@ int M3RtService::RemoveRtSystem()
         rt_system=NULL;
         if (!success)
         {
-            m3rt::M3_INFO("Failure in RtSystem shutdown.\n");
+            m3rt::M3_ERR("Failure in RtSystem shutdown.\n");
             return -1;
         }
 
@@ -174,12 +177,12 @@ bool M3RtService::AttachLogService(char * name, char * path, double freq,int pag
         log_service->AddComponent(log_components[i]);
     if (!log_service->Startup())
     {
-        m3rt::M3_INFO("M3RtLogService %s failed to start\n",name);
+        m3rt::M3_WARN("M3RtLogService %s failed to start\n",name);
         log_service->Shutdown();
         delete log_service;
         log_service=NULL;
         log_components.clear();
-        m3rt::M3_INFO("Shutting down RTSystem due to RtLogService startup failure\n");
+        m3rt::M3_WARN("Shutting down RTSystem due to RtLogService startup failure\n");
         RemoveRtSystem();
         return false;
     }

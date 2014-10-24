@@ -39,8 +39,6 @@ extern "C" {
 namespace m3rt
 {
 using namespace std;
-static bool sys_thread_active;
-static bool sys_thread_end;
 static int step_cnt = 0;
 #ifdef __RTAI__
 static RT_TASK * main_task;
@@ -61,7 +59,7 @@ unsigned long long getNanoSec(void)
 void *rt_system_thread(void *arg)
 {
     M3RtSystem *m3sys = (M3RtSystem *)arg;
-    sys_thread_end = false; //gonna be at true is startup fails=> no wait
+    m3sys->sys_thread_end = false; //gonna be at true is startup fails=> no wait
     bool safeop_only = false;
     int tmp_cnt = 0;
     bool ready_sent=false;
@@ -87,7 +85,7 @@ void *rt_system_thread(void *arg)
     M3_INFO("Beginning RTAI Initialization.\n");
     if(!( task = rt_task_init_schmod(nam2num("M3SYS"), 0, 0, 0, SCHED_FIFO, 0xF))) {
         m3rt::M3_ERR("Failed to create RT-TASK M3SYS\n", 0);
-        sys_thread_active = false;
+        m3sys->sys_thread_active = false;
         return 0;
     }
     M3_INFO("RT Task Scheduled.\n");
@@ -193,11 +191,11 @@ void *rt_system_thread(void *arg)
 #endif
 
     m3sys->over_step_cnt = 0;
-    sys_thread_end = false;
-    sys_thread_active = true;
+    m3sys->sys_thread_end = false;
+    m3sys->sys_thread_active = true;
 
     while(1) {
-        if(sys_thread_end) break;
+        if(m3sys->sys_thread_end) break;
 #ifdef __RTAI__
         start = rt_get_cpu_time_ns();
 #else
@@ -268,7 +266,7 @@ void *rt_system_thread(void *arg)
     rt_make_soft_real_time();
     rt_task_delete(task);
 #endif
-    sys_thread_active = false;
+    m3sys->sys_thread_active = false;
     return 0;
 }
 
@@ -289,12 +287,8 @@ bool M3RtSystem::Startup()
 #ifdef __RTAI__
     hst = rt_thread_create((void *)rt_system_thread, (void *)this, 1000000);
     ret = (hst!=0 ? 0:-1);
-    //rt_sem_wait_timed(this->ready_sem,nano2count(2e9)); A.H:doesn't work for some reason. FIXME: maybe because linux task (!rtai task)
 #else
-    //struct timespec ts;
-    //ts.tv_sec = 3;
     ret = pthread_create((pthread_t *)&hst, NULL, (void * ( *)(void *))rt_system_thread, (void *)this);
-    //sem_timedwait(ready_sem, &ts);
 #endif
 
     if(!(ret==0)){
@@ -304,7 +298,6 @@ bool M3RtSystem::Startup()
     for(int i = 0; i < 10; i++) {
         if(sys_thread_active)
             break;
-        //M3_INFO("Waiting for the Ready Signal.\n");
         usleep(1e6); //Wait until enters hard real-time and components loaded. Can take some time if alot of components.max wait = 1sec
         
     }
@@ -314,30 +307,23 @@ bool M3RtSystem::Startup()
     }
     return true;
 }
-/*static void shutdown(void *arg)
-{
-    m3rt::M3Component * comp=reinterpret_cast<m3rt::M3Component *>(arg);
-    M3_INFO("%s is shutting down...\n",comp->GetName().c_str());
-    comp->Shutdown();
-}*/
 
 bool M3RtSystem::Shutdown()
 {
     M3_INFO("Begin shutdown of M3RtSystem...\n");
     //Stop RtSystem thread
     sys_thread_end = true;
-//#ifdef __RTAI__
+
     usleep(500000);
-    clock_t start_time=clock();
-    int timeout = 2.0*CLOCKS_PER_SEC; //2s
-    while(sys_thread_active && (clock()-start_time < timeout))
+    
+    float timeout_s = 4;
+    time_t start_time=time(0);
+    while(sys_thread_active && (float)difftime(time(0),start_time) < timeout_s)
     {
-        M3_INFO("Waiting for M3RtSystem thread to shutdown... (%.2fs/%.2fs)\n",(float)(clock()/CLOCKS_PER_SEC),(float)(timeout/CLOCKS_PER_SEC));
+        m3rt::M3_INFO("Waiting for RtSystem thread to shutdown... (%.2fs/%.2fs)\n",(float)difftime(time(0),start_time) ,timeout_s);
         usleep(500000);
     }
-//#else
-//    pthread_join((pthread_t)hst, NULL);
-//#endif
+
     if(sys_thread_active) {
         m3rt::M3_WARN("M3RtSystem thread did not shutdown correctly\n");
         //return false;
