@@ -31,12 +31,20 @@ namespace m3rt
 {
 ////////////////////////////////////////////////////////////////
 
+/**
+ * @brief
+ *
+ */
 class M3ComponentEc: public M3Component{
 	public:
 		M3ComponentEc(int p=EC_PRIORITY):M3Component(p),shm(NULL),pdo_id(0),virtual_mode(0){}
 		friend class M3RtSystem;
 	protected:
-		void PrettyPrint();
+        /**
+         * @brief
+         *
+         */
+        void PrettyPrint();
 		//Deprecated: DSP is 16bit word, Client is 32
 		//So when doing a sizeof() on a PDO struct that contains
 		//an array, can be off by 2 as the client will pad align to word siz
@@ -44,34 +52,113 @@ class M3ComponentEc: public M3Component{
 		//of this effect.
 		//virtual size_t GetStatusPdoSize()=0;
 		//virtual size_t GetCommandPdoSize()=0;
-		virtual M3EtherCATStatus * GetEcStatus()=0;
-		virtual void SetStatusFromPdo(unsigned char * data)=0;
-		virtual void SetPdoFromCommand(unsigned char * data)=0;
+        /**
+         * @brief
+         *
+         * @return M3EtherCATStatus
+         */
+        virtual M3EtherCATStatus * GetEcStatus()=0;
+        /**
+         * @brief
+         *
+         * @param data
+         */
+        virtual void SetStatusFromPdo(unsigned char * data)=0;
+        /**
+         * @brief
+         *
+         * @param data
+         */
+        virtual void SetPdoFromCommand(unsigned char * data)=0;
 		
 		//Override these to pump virtual hardware data through the system
-		virtual void SetStatusFromPdoVirtual(){};
-		virtual void SetPdoFromCommandVirtual(){};
+        /**
+         * @brief
+         *
+         */
+        virtual void SetStatusFromPdoVirtual(){};
+        /**
+         * @brief
+         *
+         */
+        virtual void SetPdoFromCommandVirtual(){};
 		
-		bool SetSlaveEcShm(M3EcSlaveShm * slaves, int slaves_responding);
-		virtual bool ReadConfig(const char * filename);
-		void RegisterPdo(const char * name, int id){pdo_names.push_back(name);pdo_ids.push_back(id);} 
-		bool IsPdoVersion(int id){return pdo_id==id;}
-		bool IsVirtualMode(){return virtual_mode;}
-		virtual void Shutdown(){if (shm) ResetCommandPdo(shm->cmd);}
-		virtual void Startup();
-		virtual void StepStatus();
-		virtual void StepCommand();
+        /**
+         * @brief
+         *
+         * @param slaves
+         * @param slaves_responding
+         * @return bool
+         */
+        bool SetSlaveEcShm(M3EcSlaveShm * slaves, int slaves_responding);
+        /**
+         * @brief
+         *
+         * @param filename
+         * @return bool
+         */
+        virtual bool ReadConfig(const char * filename);
+        /**
+         * @brief
+         *
+         * @param name
+         * @param id
+         */
+        void RegisterPdo(const char * name, int id){pdo_names.push_back(name);pdo_ids.push_back(id);}
+        /**
+         * @brief
+         *
+         * @param id
+         * @return bool
+         */
+        bool IsPdoVersion(int id){return pdo_id==id;}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsVirtualMode(){return virtual_mode;}
+        /**
+         * @brief
+         *
+         */
+        virtual void Shutdown(){if (shm) ResetCommandPdo(shm->cmd);}
+        /**
+         * @brief
+         *
+         */
+        virtual void Startup();
+        /**
+         * @brief
+         *
+         */
+        virtual void StepStatus();
+        /**
+         * @brief
+         *
+         */
+        virtual void StepCommand();
 		//By convention, on M3 EtherCAT devices will go into a safe reset
 		//state when given a PDO of zero. Override if this is not the case.
-		virtual void ResetCommandPdo(unsigned char * pdo){memset(pdo,0,MAX_PDO_SIZE_BYTES);}
+        /**
+         * @brief
+         *
+         * @param pdo
+         */
+        virtual void ResetCommandPdo(unsigned char * pdo){memset(pdo,0,MAX_PDO_SIZE_BYTES);}
 	private:
-		M3EcSlaveShm * shm;
-		bool IsEcError();
-		int pdo_id;
-		std::vector<std::string> pdo_names;
-		std::vector<int> pdo_ids;
-		int tmp_cnt;
-		bool virtual_mode;
+        M3EcSlaveShm * shm; /**< TODO */
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsEcError();
+        int pdo_id; /**< TODO */
+        std::vector<std::string> pdo_names; /**< TODO */
+        std::vector<int> pdo_ids; /**< TODO */
+        int tmp_cnt; /**< TODO */
+        bool virtual_mode; /**< TODO */
 };
 
 }

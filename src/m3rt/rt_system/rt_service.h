@@ -43,59 +43,230 @@ extern "C" {
 
 //No m3rt namespace for swig-ability
 	
+/**
+ * @brief
+ *
+ */
 class M3RtService{
 public:
 	M3RtService():rt_system(NULL),log_service(NULL),svc_task(NULL),next_port(10000),num_rtsys_attach(0){
             log_components.reserve(50);
             data_services.reserve(20);
         }
-	~M3RtService();
-	bool Startup();
-	void Shutdown();
-	int AttachRtSystem(); //Return number attached: 0=error
-	int RemoveRtSystem();//Return number attached: 0=all removed
-	bool IsRtSystemOperational(){if (rt_system==NULL) return false; return rt_system->IsOperational();}
-	bool SetComponentStateSafeOp(char * name);
-	bool SetComponentStateOp(char * name);
-	void SetComponentStateOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
-	void SetComponentStateSafeOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
-	int AttachDataService();
-	bool AttachRosService();
-	bool RemoveRosService();
-	bool RemoveDataService(int port);
-	bool AttachLogService(char * name, char * path, double freq,int page_size,int verbose);
+    /**
+     * @brief
+     *
+     */
+    ~M3RtService();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool Startup();
+    /**
+     * @brief
+     *
+     */
+    void Shutdown();
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int AttachRtSystem(); //Return number attached: 0=error
+     /**
+      * @brief
+      *
+      * @return int
+      */
+    int RemoveRtSystem();//Return number attached: 0=all removed
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsRtSystemOperational(){if (rt_system==NULL) return false; return rt_system->IsRtSystemActive();}
+    /**
+     * @brief
+     *
+     * @param name
+     * @return bool
+     */
+    bool SetComponentStateSafeOp(char * name);
+    /**
+     * @brief
+     *
+     * @param name
+     * @return bool
+     */
+    bool SetComponentStateOp(char * name);
+    /**
+     * @brief
+     *
+     */
+    void SetComponentStateOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
+    /**
+     * @brief
+     *
+     */
+    void SetComponentStateSafeOpAll(){if (rt_system==NULL) return; rt_system->SetComponentStateOpAll();}
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int AttachDataService();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool AttachRosService();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool RemoveRosService();
+    /**
+     * @brief
+     *
+     * @param port
+     * @return bool
+     */
+    bool RemoveDataService(int port);
+    /**
+     * @brief
+     *
+     * @param name
+     * @param path
+     * @param freq
+     * @param page_size
+     * @param verbose
+     * @return bool
+     */
+    bool AttachLogService(char * name, char * path, double freq,int page_size,int verbose);
 	//bool AddRosComponent(const char * name);
-	bool AddLogComponent(char * name){log_components.push_back(name);}
-	bool RemoveLogService();
-	bool IsDataServiceRunning();
-	bool IsLogServiceRunning(){return log_service!=NULL;}
-	bool IsRosServiceRunning(){return false;}
-	bool IsRtSystemRunning(){return rt_system !=NULL;}
-	bool IsServiceThreadActive();
-	int GetNumComponents();
-	const char *  GetComponentName(int idx);
-	const char *  GetComponentType(int idx);
-	int GetComponentState(const char * name);
-	int GetComponentIdx(const char * name);
-	bool PrettyPrintComponent(const char * name);
-	bool PrettyPrintRtSystem();
-	bool ClientSubscribeStatus(const char * name, int port);
-	bool IsDataServiceError();
+    /**
+     * @brief
+     *
+     * @param name
+     * @return bool
+     */
+    bool AddLogComponent(char * name){log_components.push_back(name);}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool RemoveLogService();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsDataServiceRunning();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsLogServiceRunning(){return log_service!=NULL;}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsRosServiceRunning(){return false;}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsRtSystemRunning(){return rt_system !=NULL;}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsServiceThreadActive();
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int GetNumComponents();
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return const char
+     */
+    const char *  GetComponentName(int idx);
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return const char
+     */
+    const char *  GetComponentType(int idx);
+    /**
+     * @brief
+     *
+     * @param name
+     * @return int
+     */
+    int GetComponentState(const char * name);
+    /**
+     * @brief
+     *
+     * @param name
+     * @return int
+     */
+    int GetComponentIdx(const char * name);
+    /**
+     * @brief
+     *
+     * @param name
+     * @return bool
+     */
+    bool PrettyPrintComponent(const char * name);
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool PrettyPrintRtSystem();
+    /**
+     * @brief
+     *
+     * @param name
+     * @param port
+     * @return bool
+     */
+    bool ClientSubscribeStatus(const char * name, int port);
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool IsDataServiceError();
 private:
-  	int hlt;
-	m3rt::M3RtSystem  * rt_system;
-	m3rt::M3ComponentFactory factory; //Can only create one instance of this.
-	std::vector<m3rt::M3RtDataService*> data_services;
-	m3rt::M3RtLogService *log_service;
-	std::vector<std::string> log_components;
+    int hlt; /**< The thread created at Startup()*/
+    m3rt::M3RtSystem  * rt_system; /**< TODO */
+    m3rt::M3ComponentFactory factory; //Can only create one instance of this. /**< TODO */
+    std::vector<m3rt::M3RtDataService*> data_services; /**< TODO */
+    m3rt::M3RtLogService *log_service; /**< TODO */
+    std::vector<std::string> log_components; /**< TODO */
 #ifdef __RTAI__
-	RT_TASK *svc_task;
+    RT_TASK *svc_task; /**< TODO */
 #else
 	int * svc_task; // to preserve initializer
 #endif
-	std::vector<int> ports;
-	int next_port;
-	int num_rtsys_attach;
+    std::vector<int> ports; /**< TODO */
+    int next_port; /**< TODO */
+    int num_rtsys_attach; /**< TODO */
 };
 
 

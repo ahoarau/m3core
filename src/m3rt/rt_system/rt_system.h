@@ -50,43 +50,183 @@ extern "C" {
 
 namespace m3rt
 {
+/**
+ * @brief
+ *
+ */
 class M3RtSystem
 {
 public:
+    /**
+     * @brief The class that contains the realtime loop
+     *
+     * @param f
+     */
     M3RtSystem(M3ComponentFactory * f):log_service(NULL),
         shm_ec(0),shm_sem(0),ext_sem(NULL),sync_sem(0),factory(f),logging(false),hard_realtime(true),ready_sem(NULL),
         safeop_required(false){GOOGLE_PROTOBUF_VERIFY_VERSION;}
     friend class M3RtDataService;
+    /**
+     * @brief
+     *
+     */
     ~M3RtSystem();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
     bool Startup();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
     bool StartupComponents();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
     bool Shutdown();
+    /**
+     * @brief
+     *
+     * @param safeop_only
+     * @param dry_run
+     * @return bool
+     */
     bool Step(bool safeop_only,bool dry_run=false);
+    /**
+     * @brief
+     *
+     */
     void PrettyPrint();
+    /**
+     * @brief
+     *
+     */
     void PrettyPrintComponents();
+    /**
+     * @brief
+     *
+     * @param idx
+     */
     void PrettyPrintComponent(int idx);
+    /**
+     * @brief
+     *
+     */
     void PrettyPrintComponentNames();
+    /**
+     * @brief
+     *
+     * @param name
+     * @return M3Component
+     */
     M3Component * 	GetComponent(std::string name){return factory->GetComponent(name);}
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return M3Component
+     */
     M3Component *  	GetComponent(int idx){return factory->GetComponent(idx);}
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return std::string
+     */
     std::string  	GetComponentName(int idx){return factory->GetComponentName(idx);}
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return std::string
+     */
     std::string  	GetComponentType(int idx){return factory->GetComponentType(idx);}
+    /**
+     * @brief
+     *
+     * @return int
+     */
     int 		GetNumComponents(){return factory->GetNumComponents();}
+    /**
+     * @brief
+     *
+     * @param name
+     * @return int
+     */
     int 		GetComponentIdx(std::string name){return factory->GetComponentIdx(name);}
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return int
+     */
     int			GetComponentState(int idx);
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return bool
+     */
     bool SetComponentStateOp(int idx);
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return bool
+     */
     bool SetComponentStateSafeOp(int idx);
-	void SetComponentStateSafeOpAll(void);
-	void SetComponentStateOpAll(void);
+    /**
+     * @brief
+     *
+     */
+    void SetComponentStateSafeOpAll(void);
+    /**
+     * @brief
+     *
+     */
+    void SetComponentStateOpAll(void);
+    /**
+     * @brief
+     *
+     * @return bool
+     */
     bool IsOperational(){return !safeop_required;}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
     bool IsHardRealTime(){return hard_realtime;}
+    /**
+     * @brief
+     *
+     * @return M3ComponentFactory
+     */
+    bool IsRtSystemActive(){return sys_thread_active;}
     M3ComponentFactory * GetFactory()const{return factory;}
+    /**
+     * @brief
+     *
+     * @param timeout_ns
+     * @return bool
+     */
     bool WaitForEcComponents(mReal timeout_ns=3e9);
 #ifdef __RTAI__
+    /**
+     * @brief
+     *
+     * @return int
+     */
     int GetEcCounter(){return shm_ec->counter;}
-    SEM * ready_sem;
-    SEM * sync_sem;
-    SEM * shm_sem;
-    SEM * ext_sem;
+    SEM * ready_sem; /**< TODO */
+    SEM * sync_sem; /**< TODO */
+    SEM * shm_sem; /**< TODO */
+    SEM * ext_sem; /**< TODO */
 #else
     sem_t * shm_sem;
     sem_t * sync_sem;
@@ -94,36 +234,76 @@ public:
     sem_t * ready_sem;
     int GetEcCounter(){return 0;}
 #endif
+    /**
+     * @brief
+     *
+     * @param f
+     */
     void SetFactory(M3ComponentFactory * f){factory=f;}
+    /**
+     * @brief
+     *
+     * @param l
+     */
     void AttachLogService(M3RtLogService * l){log_service=l;}
 
+    /**
+     * @brief
+     *
+     */
     void RemoveLogService(){log_service=NULL;M3_DEBUG("Log service stopped at %d\n",log_service);}
+    /**
+     * @brief
+     *
+     * @param msg
+     * @return bool
+     */
     bool ParseCommandFromExt(M3CommandAll & msg);  //Must be thread safe
+    /**
+     * @brief
+     *
+     * @param msg
+     * @param names
+     * @return bool
+     */
     bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
-    bool logging;
-    int over_step_cnt;
+    bool logging; /**< TODO */
+    int over_step_cnt; /**< TODO */
+    bool sys_thread_end;
+    bool sys_thread_active;
 private:
+    /**
+     * @brief
+     *
+     */
     void CheckComponentStates();
-    M3ComponentFactory * factory;
-    M3EcSystemShm *  shm_ec;
-    bool safeop_required;
-	bool hard_realtime;
-    std::vector<M3ComponentEc *>	m3ec_list;
-    std::vector<M3Component *>	m3rt_list;
+    M3ComponentFactory * factory; /**< TODO */
+    M3EcSystemShm *  shm_ec; /**< TODO */
+    bool safeop_required; /**< TODO */
+    bool hard_realtime; /**< TODO */
+    std::vector<M3ComponentEc *>	m3ec_list; /**< TODO */
+    std::vector<M3Component *>	m3rt_list; /**< TODO */
 #ifdef __RTAI__
-    RTIME last_cycle_time;
+    RTIME last_cycle_time; /**< TODO */
 #else
     long long last_cycle_time;
 #endif
-    M3RtLogService * log_service;
+    M3RtLogService * log_service; /**< TODO */
 
-    std::vector<int> idx_map_ec;
-    std::vector<int> idx_map_rt;
-    long hst;
-    double test;
+    std::vector<int> idx_map_ec; /**< TODO */
+    std::vector<int> idx_map_rt; /**< TODO */
+    long hst; /**< TODO */
+    double test; /**< TODO */
 	
 protected:
     template <class T>
+    /**
+     * @brief
+     *
+     * @param name
+     * @param comp_list
+     * @return bool
+     */
     bool IsComponentInList(std::string& name,std::vector<T*>& comp_list){
 	for(int i=0;i<comp_list.size();++i){
 	      if( comp_list[i]->GetName() == name)
@@ -132,13 +312,27 @@ protected:
 	return false;
     }
 #ifdef __RTAI__
+    /**
+     * @brief
+     *
+     * @return SEM
+     */
     SEM * GetExtSem(){return ext_sem;}
 #else
     sem_t * GetExtSem(){return ext_sem;}
 #endif
 	// Here we read the config files in robot_config1:robot_config_add:robot_config_overlap
 	template <class T>
-	bool ReadConfig(const char* filename, const char* component_type, std::vector<T*>& comp_list, std::vector< int >& idx_map)
+    /**
+     * @brief
+     *
+     * @param filename
+     * @param component_type
+     * @param comp_list
+     * @param idx_map
+     * @return bool
+     */
+    bool ReadConfig(const char* filename, const char* component_type, std::vector<T*>& comp_list, std::vector< int >& idx_map)
 	{
 		std::vector<std::string> vpath;
 		GetFileConfigPath(filename,vpath);
@@ -164,7 +358,16 @@ protected:
 		return ret;
 	}
 	template <class T>
-	bool ReadConfigUnordered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
+    /**
+     * @brief
+     *
+     * @param filename
+     * @param component_type
+     * @param comp_list
+     * @param idx_map
+     * @return bool
+     */
+    bool ReadConfigUnordered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
 	{
 		try{
 		YAML::Node doc;
@@ -249,7 +452,16 @@ protected:
 	}
 #if defined(YAMLCPP_05)
 	template <class T>
-	bool ReadConfigOrdered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
+    /**
+     * @brief
+     *
+     * @param filename
+     * @param component_type
+     * @param comp_list
+     * @param idx_map
+     * @return bool
+     */
+    bool ReadConfigOrdered(const std::string& filename,const char * component_type,std::vector<T>& comp_list,std::vector<int>& idx_map)
 	{
 		// New version with -ma17: -actuator1:type1 etc
 		YAML::Node doc = YAML::LoadFile(filename);

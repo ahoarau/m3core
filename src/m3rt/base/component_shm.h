@@ -46,30 +46,97 @@ namespace m3rt
 {
 ////////////////////////////////////////////////////////////////
  
+/**
+ * @brief
+ *
+ */
 class M3CompShm: public M3Component{
 	public:
 		M3CompShm(int p=EC_PRIORITY):M3Component(p),shm(NULL),status_sem(NULL), command_sem(NULL){}
 		
 	protected:		
-		virtual size_t GetStatusSdsSize()=0;
-		virtual size_t GetCommandSdsSize()=0;		
-		virtual void SetCommandFromSds(unsigned char * data)=0;
-		virtual void SetSdsFromStatus(unsigned char * data)=0;	
-		virtual bool ReadConfig(const char * filename);			
-		virtual void Startup();
-		virtual void Shutdown();
-		virtual void StepStatus();
-		virtual void StepCommand();		
-		virtual void ResetCommandSds(unsigned char * sds){memset(sds,0,MAX_SDS_SIZE_BYTES);}
-		void request_status(){rt_sem_wait(status_sem);}
-		void release_status(){rt_sem_signal(status_sem);}
-		void request_command(){rt_sem_wait(command_sem);}
-		void release_command(){rt_sem_signal(command_sem);}
+        /**
+         * @brief
+         *
+         * @return size_t
+         */
+        virtual size_t GetStatusSdsSize()=0;
+        /**
+         * @brief
+         *
+         * @return size_t
+         */
+        virtual size_t GetCommandSdsSize()=0;
+        /**
+         * @brief
+         *
+         * @param data
+         */
+        virtual void SetCommandFromSds(unsigned char * data)=0;
+        /**
+         * @brief
+         *
+         * @param data
+         */
+        virtual void SetSdsFromStatus(unsigned char * data)=0;
+        /**
+         * @brief
+         *
+         * @param filename
+         * @return bool
+         */
+        virtual bool ReadConfig(const char * filename);
+        /**
+         * @brief
+         *
+         */
+        virtual void Startup();
+        /**
+         * @brief
+         *
+         */
+        virtual void Shutdown();
+        /**
+         * @brief
+         *
+         */
+        virtual void StepStatus();
+        /**
+         * @brief
+         *
+         */
+        virtual void StepCommand();
+        /**
+         * @brief
+         *
+         * @param sds
+         */
+        virtual void ResetCommandSds(unsigned char * sds){memset(sds,0,MAX_SDS_SIZE_BYTES);}
+        /**
+         * @brief
+         *
+         */
+        void request_status(){rt_sem_wait(status_sem);}
+        /**
+         * @brief
+         *
+         */
+        void release_status(){rt_sem_signal(status_sem);}
+        /**
+         * @brief
+         *
+         */
+        void request_command(){rt_sem_wait(command_sem);}
+        /**
+         * @brief
+         *
+         */
+        void release_command(){rt_sem_signal(command_sem);}
 	private:
-		M3Sds * shm;				
-		SEM * status_sem;
-		SEM * command_sem;	
-		std::string shm_id;
+        M3Sds * shm;				 /**< TODO */
+        SEM * status_sem; /**< TODO */
+        SEM * command_sem;	 /**< TODO */
+        std::string shm_id; /**< TODO */
 };
 
 }

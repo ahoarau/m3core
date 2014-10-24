@@ -42,6 +42,10 @@ namespace m3rt
 
 #define MAX_PAGE_QUEUE 300 //In case log service not stopped properly, force shutdown
 
+/**
+ * @brief
+ *
+ */
 class M3RtLogService
 {
 public:
@@ -51,40 +55,94 @@ public:
 		downsample_rate = MAX(0,((int)((mReal)RT_TASK_FREQUENCY)/freq)-1); 
 		downsample_cnt=0;
 	}
-	bool Startup();					//Called by M3RtService
-	void Shutdown();				//Called by M3RtService
-	bool WritePagesToDisk();			//Called by M3RtLogService thread
-	void AddComponent(std::string name);			//Called by M3RtService
-	bool Step();					//Called by M3RtSystem
-	bool WriteEntry(bool final);	
-	M3StatusLogPage * GetNextPageToRead();
-	M3StatusLogPage * GetNextPageToWrite();
-	void MarkPageEmpty();
-	void MarkPageFull();
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool Startup();					//Called by M3RtService
+    /**
+     * @brief
+     *
+     */
+    void Shutdown();				//Called by M3RtService
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool WritePagesToDisk();			//Called by M3RtLogService thread
+    /**
+     * @brief
+     *
+     * @param name
+     */
+    void AddComponent(std::string name);			//Called by M3RtService
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool Step();					//Called by M3RtSystem
+    /**
+     * @brief
+     *
+     * @param final
+     * @return bool
+     */
+    bool WriteEntry(bool final);
+    /**
+     * @brief
+     *
+     * @return M3StatusLogPage
+     */
+    M3StatusLogPage * GetNextPageToRead();
+    /**
+     * @brief
+     *
+     * @return M3StatusLogPage
+     */
+    M3StatusLogPage * GetNextPageToWrite();
+    /**
+     * @brief
+     *
+     */
+    void MarkPageEmpty();
+    /**
+     * @brief
+     *
+     */
+    void MarkPageFull();
 private:
 	
-	std::string GetNextFilename(int num_entry);
-	std::string name;
-	std::string path;
-	M3StatusAll * entry;
-	std::vector<M3StatusLogPage*> pages;
-	std::vector<bool> is_page_full;
-	std::vector<M3Component *> components;
-	int start_idx;
-	int downsample_cnt;
-	int downsample_rate;
-	M3StatusLogPage * page;
-	M3RtSystem * sys;
-	int page_size;
-	int hlt;
-	int verbose;
-	int num_page_write;
-	int num_kbyte_write;
-	int num_kbytes_in_buffer;
-	int entry_idx;
-	int page_idx_write;
-	int page_idx_read;
-	int pages_written;
+    /**
+     * @brief
+     *
+     * @param num_entry
+     * @return std::string
+     */
+    std::string GetNextFilename(int num_entry);
+    std::string name; /**< TODO */
+    std::string path; /**< TODO */
+    M3StatusAll * entry; /**< TODO */
+    std::vector<M3StatusLogPage*> pages; /**< TODO */
+    std::vector<bool> is_page_full; /**< TODO */
+    std::vector<M3Component *> components; /**< TODO */
+    int start_idx; /**< TODO */
+    int downsample_cnt; /**< TODO */
+    int downsample_rate; /**< TODO */
+    M3StatusLogPage * page; /**< TODO */
+    M3RtSystem * sys; /**< TODO */
+    int page_size; /**< TODO */
+    int hlt; /**< TODO */
+    int verbose; /**< TODO */
+    int num_page_write; /**< TODO */
+    int num_kbyte_write; /**< TODO */
+    int num_kbytes_in_buffer; /**< TODO */
+    int entry_idx; /**< TODO */
+    int page_idx_write; /**< TODO */
+    int page_idx_read; /**< TODO */
+    int pages_written; /**< TODO */
 };
 
 }

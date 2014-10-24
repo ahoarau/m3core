@@ -44,8 +44,12 @@ extern "C" {
 
 namespace m3rt
 {
-	static int num_asyncs = 0;
+    static int num_asyncs = 0; /**< TODO */
 	
+/**
+ * @brief
+ *
+ */
 class M3ComponentAsync : public M3Component
 {
 	public:
@@ -56,41 +60,121 @@ class M3ComponentAsync : public M3Component
 			
 		}
 		
-		virtual void StepAsync()=0;
-		bool IsStopping(){return stop_thread;}
-		void SignalStop(){stop_thread = true;}
-		bool IsInitializing(){return initializing;}
+        /**
+         * @brief
+         *
+         */
+        virtual void StepAsync()=0;
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsStopping(){return stop_thread;}
+        /**
+         * @brief
+         *
+         */
+        void SignalStop(){stop_thread = true;}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsInitializing(){return initializing;}
 		
 #ifdef __RTAI__			
-		SEM * cmd_mutex;
-	        SEM * status_mutex;
+        SEM * cmd_mutex; /**< TODO */
+            SEM * status_mutex; /**< TODO */
 #endif
 
-		virtual google::protobuf::Message *  GetCommandAsync()=0;
-		virtual google::protobuf::Message *  GetStatusAsync()=0;
-		virtual google::protobuf::Message *  GetParamAsync()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetCommandAsync()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetStatusAsync()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetParamAsync()=0;
 		
-		virtual google::protobuf::Message *  GetCommandShared()=0;
-		virtual google::protobuf::Message *  GetStatusShared()=0;
-		virtual google::protobuf::Message *  GetParamShared()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetCommandShared()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetStatusShared()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetParamShared()=0;
 		
-		virtual google::protobuf::Message * GetStatusThread()=0;
-		bool initializing;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message * GetStatusThread()=0;
+        bool initializing; /**< TODO */
 		
 	protected:
-		enum {DEFAULT, ISS};		
+        enum {DEFAULT, ISS};		 /**< TODO */
 		
 		
-		virtual bool ReadConfig(const char * filename);
-		virtual void Startup();
-		virtual void Shutdown();
-		virtual void StepStatus();
-		virtual void StepCommand();			
-		virtual bool LinkDependentComponents();		
+        /**
+         * @brief
+         *
+         * @param filename
+         * @return bool
+         */
+        virtual bool ReadConfig(const char * filename);
+        /**
+         * @brief
+         *
+         */
+        virtual void Startup();
+        /**
+         * @brief
+         *
+         */
+        virtual void Shutdown();
+        /**
+         * @brief
+         *
+         */
+        virtual void StepStatus();
+        /**
+         * @brief
+         *
+         */
+        virtual void StepCommand();
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        virtual bool LinkDependentComponents();
 	private:	      
-	      long rc;
-	      bool stop_thread;
-	      int tmp;
+          long rc; /**< TODO */
+          bool stop_thread; /**< TODO */
+          int tmp; /**< TODO */
 
 };
 

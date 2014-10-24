@@ -43,33 +43,61 @@ extern "C" {
 
 namespace m3rt
 {
+/**
+ * @brief
+ *
+ */
 class M3RtDataService
 {
 public:
 	M3RtDataService(M3RtSystem * s, int port):sys(s),data_thread_active(false),data_thread_error(false),data_thread_end(false),portno(port){
             status_names.reserve(50);
         }
-	bool Startup();							//Start thread, open port
-	void Shutdown();						//Stop thread, close port
-	bool StartServer(){return server.Startup(portno);}
-	bool Step();
-	void ClientSubscribeStatus(std::string name);
-	bool data_thread_active;
-	bool data_thread_end;
-	bool data_thread_error;
-	static int instances;
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool Startup();							//Start thread, open port
+    /**
+     * @brief
+     *
+     */
+    void Shutdown();						//Stop thread, close port
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool StartServer(){return server.Startup(portno);}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
+    bool Step();
+    /**
+     * @brief
+     *
+     * @param name
+     */
+    void ClientSubscribeStatus(std::string name);
+    bool data_thread_active; /**< TODO */
+    bool data_thread_end; /**< TODO */
+    bool data_thread_error; /**< TODO */
+    static int instances; /**< TODO */
 private:
-	M3StatusAll status;
-	M3SimpleServer server;
-	int portno;
+    M3StatusAll status; /**< TODO */
+    M3SimpleServer server; /**< TODO */
+    int portno; /**< TODO */
 	
-	std::string sread;
-	std::string swrite;
-	M3RtSystem * sys;
-	std::vector<std::string> status_names;
-	long hdt;
+    std::string sread; /**< TODO */
+    std::string swrite; /**< TODO */
+    M3RtSystem * sys; /**< TODO */
+    std::vector<std::string> status_names; /**< TODO */
+    long hdt; /**< TODO */
 #ifdef __RTAI__	
-	SEM * ext_sem;
+    SEM * ext_sem; /**< TODO */
 #else
 	sem_t * ext_sem;
 #endif

@@ -28,45 +28,166 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <algorithm>
 #include <sys/stat.h>
+#include <ctime>
+#include <time.h>
 namespace m3rt
 {
 
 #define M3_PRINTF printf
+/**
+ * @brief
+ *
+ * @param format...
+ */
 void M3_WARN(const char * format, ...);
+/**
+ * @brief
+ *
+ * @param format...
+ */
 void M3_ERR(const char * format, ...);
+/**
+ * @brief
+ *
+ * @param format...
+ */
 void M3_INFO(const char * format, ...);
+/**
+ * @brief
+ *
+ * @param format...
+ */
 void M3_DEBUG(const char * format, ...);
 
+/**
+ * @brief
+ *
+ * @param name
+ * @return bool
+ */
 inline bool file_exists (const std::string& name) {
   struct stat buffer;   
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
+/**
+ * @brief
+ *
+ * @param width
+ * @param format...
+ */
 void BannerPrint(int width, const char *format, ...);
+/**
+ * @brief
+ *
+ * @param var
+ * @param result
+ * @return bool
+ */
 bool GetEnvironmentVariable(const char * var, std::vector<std::string>& result);
+/**
+ * @brief
+ *
+ * @param var
+ * @param s
+ * @return bool
+ */
 bool GetEnvironmentVar(const char * var, std::string &s);
+/**
+ * @brief
+ *
+ * @param s
+ * @return std::vector<mReal>
+ */
 std::vector<mReal> YamlReadVectorM(std::string s);
+/**
+ * @brief
+ *
+ * @param s
+ * @return std::vector<std::string>
+ */
 std::vector<std::string> YamlReadVectorString(std::string s);
 #ifndef YAMLCPP_05
 std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 #endif
+/**
+ * @brief
+ *
+ * @param xs
+ * @return unsigned int
+ */
 unsigned int xtoi(const char* xs);
+/**
+ * @brief
+ *
+ * @param vpath
+ * @param sub_dir
+ * @return bool
+ */
 bool GetRobotConfigPath(std::vector< std::string >& vpath, std::string sub_dir = std::string(M3_CONFIG_DIR));
 
+/**
+ * @brief
+ *
+ * @param filename
+ * @param vpath
+ * @return bool
+ */
 bool GetFileConfigPath(const char* filename, std::vector< std::string >& vpath);
 
+/**
+ * @brief
+ *
+ * @param filename
+ * @param doc
+ * @param sub_dir
+ */
 void WriteYamlDoc(const char *filename, YAML::Emitter &doc, std::string sub_dir= std::string(M3_CONFIG_DIR));
 
+/**
+ * @brief
+ *
+ * @param filename
+ * @param doc
+ * @param
+ * @return std::string
+ */
 std::string GetYamlDoc(const char* filename, YAML::Node& doc, void*);
+/**
+ * @brief
+ *
+ * @param filename
+ * @param doc
+ * @return bool
+ */
 bool GetYamlDoc(const char* filename, YAML::Node& doc);
 
+/**
+ * @brief
+ *
+ * @param filename
+ * @param out
+ * @return bool
+ */
 bool GetYamlStream(const char* filename, YAML::Emitter& out);
 #ifdef YAMLCPP_05	
 template <typename _T >
+/**
+ * @brief
+ *
+ * @param input
+ * @param value
+ */
 void operator >>(const YAML::Node& input, _T& value) {
 	value = input.as<_T>();
 }
 template <typename _T >
+/**
+ * @brief
+ *
+ * @param node
+ * @param v
+ */
 void operator >> (const YAML::Node &node, std::vector<_T> & v)
 {
 	for(unsigned i = 0; i < node.size(); i++){
@@ -84,6 +205,13 @@ inline void operator >> (const YAML::Node &node, std::vector<mReal> & v)
 }
 #endif 
 
+/**
+ * @brief
+ *
+ * @param v_in
+ * @param s_in
+ * @return bool
+ */
 inline bool ContainsString(const std::vector<std::string>& v_in, const std::string& s_in)
 {
 	assert(false == s_in.empty());
@@ -95,7 +223,21 @@ inline bool ContainsString(const std::vector<std::string>& v_in, const std::stri
 	return false;
 }
 
+/**
+ * @brief
+ *
+ * @param filename
+ * @param docs
+ * @return bool
+ */
 bool GetAllYamlDocs(const char* filename, std::vector< YAML::Node >& docs );
+/**
+ * @brief
+ *
+ * @param vpath
+ * @param docs
+ * @return bool
+ */
 bool GetAllYamlDocs(std::vector< std::string > vpath, std::vector< YAML::Node >& docs );
 
 }

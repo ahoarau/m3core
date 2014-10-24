@@ -32,89 +32,286 @@ namespace m3rt
 class M3ComponentFactory;
 class M3RtSystem;
 
-/*
-A component can be in one of 4 states:
-		M3COMP_STATE_INIT = 0;
-		M3COMP_STATE_ERR = 1;
-		M3COMP_STATE_SAFEOP = 2;
-		M3COMP_STATE_OP = 3;
-	
-	State INIT: On creation, Startup() not yet called.
-	State OP: Initialized, running normally. Status and Command data is modified. A module must be placed in OP by an external process.
-	State SAFEOP: Only Status data is modified. SAFEOP is set externally in case of system error.
-	State ERR: A non-recoverable error or safety exception has been triggered. 
-	
-	Each component must implement  Startup, Shutdown, StepStateOp, StepStateSafeOp, StepStateError . 
-	After successful Startup,     it should do a SetStateSafeOp else SetStateError
-	After successful StepStateOp, it should do a SetStateOp else SetStateError
-	After successful StepStateSafeOp, it should do a SetStateSafeOp else SetStateError
-	After a StepStateError, 	  it should do a SetStateError
-	
-	The client process must manually place each SafeOp component in state Op.
-*/
-
+/**
+ * @brief
+ *
+ * A component can be in one of 4 states: \n
+ *         M3COMP_STATE_INIT = 0; \n
+ *         M3COMP_STATE_ERR = 1; \n
+ *         M3COMP_STATE_SAFEOP = 2; \n
+ *         M3COMP_STATE_OP = 3; \n
+ *    \n
+ *    State INIT: On creation, Startup() not yet called.\n
+ *    State OP: Initialized, running normally. Status and Command data is modified. A module must be placed in OP by an external process.\n
+ *    State SAFEOP: Only Status data is modified. SAFEOP is set externally in case of system error.\n
+ *    State ERR: A non-recoverable error or safety exception has been triggered.\n
+ *    \n
+ *    Each component must implement  Startup, Shutdown, StepStateOp, StepStateSafeOp, StepStateError \n
+ *    After successful Startup,     it should do a SetStateSafeOp else SetStateError\n
+ *    After successful StepStateOp, it should do a SetStateOp else SetStateError\n
+ *    After successful StepStateSafeOp, it should do a SetStateSafeOp else SetStateError\n
+ *    After a StepStateError, 	  it should do a SetStateError\n
+ *    \n
+ *    The client process must manually place each SafeOp component in state Op.
+ */
 class M3Component{
 	public:
 		M3Component(int p=0):factory(NULL),priority(p),version_id(-1),doc_path(""){GOOGLE_PROTOBUF_VERIFY_VERSION;}
-		virtual ~M3Component(){}
+        /**
+         * @brief
+         *
+         */
+        virtual ~M3Component(){}
 		friend class M3RtSystem;
 		friend class M3RtLogService;
-		std::string GetName(){return GetBaseStatus()->name();}
-		int  GetState(){return (int)GetBaseStatus()->state();}
-		int  GetPriority(){return priority;}
-		void  SetPriority(int p){priority=p;}
-		void SetVerbose(bool v){verbose_=v;}
-		const YAML::Node& GetConfig(){return this->doc;}
-		void SetStateError(){GetBaseStatus()->set_state(M3COMP_STATE_ERR);}
-		void SetStateOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_OP);}
-		void SetStateSafeOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_SAFEOP);}
-		bool IsStateError(){return GetBaseStatus()->state() == M3COMP_STATE_ERR;}
-		bool IsStateSafeOp(){return GetBaseStatus()->state() == M3COMP_STATE_SAFEOP;}
-		bool IsStateOp(){return GetBaseStatus()->state() == M3COMP_STATE_OP;}
-		bool IsRateFast(){return GetBaseStatus()->rate()=="fast";}
-		bool IsRateMedium(){return GetBaseStatus()->rate()=="medium";}
-		bool IsRateSlow(){return GetBaseStatus()->rate()=="slow";}
-		bool IsVersion(int id){return version_id==id;} 
-		const std::string GetConfigPath(){ return doc_path;}
-		void RegisterVersion(const char * name, int id){version_names.push_back(name);version_ids.push_back(id);} 
-		virtual void Startup()=0;
-		virtual void Shutdown()=0;
-		virtual void StepStatus()=0;
-		virtual void StepCommand()=0;
+        /**
+         * @brief
+         *
+         * @return std::string
+         */
+        std::string GetName(){return GetBaseStatus()->name();}
+        /**
+         * @brief
+         *
+         * @return int
+         */
+        int  GetState(){return (int)GetBaseStatus()->state();}
+        /**
+         * @brief
+         *
+         * @return int
+         */
+        int  GetPriority(){return priority;}
+        /**
+         * @brief
+         *
+         * @param p
+         */
+        void  SetPriority(int p){priority=p;}
+        /**
+         * @brief
+         *
+         * @param v
+         */
+        void SetVerbose(bool v){verbose_=v;}
+        /**
+         * @brief
+         *
+         * @return const YAML::Node
+         */
+        const YAML::Node& GetConfig(){return this->doc;}
+        /**
+         * @brief
+         *
+         */
+        void SetStateError(){GetBaseStatus()->set_state(M3COMP_STATE_ERR);}
+        /**
+         * @brief
+         *
+         */
+        void SetStateOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_OP);}
+        /**
+         * @brief
+         *
+         */
+        void SetStateSafeOp(){if (!IsStateError()) GetBaseStatus()->set_state(M3COMP_STATE_SAFEOP);}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsStateError(){return GetBaseStatus()->state() == M3COMP_STATE_ERR;}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsStateSafeOp(){return GetBaseStatus()->state() == M3COMP_STATE_SAFEOP;}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsStateOp(){return GetBaseStatus()->state() == M3COMP_STATE_OP;}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsRateFast(){return GetBaseStatus()->rate()=="fast";}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsRateMedium(){return GetBaseStatus()->rate()=="medium";}
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        bool IsRateSlow(){return GetBaseStatus()->rate()=="slow";}
+        /**
+         * @brief
+         *
+         * @param id
+         * @return bool
+         */
+        bool IsVersion(int id){return version_id==id;}
+        /**
+         * @brief
+         *
+         * @return const std::string
+         */
+        const std::string GetConfigPath(){ return doc_path;}
+        /**
+         * @brief
+         *
+         * @param name
+         * @param id
+         */
+        void RegisterVersion(const char * name, int id){version_names.push_back(name);version_ids.push_back(id);}
+        /**
+         * @brief
+         *
+         */
+        virtual void Startup()=0;
+        /**
+         * @brief
+         *
+         */
+        virtual void Shutdown()=0;
+        /**
+         * @brief
+         *
+         */
+        virtual void StepStatus()=0;
+        /**
+         * @brief
+         *
+         */
+        virtual void StepCommand()=0;
 		
-		void SetTimestamp(int64_t ts){GetBaseStatus()->set_timestamp(ts);}
-		void GetTimestamp(int64_t ts){GetBaseStatus()->timestamp();}
-		void SetFactory(M3ComponentFactory * f){factory=f;}
+        /**
+         * @brief
+         *
+         * @param ts
+         */
+        void SetTimestamp(int64_t ts){GetBaseStatus()->set_timestamp(ts);}
+        /**
+         * @brief
+         *
+         * @param ts
+         */
+        void GetTimestamp(int64_t ts){GetBaseStatus()->timestamp();}
+        /**
+         * @brief
+         *
+         * @param f
+         */
+        void SetFactory(M3ComponentFactory * f){factory=f;}
 		
-		virtual void PrettyPrint();
-		virtual google::protobuf::Message *  GetCommand()=0;
-		virtual google::protobuf::Message *  GetStatus()=0;
-		virtual google::protobuf::Message *  GetParam()=0;
-		void ParseCommandTest(std::string & s){}
-		virtual bool SerializeStatus(std::string & s);
+        /**
+         * @brief
+         *
+         */
+        virtual void PrettyPrint();
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetCommand()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetStatus()=0;
+        /**
+         * @brief
+         *
+         * @return google::protobuf::Message
+         */
+        virtual google::protobuf::Message *  GetParam()=0;
+        /**
+         * @brief
+         *
+         * @param s
+         */
+        void ParseCommandTest(std::string & s){}
+        /**
+         * @brief
+         *
+         * @param s
+         * @return bool
+         */
+        virtual bool SerializeStatus(std::string & s);
 	protected:
-		void RegisterVersionID(const char * name, int id);
-		virtual bool ParseCommand(std::string & s);
-		virtual bool ParseParam(std::string & s);		
-		virtual bool LinkDependentComponents(){return true;}
-		virtual M3BaseStatus *  GetBaseStatus()=0;
+        /**
+         * @brief
+         *
+         * @param name
+         * @param id
+         */
+        void RegisterVersionID(const char * name, int id);
+        /**
+         * @brief
+         *
+         * @param s
+         * @return bool
+         */
+        virtual bool ParseCommand(std::string & s);
+        /**
+         * @brief
+         *
+         * @param s
+         * @return bool
+         */
+        virtual bool ParseParam(std::string & s);
+        /**
+         * @brief
+         *
+         * @return bool
+         */
+        virtual bool LinkDependentComponents(){return true;}
+        /**
+         * @brief
+         *
+         * @return M3BaseStatus
+         */
+        virtual M3BaseStatus *  GetBaseStatus()=0;
 	protected:
-		virtual bool ReadConfig(const char * filename);
-		m3rt::M3ComponentFactory * factory;
-		int priority;
-                bool verbose_;
-		std::vector<std::string> version_names;
-		std::vector<int> version_ids;
-		int version_id;
-		YAML::Node doc;
-		std::string doc_path;
+        /**
+         * @brief
+         *
+         * @param filename
+         * @return bool
+         */
+        virtual bool ReadConfig(const char * filename);
+        m3rt::M3ComponentFactory * factory; /**< TODO */
+        int priority; /**< TODO */
+                bool verbose_; /**< TODO */
+        std::vector<std::string> version_names; /**< TODO */
+        std::vector<int> version_ids; /**< TODO */
+        int version_id; /**< TODO */
+        YAML::Node doc; /**< TODO */
+        std::string doc_path; /**< TODO */
 };
 
 //Factory defn.
+/**
+ * @brief
+ *
+ */
 typedef M3Component * create_comp_t();
+/**
+ * @brief
+ *
+ */
 typedef void destroy_comp_t(M3Component *);
-extern std::map< std::string, create_comp_t *, std::less<std::string> > creator_factory;	//global
-extern std::map< std::string, destroy_comp_t *, std::less<std::string> > destroyer_factory; //global
+extern std::map< std::string, create_comp_t *, std::less<std::string> > creator_factory;	//global /**< TODO */
+extern std::map< std::string, destroy_comp_t *, std::less<std::string> > destroyer_factory; //global /**< TODO */
 
 }
 

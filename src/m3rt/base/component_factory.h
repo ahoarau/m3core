@@ -31,31 +31,120 @@ namespace m3rt
 //Because of Protocol Buffers implementation
 //Only one instance of libprotobuf can be loaded
 //So make this once on system startup, close only on exit
+/**
+ * @brief
+ *
+ */
 class M3ComponentFactory{
 public:
+    /**
+     * @brief
+     *
+     */
     M3ComponentFactory(){}
+    /**
+     * @brief
+     *
+     */
     ~M3ComponentFactory(){}
+    /**
+     * @brief
+     *
+     * @return bool
+     */
     bool Startup();												//Load libraries
+    /**
+     * @brief
+     *
+     */
     void Shutdown();											//Free libraries, release components
+    /**
+     * @brief
+     *
+     * @param type
+     * @return M3Component
+     */
     M3Component * CreateComponent(std::string type);			//Instantiate a component of this type
+    /**
+     * @brief
+     *
+     * @param c
+     * @return bool
+     */
     bool ReleaseComponent(M3Component * c);						//Safe delete of a component
+    /**
+     * @brief
+     *
+     */
     void ReleaseAllComponents();								//Safe delete of all components
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return M3Component
+     */
     M3Component *  	GetComponent(int idx);
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return std::string
+     */
     std::string  	GetComponentType(int idx);
+    /**
+     * @brief
+     *
+     * @param name
+     * @return int
+     */
     int 			GetComponentIdx(std::string name); 			//Returns -1 if not found
+    /**
+     * @brief
+     *
+     * @param name
+     * @return M3Component
+     */
     M3Component * 	GetComponent(std::string name);
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return std::string
+     */
     std::string  	GetComponentName(int idx);
+    /**
+     * @brief
+     *
+     * @return int
+     */
     int 			GetNumComponents();
+    /**
+     * @brief
+     *
+     * @return M3MonitorStatus
+     */
     M3MonitorStatus * GetMonitorStatus(){return &monitor_status;}
 private:
+    /**
+     * @brief
+     *
+     * @param filename
+     * @return bool
+     */
     bool ReadConfig(const char * filename);
+    /**
+     * @brief
+     *
+     * @param lib
+     * @return bool
+     */
     bool AddComponentLibrary(std::string lib);
-    std::vector<M3Component *>	m3_list;
-    std::vector<std::string>	m3_types;
-    std::vector<void *> 		dl_list; 						//handles for dynamic libs
-    std::vector<std::string> 	dl_list_str;
-    std::vector<std::string> 	dl_types;
-    M3MonitorStatus  monitor_status; 					//Container for all component rt stats
+    std::vector<M3Component *>	m3_list; /**< TODO */
+    std::vector<std::string>	m3_types; /**< TODO */
+    std::vector<void *> 		dl_list; 						//handles for dynamic libs /**< TODO */
+    std::vector<std::string> 	dl_list_str; /**< TODO */
+    std::vector<std::string> 	dl_types; /**< TODO */
+    M3MonitorStatus  monitor_status; 					//Container for all component rt stats /**< TODO */
 };
 
 }
