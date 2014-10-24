@@ -417,7 +417,7 @@ std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
     string root_path = std::string();
     string path = std::string();
     for(std::vector<std::pair<string,string> >::reverse_iterator it = paths.rbegin(); it != paths.rend(); ++it) {
-        cout<<"Trying with : "<<it->second<<endl;
+        //cout<<"Trying with : "<<it->second<<endl;
         //A.H: Let's start by the very last one i.e a local version.
         //If the file exists, load it, otherwise go to previous path (down to original robot_config)
         //If the file is loaded, then check for an optional find_str provided to checkif this is the right file to load, otherwise go to previous path
