@@ -15,6 +15,13 @@ message("-- Custom kernel : ${KERNEL_NAME}")
 endif()
 
 
+# paths to the FindXXX.cmake
+set(CMAKE_MODULE_PATH
+    "${MEKABOT}/meka-cmake-modules/Modules/"
+    $ENV{M3_CMAKE_MODULES}
+    ${CMAKE_MODULE_PATH})
+
+
 OPTION(RTAI "Enable/Disable RTAI (used for python proxy users only)" ON)
 
 OPTION(ETHERCAT "Enable/Disable EtherCAT (sim or not)" OFF)
@@ -39,6 +46,7 @@ endif()
 # Tmp solution for the FindXXX.cmake 
 set(CMAKE_MODULE_PATH 
     "${MEKABOT}/meka-cmake-modules/Modules/"
+    ${M3_CMAKE_MODULES}
     ${CMAKE_MODULE_PATH})
 
 if(NOT MEKABOT)
@@ -95,3 +103,6 @@ SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 INCLUDE(CPack)
  
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+
+
