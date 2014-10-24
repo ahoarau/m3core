@@ -73,12 +73,12 @@ def stop_log_service():
 
 def get_log_file(logfilename):
     try:
-        f = open(logfilename, "rb")
-        s=f.read()
-        f.close()
-        return xmlrpclib.Binary(s)
+        with open(logfilename, "rb") as f:
+	    s=f.read()
+            return xmlrpclib.Binary(s)
     except IOError:
         return ''
+
 def get_log_info(logname,logpath=None):
     return m3t.get_log_info(logname,logpath)
 
@@ -92,22 +92,21 @@ class client_thread(Thread):
         self.stop_event = Event()
         self.proxy = m3p.M3RtProxy(rpc_port=port)
         self.proxy.start(start_data_svc, False)  
+        print "M3 INFO: M3 is now running ",
         if self.make_all_op:
-            print("M3 INFO: M3 is now running (with option -make operational all+shm)")
+            print "(with option -make operational all+shm)"
             self.proxy.make_operational_all()
             self.proxy.make_operational_all_shm()
         if self.make_all_op_shm:  
-            print("M3 INFO: M3 is now running (with option -make operational shm only)")
+            print "(with option -make operational shm only)"
             self.proxy.make_operational_all_shm()        
         if self.make_all_op_no_shm:
-            print("M3 INFO: M3 is now running (with option -make operational all (no shm))")
+            print "(with option -make operational all (no shm))"
             self.proxy.make_operational_all()
     def run(self):
-        try:
-            self.stop_event.wait(timeout=None)
-        finally:
-            print "M3 INFO: Closing Client Thread."
-            self.proxy.stop()    
+        self.stop_event.wait(timeout=None)
+        print "M3 INFO: Closing Client Thread."
+        self.proxy.stop()    
 
 class M3Server(Thread):
     def __init__(self):
@@ -121,12 +120,10 @@ class M3Server(Thread):
         self.server.register_function(get_log_info)
         #time.sleep(2.0) # wait for EC kmod to get slaves in OP
     def run(self):
-        try:
-            print 'Starting M3 RPC Server on Host: ',host,' at Port: ',port,'...'
-            self.server.serve_forever()
-        finally:
-            print "M3 INFO: Closing Socket."
-            self.server.socket.close()
+        print 'Starting M3 RPC Server on Host:',host,'at Port:',port,'...'
+        self.server.serve_forever()
+        print "M3 INFO: Closing Socket"
+        self.server.socket.close()
             
 # ################################################################################
 
@@ -214,6 +211,7 @@ except Exception,e:
 if svc:
     print "M3 INFO: Shutting down M3Service."
     svc.Shutdown() #it's in the destructor !
+ 
 if m3client_thread and m3client_thread.is_alive():
     print "M3 INFO: Shutting down Client Thread."
     m3client_thread.stop_event.set()
@@ -221,14 +219,15 @@ if m3client_thread and m3client_thread.is_alive():
     while m3client_thread.is_alive():
         time.sleep(0.05)
     print 'M3 INFO: Client thread exited normally.'
-    
+  
 if m3server and m3server.is_alive():
     print "M3 INFO: Shutting down M3 RPC Server."
     m3server.server.shutdown()
-    print 'M3 INFO: Waiting for M3 RPC Server to shutdown.'
     while m3server.is_alive():
+	print 'M3 INFO: Waiting for M3 RPC Server to shutdown.'
         time.sleep(0.05)
     print 'M3 INFO: M3 RPC Server exited normally.'
+
 time.sleep(0.5)
 print("M3 INFO: Exiting")
 exit(0)
