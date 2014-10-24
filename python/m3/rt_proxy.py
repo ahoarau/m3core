@@ -457,7 +457,10 @@ class M3RtProxy:
         try:
             try:
                 self.rtsys_id=self.proxy.AttachRtSystem()
+                if self.rtsys_id==-1:
+		    raise m3t.M3Exception('M3RtSystem still online')
                 if self.rtsys_id==0: #failed to start
+		    print "Attaching a new rt system failed"
                     self.stop()
                     raise m3t.M3Exception('Unable to start M3RtSystem. Try restarting server')
             except xmlrpclib.ProtocolError,v:
