@@ -263,9 +263,8 @@ void run(long shm)
 		
 #if defined(ETHERCAT) && defined(USE_DISTRIBUTED_CLOCKS)
 		sys.shm->timestamp_ns=EC_TIMEVAL2NANO(tv);
-#elif defined(ETHERCAT)
-		sys.shm->timestamp_ns=rt_get_time_ns()-tstart;
 #endif
+		sys.shm->timestamp_ns=rt_get_time_ns()-tstart;
 
 	
 		for (sidx=0;sidx<sys.shm->slaves_responding;sidx++)
