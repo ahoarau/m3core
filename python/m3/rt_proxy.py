@@ -384,6 +384,7 @@ class M3RtProxy:
         idx=0
         for name,v in self.published_command.items():
             self.command_raw.name_cmd[idx]=name
+            v['component'].load_command()
             self.command_raw.datum_cmd[idx]=v['command'].SerializeToString()
             idx=idx+1
         idx=0
