@@ -12,11 +12,6 @@ sync
 $SUDO $rmmod rtai_shm
 sync
 $SUDO $rmmod rtai_sem
-if [ -f $MODULES/rtai_smi.ko ]
-then
-  sync
-  $SUDO $rmmod rtai_smi
-fi
 sync
 if [ -f $MODULES/rtai_lxrt.ko ]; then
         $SUDO $rmmod rtai_lxrt
@@ -27,8 +22,11 @@ $SUDO $rmmod rtai_sched
 sync
 $SUDO $rmmod rtai_hal
 sync
-
-
+if [ -f $MODULES/rtai_smi.ko ]
+then
+  sync
+  $SUDO $rmmod rtai_smi
+fi
 
 
 
