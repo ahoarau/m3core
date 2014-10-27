@@ -97,6 +97,7 @@ void M3RtService::Shutdown()
     void *end;
     float timeout_s = 4;
     time_t start_time=time(0);
+    usleep(500000);
     while(svc_thread_active && (float)difftime(time(0),start_time) < timeout_s)
     {
         m3rt::M3_INFO("Waiting for Service thread to shutdown... (%.2fs/%.2fs)\n",(float)difftime(time(0),start_time) ,timeout_s);
@@ -110,10 +111,11 @@ void M3RtService::Shutdown()
 int M3RtService::AttachRtSystem()
 {
     if(!svc_thread_active || svc_thread_end){
-      svc_thread_active=true;
-      svc_thread_end=false;
+      //svc_thread_active=true;
+      //svc_thread_end=false;
       return -1;
     }
+    m3rt::M3_INFO("Attaching new RTSystem.\n");
     if(rt_system!=NULL)
         return ++num_rtsys_attach;
 
@@ -227,7 +229,7 @@ bool  M3RtService::IsDataServiceRunning()
 //////////////////////////////////////////////////////////////////////////////////////
 int M3RtService::AttachDataService()
 {
-    if (rt_system==NULL)
+    if (rt_system==NULL || svc_thread_end)
         return -1;
     data_services.push_back(new m3rt::M3RtDataService(rt_system,next_port));
     if (!data_services.back()->Startup())
@@ -246,7 +248,7 @@ int M3RtService::AttachDataService()
 
 bool M3RtService::RemoveDataService(int port)
 {	
-    m3rt::M3_INFO("Removing DataService\n");
+    m3rt::M3_INFO("Removing data service in port %d\n",port);
     int idx=-1;
     for (int i=0; i<data_services.size(); i++)
     {
@@ -272,7 +274,7 @@ bool M3RtService::RemoveDataService(int port)
 
 bool M3RtService::ClientSubscribeStatus(const char * name, int port)
 {
-    if (IsDataServiceRunning())
+    if (IsDataServiceRunning() && !svc_thread_end)
     {
         for (int i=0; i<data_services.size(); i++)
         {

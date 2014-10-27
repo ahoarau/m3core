@@ -82,6 +82,7 @@ public:
      * @param name
      */
     void ClientSubscribeStatus(std::string name);
+    bool IsShuttingDown(){return data_thread_end;}
     bool data_thread_active; /**< TODO */
     bool data_thread_end; /**< TODO */
     bool data_thread_error; /**< TODO */
