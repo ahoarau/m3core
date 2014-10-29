@@ -214,7 +214,7 @@ vector<string> YamlReadVectorString(string s)
 }
 
 
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 vector<mReal> YamlReadVectorM(const YAML::Node &seq)
 {
     vector<mReal> f;
@@ -311,7 +311,7 @@ bool GetFileConfigPath(const char *filename,vector<string>& vpath)
     parser.PrintTokens(cout);
     return docs.Clone();
 }*/
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 bool GetYamlStream(const char *filename, YAML::Emitter &out)
 {
     string path;
@@ -360,7 +360,7 @@ bool GetYamlDoc(const char* filename, YAML::Node& doc)
     std::string ret = GetYamlDoc(filename,doc,NULL);
     return !ret.empty();
 }
-#if defined(YAMLCPP_05)
+#ifndef YAMLCPP_03
 bool GetAllYamlDocs(const char* filename, std::vector<YAML::Node>& docs )
 {
     if(!filename) return false;
@@ -423,7 +423,7 @@ std::string GetYamlDoc(const char* filename, YAML::Node& doc, void * )
         //If the file is loaded, then check for an optional find_str provided to checkif this is the right file to load, otherwise go to previous path
         path = it->first;
         root_path = it->second;
-#if defined(YAMLCPP_05)
+#ifndef YAMLCPP_03
         try{
             if(m3rt::file_exists(path))
                 doc = YAML::LoadFile(path);

@@ -99,7 +99,7 @@ bool M3Component::ReadConfig(const char *filename)
     }
     ret +=filename;
     this->doc_path = ret;
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 	std::string name;
 	std::string version;
     try {

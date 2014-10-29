@@ -346,7 +346,7 @@ protected:
 			  M3_WARN("Old config file detected, please update your %s\n",(*it).c_str());
 			  continue;
 			}
-#if defined(YAMLCPP_05)
+#ifndef YAMLCPP_03
 
 			try{
 				ret = this->ReadConfigOrdered(*it,component_type,comp_list,idx_map);
@@ -371,7 +371,7 @@ protected:
 	{
 		try{
 		YAML::Node doc;
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 		std::ifstream fin(filename.c_str());
 		YAML::Parser parser(fin);
 		while(parser.GetNextDocument(doc)) {
@@ -380,7 +380,7 @@ protected:
 		if(doc.IsNull()){M3_ERR("%s not found, please update the robot's config files.\n",filename.c_str()); return false;}
 #endif
 
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 			if(!doc.FindValue(component_type)) {
 #else
 			if(!doc[component_type]){
@@ -389,7 +389,7 @@ protected:
 				return true;
 			}
 			
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 			const YAML::Node& components = doc[component_type];
 			for(YAML::Iterator it = components.begin(); it != components.end(); ++it) {
 				std::string dir;
@@ -400,7 +400,7 @@ protected:
 				std::string dir = it_rt->first.as<std::string>();
 #endif
 				
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 				for(YAML::Iterator it_dir = components[dir.c_str()].begin();
 					it_dir != components[dir.c_str()].end(); ++it_dir) {
 					std::string  name;
@@ -441,7 +441,7 @@ protected:
 				}
 			}
 		return true;
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 		}
 #endif
 		}catch(std::exception &e){
@@ -450,7 +450,7 @@ protected:
 		}
 		std::cout<<std::endl;
 	}
-#if defined(YAMLCPP_05)
+#ifndef YAMLCPP_03
 	template <class T>
     /**
      * @brief

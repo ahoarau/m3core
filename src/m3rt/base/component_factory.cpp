@@ -35,7 +35,7 @@ using namespace std;
 //global factory for making components
 map< string, create_comp_t *, less<string> >  creator_factory;	//global
 map< string, destroy_comp_t *, less<string> > destroyer_factory; //global
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 bool M3ComponentFactory::ReadConfig(const char *filename)
 {
     YAML::Node doc;

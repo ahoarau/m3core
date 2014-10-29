@@ -107,7 +107,7 @@ std::vector<mReal> YamlReadVectorM(std::string s);
  * @return std::vector<std::string>
  */
 std::vector<std::string> YamlReadVectorString(std::string s);
-#ifndef YAMLCPP_05
+#ifdef YAMLCPP_03
 std::vector<mReal> YamlReadVectorM(const YAML::Node& seq);
 #endif
 /**
@@ -170,7 +170,7 @@ bool GetYamlDoc(const char* filename, YAML::Node& doc);
  * @return bool
  */
 bool GetYamlStream(const char* filename, YAML::Emitter& out);
-#ifdef YAMLCPP_05	
+#ifndef YAMLCPP_03	
 template <typename _T >
 /**
  * @brief
