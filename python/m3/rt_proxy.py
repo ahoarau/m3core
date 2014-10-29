@@ -260,15 +260,11 @@ class M3RtProxy:
         c+=self.get_available_components('m3head')        
         return c
     
-    def get_available_components(self,type=None):
+    def get_available_components(self,component_name=None):
         """Get a list of available components on the server of a particular type"""
-        if type==None:
+        if component_name==None:
             return self.available_components
-        c=[]
-        for i in range(len(self.available_components)):
-            if self.available_component_types[i]==type:
-                c.append(self.available_components[i])
-        return c
+        return [c for c in self.available_components if component_name in c]
 
     def get_num_components(self):
         return self.proxy.GetNumComponents()
