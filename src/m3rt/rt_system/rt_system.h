@@ -267,10 +267,10 @@ public:
      * @return bool
      */
     bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
-    bool logging; /**< TODO */
+    std::atomic<bool> logging; /**< TODO */
     int over_step_cnt; /**< TODO */
-    bool sys_thread_end;
-    bool sys_thread_active;
+    std::atomic<bool> sys_thread_end;
+    std::atomic<bool> sys_thread_active;
 private:
     /**
      * @brief
@@ -279,8 +279,8 @@ private:
     void CheckComponentStates();
     M3ComponentFactory * factory; /**< TODO */
     M3EcSystemShm *  shm_ec; /**< TODO */
-    bool safeop_required; /**< TODO */
-    bool hard_realtime; /**< TODO */
+    std::atomic<bool> safeop_required; /**< TODO */
+    std::atomic<bool> hard_realtime; /**< TODO */
     std::vector<M3ComponentEc *>	m3ec_list; /**< TODO */
     std::vector<M3Component *>	m3rt_list; /**< TODO */
 #ifdef __RTAI__

@@ -29,6 +29,7 @@ along with M3.  If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <sys/stat.h>
 #include <ctime>
+#include <atomic>
 #include <time.h>
 namespace m3rt
 {

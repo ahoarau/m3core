@@ -142,7 +142,7 @@ void *rt_system_thread(void *arg)
     int nerr = 0;
     int ntrialsmin=500;
     while(1){
-        if(sys_thread_end)
+        if(m3sys->sys_thread_end)
             return 0;
         nerr = 0;
         // Let's try to step
