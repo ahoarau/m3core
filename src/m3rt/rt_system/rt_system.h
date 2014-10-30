@@ -47,6 +47,9 @@ extern "C" {
 #include <sys/time.h>
 #include <algorithm>
 
+#ifdef __cplusplus11__
+#include <atomic>
+#endif
 
 namespace m3rt
 {
@@ -223,10 +226,10 @@ public:
      * @return int
      */
     int GetEcCounter(){return shm_ec->counter;}
-    SEM * ready_sem; /**< TODO */
-    SEM * sync_sem; /**< TODO */
-    SEM * shm_sem; /**< TODO */
-    SEM * ext_sem; /**< TODO */
+    SEM * ready_sem; 
+    SEM * sync_sem; 
+    SEM * shm_sem; 
+    SEM * ext_sem; 
 #else
     sem_t * shm_sem;
     sem_t * sync_sem;
@@ -267,33 +270,43 @@ public:
      * @return bool
      */
     bool SerializeStatusToExt(M3StatusAll & msg, std::vector<std::string>& names); //Must be thread safe
-    std::atomic<bool> logging; /**< TODO */
-    int over_step_cnt; /**< TODO */
+    int over_step_cnt;
+#ifdef __cplusplus11__
+    std::atomic<bool> logging; 
     std::atomic<bool> sys_thread_end;
     std::atomic<bool> sys_thread_active;
+#else
+    bool logging; 
+    bool sys_thread_end;
+    bool sys_thread_active;
+#endif
 private:
     /**
      * @brief
      *
      */
     void CheckComponentStates();
-    M3ComponentFactory * factory; /**< TODO */
-    M3EcSystemShm *  shm_ec; /**< TODO */
-    std::atomic<bool> safeop_required; /**< TODO */
-    std::atomic<bool> hard_realtime; /**< TODO */
-    std::vector<M3ComponentEc *>	m3ec_list; /**< TODO */
-    std::vector<M3Component *>	m3rt_list; /**< TODO */
+    M3ComponentFactory * factory; 
+    M3EcSystemShm *  shm_ec; 
+#ifdef __cplusplus11__
+    std::atomic<bool> safeop_required;
+#else
+    bool safeop_required;
+#endif
+    bool hard_realtime; 
+    std::vector<M3ComponentEc *>	m3ec_list; 
+    std::vector<M3Component *>	m3rt_list; 
 #ifdef __RTAI__
-    RTIME last_cycle_time; /**< TODO */
+    RTIME last_cycle_time; 
 #else
     long long last_cycle_time;
 #endif
-    M3RtLogService * log_service; /**< TODO */
+    M3RtLogService * log_service; 
 
-    std::vector<int> idx_map_ec; /**< TODO */
-    std::vector<int> idx_map_rt; /**< TODO */
-    long hst; /**< TODO */
-    double test; /**< TODO */
+    std::vector<int> idx_map_ec; 
+    std::vector<int> idx_map_rt; 
+    long hst; 
+    double test; 
 	
 protected:
     template <class T>

@@ -26,6 +26,15 @@ endif()
 
 find_package(Threads)
 
+## C++11 support for thread safety
+if(C++11) # option
+get_property(DEFS DIRECTORY
+   PROPERTY COMPILE_DEFINITIONS)
+set_property(
+   DIRECTORY
+   PROPERTY COMPILE_DEFINITIONS ${DEFS} __cplusplus11__
+   )
+endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(YAMLCPP REQUIRED yaml-cpp)

@@ -41,6 +41,10 @@ extern "C" {
 #include <pthread.h>
 #endif
 
+#ifdef __cplusplus11__
+#include <atomic>
+#endif
+
 namespace m3rt
 {
 /**
@@ -82,22 +86,28 @@ public:
      * @param name
      */
     void ClientSubscribeStatus(std::string name);
-    std::atomic<bool> data_thread_active; /**< TODO */
-    std::atomic<bool> data_thread_end; /**< TODO */
-    std::atomic<bool> data_thread_error; /**< TODO */
-    static int instances; /**< TODO */
+#ifdef __cplusplus11__
+    std::atomic<bool> data_thread_active; 
+    std::atomic<bool> data_thread_end; 
+    std::atomic<bool> data_thread_error; 
+#else
+    bool data_thread_active; 
+    bool data_thread_end; 
+    bool data_thread_error; 
+#endif
+    static int instances; 
 private:
-    M3StatusAll status; /**< TODO */
-    M3SimpleServer server; /**< TODO */
-    int portno; /**< TODO */
+    M3StatusAll status; 
+    M3SimpleServer server; 
+    int portno; 
 	
-    std::string sread; /**< TODO */
-    std::string swrite; /**< TODO */
-    M3RtSystem * sys; /**< TODO */
-    std::vector<std::string> status_names; /**< TODO */
-    long hdt; /**< TODO */
+    std::string sread; 
+    std::string swrite; 
+    M3RtSystem * sys; 
+    std::vector<std::string> status_names; 
+    long hdt; 
 #ifdef __RTAI__	
-    SEM * ext_sem; /**< TODO */
+    SEM * ext_sem; 
 #else
 	sem_t * ext_sem;
 #endif

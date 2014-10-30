@@ -254,19 +254,19 @@ public:
     bool IsDataServiceError();
 private:
     int hlt; /**< The thread created at Startup()*/
-    m3rt::M3RtSystem  * rt_system; /**< TODO */
-    m3rt::M3ComponentFactory factory; //Can only create one instance of this. /**< TODO */
-    std::vector<m3rt::M3RtDataService*> data_services; /**< TODO */
-    m3rt::M3RtLogService *log_service; /**< TODO */
-    std::vector<std::string> log_components; /**< TODO */
+    m3rt::M3RtSystem  * rt_system; 
+    m3rt::M3ComponentFactory factory; //Can only create one instance of this. 
+    std::vector<m3rt::M3RtDataService*> data_services; 
+    m3rt::M3RtLogService *log_service; 
+    std::vector<std::string> log_components; 
 #ifdef __RTAI__
-    RT_TASK *svc_task; /**< TODO */
+    RT_TASK *svc_task; 
 #else
 	int * svc_task; // to preserve initializer
 #endif
-    std::vector<int> ports; /**< TODO */
-    int next_port; /**< TODO */
-    int num_rtsys_attach; /**< TODO */
+    std::vector<int> ports; 
+    int next_port; 
+    int num_rtsys_attach; 
 };
 
 
