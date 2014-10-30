@@ -385,7 +385,7 @@ bool M3RtSystem::StartupComponents()
         return false;
     M3_INFO("Done reading components config files.\n");
 #ifdef __RTAI__
-    main_task = rt_task_init_schmod(nam2num("M3MAIN"),RT_TASK_PRIORITY,RT_STACK_SIZE,0,SCHED_FIFO,0);
+    main_task = rt_task_init_schmod(nam2num("M3MAIN"),RT_TASK_PRIORITY,RT_STACK_SIZE,0,SCHED_FIFO,0xF);
     if(!main_task){
         M3_ERR("Unable to start M3RtSystem main RTAI task, abording.\n");
         return false;
