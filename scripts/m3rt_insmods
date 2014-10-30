@@ -16,11 +16,6 @@ rmmod=/sbin/rmmod
 m3ko=/lib/modules/$(uname -r)/extra/m3ec.ko
 MODULES=/usr/realtime/modules
 
-# May not be necessary
-$SUDO $rmmod lp
-$SUDO $rmmod parport_pc
-$SUDO $rmmod ppdev
-$SUDO $rmmod parport
 
 if [ -f $MODULES/rtai_smi.ko ]
 then

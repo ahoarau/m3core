@@ -14,6 +14,7 @@ disable_ros
 lsec
 m3rt_insmods
 m3rt_rmmods
+m3rt_ethercat_check
 m3rt_rotate_logs
 m3rt_server_debug
 m3rt_server_kill

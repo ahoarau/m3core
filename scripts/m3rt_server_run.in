@@ -16,11 +16,13 @@ fi
 
 if $(m3rt_check_server.py) 2>/dev/null ; then
     if [ $virtual = 0 ]; then
-	echo 'Checking Ethercat'
-	if $(m3rt_bus_init.py) 2>/dev/null ; then
-           echo 'EtherCAT failed to initialize components, please run m3rt_bus_init for debug.'
-		exit
-	fi
+        echo 'Checking Ethercat'
+        m3rt_ethercat_check
+        test_ethercat=$?
+        if [ test_ethercat = 0 ]; then
+           echo 'EtherCAT failed to initialize components, please run lsec for debug.'
+                exit
+        fi
     fi
     echo 'Running insmods'
     m3rt_insmods
@@ -31,6 +33,7 @@ if $(m3rt_check_server.py) 2>/dev/null ; then
 else
     echo 'Server already running, abording'
 fi
+
 
 
 

@@ -102,7 +102,7 @@ def get_num_slaves_preop():
     return len(s)-1
 
 def restart_ethercat():
-    cmd = 'sudo /etc/init.d/ethercat restart'
+    cmd = 'sudo service ethercat restart'
     os.system(cmd)
 
 def get_num_slaves_op():
@@ -197,6 +197,8 @@ def ethercat_bus_init(verbose=True):
             print ie,'slaves still in state INIT_E. Restarting EtherCAT master...'
         restart_ethercat()
         while get_num_slaves_not_init_yet():
+            if verbose:
+                print 'Waiting for slaves to be in PREOP state...'
             time.sleep(1.0)
         i=get_num_slaves_init()
         ie=get_num_slaves_init_e()
@@ -206,12 +208,13 @@ def ethercat_bus_init(verbose=True):
             if verbose:
                 print i,': Slaves in PREOP',p,', of ',n
             if p==n:
-                print 'All slaves in state PREOP. Initialization successful...'
+                if verbose:
+                    print 'All slaves in state PREOP. Initialization successful...'
                 return True
             time.sleep(1.0)
 
-        print 'Unable to initialize the EtherCAT bus. Power cycle the robot and try again'
-        return False
+    print 'Unable to initialize the EtherCAT bus. Power cycle the robot and try again'
+    return False
         
 # #######################################################################################
 
