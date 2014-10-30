@@ -80,18 +80,18 @@ protected:
      * @return bool
      */
     bool IsActiveSocket(){return socket_fd!=-1;}
-    int portno; /**< TODO */
-    int nb_rx; /**< TODO */
-    int nb_tx; /**< TODO */
-    unsigned char * buf_rx; /**< TODO */
-    unsigned char * buf_tx; /**< TODO */
-    fd_set master;   // master file descriptor list /**< TODO */
-    fd_set read_fds; // temp file descriptor list for select() /**< TODO */
-    fd_set write_fds; // temp file descriptor list for select() /**< TODO */
-    int fdmax;        // maximum file descriptor number /**< TODO */
-    int socket_fd; /**< TODO */
-    int listener;     // listening socket descriptor /**< TODO */
-    struct timeval tv; /**< TODO */
+    int portno; 
+    int nb_rx; 
+    int nb_tx; 
+    unsigned char * buf_rx; 
+    unsigned char * buf_tx; 
+    fd_set master;   // master file descriptor list 
+    fd_set read_fds; // temp file descriptor list for select() 
+    fd_set write_fds; // temp file descriptor list for select() 
+    int fdmax;        // maximum file descriptor number 
+    int socket_fd; 
+    int listener;     // listening socket descriptor 
+    struct timeval tv; 
 };
 }
 #endif

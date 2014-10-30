@@ -133,10 +133,10 @@ class M3CompShm: public M3Component{
          */
         void release_command(){rt_sem_signal(command_sem);}
 	private:
-        M3Sds * shm;				 /**< TODO */
-        SEM * status_sem; /**< TODO */
-        SEM * command_sem;	 /**< TODO */
-        std::string shm_id; /**< TODO */
+        M3Sds * shm;				 
+        SEM * status_sem; 
+        SEM * command_sem;	 
+        std::string shm_id; 
 };
 
 }

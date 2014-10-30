@@ -147,18 +147,18 @@ class M3ComponentEc: public M3Component{
          */
         virtual void ResetCommandPdo(unsigned char * pdo){memset(pdo,0,MAX_PDO_SIZE_BYTES);}
 	private:
-        M3EcSlaveShm * shm; /**< TODO */
+        M3EcSlaveShm * shm; 
         /**
          * @brief
          *
          * @return bool
          */
         bool IsEcError();
-        int pdo_id; /**< TODO */
-        std::vector<std::string> pdo_names; /**< TODO */
-        std::vector<int> pdo_ids; /**< TODO */
-        int tmp_cnt; /**< TODO */
-        bool virtual_mode; /**< TODO */
+        int pdo_id; 
+        std::vector<std::string> pdo_names; 
+        std::vector<int> pdo_ids; 
+        int tmp_cnt; 
+        bool virtual_mode; 
 };
 
 }

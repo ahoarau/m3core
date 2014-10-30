@@ -139,12 +139,12 @@ private:
      * @return bool
      */
     bool AddComponentLibrary(std::string lib);
-    std::vector<M3Component *>	m3_list; /**< TODO */
-    std::vector<std::string>	m3_types; /**< TODO */
-    std::vector<void *> 		dl_list; 						//handles for dynamic libs /**< TODO */
-    std::vector<std::string> 	dl_list_str; /**< TODO */
-    std::vector<std::string> 	dl_types; /**< TODO */
-    M3MonitorStatus  monitor_status; 					//Container for all component rt stats /**< TODO */
+    std::vector<M3Component *>	m3_list; 
+    std::vector<std::string>	m3_types; 
+    std::vector<void *> 		dl_list; 						//handles for dynamic libs 
+    std::vector<std::string> 	dl_list_str; 
+    std::vector<std::string> 	dl_types; 
+    M3MonitorStatus  monitor_status; 					//Container for all component rt stats 
 };
 
 }

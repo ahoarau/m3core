@@ -289,14 +289,14 @@ class M3Component{
          * @return bool
          */
         virtual bool ReadConfig(const char * filename);
-        m3rt::M3ComponentFactory * factory; /**< TODO */
-        int priority; /**< TODO */
-                bool verbose_; /**< TODO */
-        std::vector<std::string> version_names; /**< TODO */
-        std::vector<int> version_ids; /**< TODO */
-        int version_id; /**< TODO */
-        YAML::Node doc; /**< TODO */
-        std::string doc_path; /**< TODO */
+        m3rt::M3ComponentFactory * factory; 
+        int priority; 
+                bool verbose_; 
+        std::vector<std::string> version_names; 
+        std::vector<int> version_ids; 
+        int version_id; 
+        YAML::Node doc; 
+        std::string doc_path; 
 };
 
 //Factory defn.
@@ -310,8 +310,8 @@ typedef M3Component * create_comp_t();
  *
  */
 typedef void destroy_comp_t(M3Component *);
-extern std::map< std::string, create_comp_t *, std::less<std::string> > creator_factory;	//global /**< TODO */
-extern std::map< std::string, destroy_comp_t *, std::less<std::string> > destroyer_factory; //global /**< TODO */
+extern std::map< std::string, create_comp_t *, std::less<std::string> > creator_factory;	//global 
+extern std::map< std::string, destroy_comp_t *, std::less<std::string> > destroyer_factory; //global 
 
 }
 

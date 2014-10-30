@@ -44,7 +44,7 @@ extern "C" {
 
 namespace m3rt
 {
-    static int num_asyncs = 0; /**< TODO */
+    static int num_asyncs = 0; 
 	
 /**
  * @brief
@@ -84,8 +84,8 @@ class M3ComponentAsync : public M3Component
         bool IsInitializing(){return initializing;}
 		
 #ifdef __RTAI__			
-        SEM * cmd_mutex; /**< TODO */
-            SEM * status_mutex; /**< TODO */
+        SEM * cmd_mutex; 
+            SEM * status_mutex; 
 #endif
 
         /**
@@ -132,10 +132,10 @@ class M3ComponentAsync : public M3Component
          * @return google::protobuf::Message
          */
         virtual google::protobuf::Message * GetStatusThread()=0;
-        bool initializing; /**< TODO */
+        bool initializing; 
 		
 	protected:
-        enum {DEFAULT, ISS};		 /**< TODO */
+        enum {DEFAULT, ISS};		 
 		
 		
         /**
@@ -172,9 +172,9 @@ class M3ComponentAsync : public M3Component
          */
         virtual bool LinkDependentComponents();
 	private:	      
-          long rc; /**< TODO */
-          bool stop_thread; /**< TODO */
-          int tmp; /**< TODO */
+          long rc; 
+          bool stop_thread; 
+          int tmp; 
 
 };
 
