@@ -109,6 +109,16 @@ class M3RtProxy:
         try:
             if self.is_server_started:
                 for comp_name in self.command_raw.name_cmd:
+                    try:
+                        try: #if bot
+                            bot_comp = self.published_command[comp_name]['component']
+                            for c in bot_comp.get_available_chains():
+                                bot_comp.set_mode_off(c)
+                        except: pass
+                        # or just hand, arm etc
+                        self.published_command[comp_name]['component'].set_mode_off()
+                    except: pass
+                    self.step()
                     self.make_safe_operational(comp_name)
             if self.data_svc is not None:
                 self.__stop_data_service()
@@ -125,7 +135,7 @@ class M3RtProxy:
             self.available_component_types=[]
             self.status_raw=mbs.M3StatusAll()
             self.command_raw=mbs.M3CommandAll()
-        except socket.error, msg:
+        except socket.error:
             pass #Ok because shutting down
         self.stopped=True
         self.is_server_started=False
